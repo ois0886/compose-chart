@@ -11,14 +11,14 @@ import androidx.compose.ui.unit.dp
  *
  * @param showHorizontalLines 수평 그리드 라인 표시 여부
  * @param showVerticalLines 수직 그리드 라인 표시 여부
- * @param lineColor 그리드 라인 색상
+ * @param lineColor 그리드 라인 색상. [Color.Unspecified]이면 라이트/다크 테마에 맞게 자동 적용
  * @param strokeWidth 그리드 라인 두께
  * @param dashPattern 점선 패턴 (null이면 실선). 예: floatArrayOf(10f, 5f)
  */
 data class GridStyle(
     val showHorizontalLines: Boolean = true,
     val showVerticalLines: Boolean = false,
-    val lineColor: Color = Color(0xFFEEEEEE),
+    val lineColor: Color = Color.Unspecified,
     val strokeWidth: Dp = 0.5.dp,
     val dashPattern: FloatArray? = null,
 ) {

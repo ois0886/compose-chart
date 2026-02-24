@@ -1,6 +1,7 @@
 package com.inseong.composechart.bar
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,6 +69,15 @@ fun BarChart(
     colors: List<Color> = ChartDefaults.colors,
     onBarSelected: ((groupIndex: Int, entryIndex: Int, stackIndex: Int) -> Unit)? = null,
 ) {
+    // 다크 테마 감지 및 스타일 해석
+    val isDark = isSystemInDarkTheme()
+    val resolvedGridStyle = style.grid.copy(
+        lineColor = ChartDefaults.resolveGridLineColor(style.grid.lineColor, isDark),
+    )
+    val resolvedAxisStyle = style.axis.copy(
+        labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
+    )
+
     val progress by rememberChartAnimation(style.animationDurationMs)
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
     var selectedGroupIndex by remember { mutableIntStateOf(-1) }
@@ -97,8 +107,8 @@ fun BarChart(
             },
     ) {
         val paddingPx = chartPaddingPx.toPx()
-        val yAxisWidth = if (style.axis.showYAxis) 40.dp.toPx() else 0f
-        val xAxisHeight = if (style.axis.showXAxis) 20.dp.toPx() else 0f
+        val yAxisWidth = if (resolvedAxisStyle.showYAxis) 40.dp.toPx() else 0f
+        val xAxisHeight = if (resolvedAxisStyle.showXAxis) 20.dp.toPx() else 0f
 
         val chartArea = Rect(
             left = paddingPx + yAxisWidth,
@@ -108,17 +118,17 @@ fun BarChart(
         )
 
         // 그리드 및 축 그리기
-        drawGrid(style.grid, chartArea, style.axis.yLabelCount)
+        drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
 
-        if (style.axis.showYAxis) {
-            drawYAxisLabels(0f, adjustedMax, style.axis, chartArea)
+        if (resolvedAxisStyle.showYAxis) {
+            drawYAxisLabels(0f, adjustedMax, resolvedAxisStyle, chartArea)
         }
 
         // X축 라벨 (그룹 라벨 사용)
-        if (style.axis.showXAxis) {
+        if (resolvedAxisStyle.showXAxis) {
             val labels = validGroups.map { it.label }
             if (labels.any { it.isNotEmpty() }) {
-                drawXAxisLabels(labels, style.axis, chartArea)
+                drawXAxisLabels(labels, resolvedAxisStyle, chartArea)
             }
         }
 

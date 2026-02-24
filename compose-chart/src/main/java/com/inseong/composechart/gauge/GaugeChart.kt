@@ -1,6 +1,7 @@
 package com.inseong.composechart.gauge
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -11,6 +12,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.style.GaugeChartStyle
@@ -52,6 +54,11 @@ fun GaugeChart(
     style: GaugeChartStyle = GaugeChartStyle(),
     centerContent: (@Composable (animatedValue: Float) -> Unit)? = null,
 ) {
+    // 다크 테마 감지 및 색상 해석
+    val isDark = isSystemInDarkTheme()
+    val resolvedTrackColor = ChartDefaults.resolveGaugeTrackColor(style.trackColor, isDark)
+    val resolvedCenterTextColor = ChartDefaults.resolveGaugeCenterTextColor(style.centerTextColor, isDark)
+
     val progress by rememberChartAnimation(style.animationDurationMs)
 
     // 음수/NaN/Infinity/0 방어: 안전한 값으로 보정
@@ -88,7 +95,7 @@ fun GaugeChart(
 
             // 배경 트랙 호
             drawArc(
-                color = style.trackColor,
+                color = resolvedTrackColor,
                 startAngle = startAngle,
                 sweepAngle = style.sweepAngle,
                 useCenter = false,
@@ -129,7 +136,7 @@ fun GaugeChart(
                     text = valueText,
                     style = androidx.compose.ui.text.TextStyle(
                         fontSize = style.centerTextSize,
-                        color = style.centerTextColor,
+                        color = resolvedCenterTextColor,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     ),
                 )
@@ -140,7 +147,7 @@ fun GaugeChart(
                         text = data.label,
                         style = androidx.compose.ui.text.TextStyle(
                             fontSize = style.centerTextSize * 0.5f,
-                            color = style.centerTextColor.copy(alpha = 0.6f),
+                            color = resolvedCenterTextColor.copy(alpha = 0.6f),
                         ),
                     )
                 }

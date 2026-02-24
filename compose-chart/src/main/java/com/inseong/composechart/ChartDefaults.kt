@@ -24,4 +24,61 @@ object ChartDefaults {
         Color(0xFF9F7AEA), // 퍼플
         Color(0xFF38B2AC), // 틸
     )
+
+    // ── 라이트/다크 테마 기본 색상 ──
+
+    /** 그리드 라인 색상 (라이트) */
+    internal val gridLineColorLight = Color(0xFFEEEEEE)
+    /** 그리드 라인 색상 (다크) */
+    internal val gridLineColorDark = Color(0xFF333333)
+
+    /** 축 라벨 색상 (라이트) */
+    internal val axisLabelColorLight = Color(0xFF9E9E9E)
+    /** 축 라벨 색상 (다크) */
+    internal val axisLabelColorDark = Color(0xFFBBBBBB)
+
+    /** 게이지 트랙 색상 (라이트) */
+    internal val gaugeTrackColorLight = Color(0xFFF0F0F0)
+    /** 게이지 트랙 색상 (다크) */
+    internal val gaugeTrackColorDark = Color(0xFF2A2A2A)
+
+    /** 게이지 중앙 텍스트 색상 (라이트) */
+    internal val gaugeCenterTextColorLight = Color(0xFF191F28)
+    /** 게이지 중앙 텍스트 색상 (다크) */
+    internal val gaugeCenterTextColorDark = Color(0xFFE8E8E8)
+
+    /**
+     * [Color.Unspecified]인 경우 다크 테마 여부에 따라 적절한 기본 색상을 반환한다.
+     */
+    internal fun resolveGridLineColor(color: Color, isDark: Boolean): Color {
+        return if (color == Color.Unspecified) {
+            if (isDark) gridLineColorDark else gridLineColorLight
+        } else {
+            color
+        }
+    }
+
+    internal fun resolveAxisLabelColor(color: Color, isDark: Boolean): Color {
+        return if (color == Color.Unspecified) {
+            if (isDark) axisLabelColorDark else axisLabelColorLight
+        } else {
+            color
+        }
+    }
+
+    internal fun resolveGaugeTrackColor(color: Color, isDark: Boolean): Color {
+        return if (color == Color.Unspecified) {
+            if (isDark) gaugeTrackColorDark else gaugeTrackColorLight
+        } else {
+            color
+        }
+    }
+
+    internal fun resolveGaugeCenterTextColor(color: Color, isDark: Boolean): Color {
+        return if (color == Color.Unspecified) {
+            if (isDark) gaugeCenterTextColorDark else gaugeCenterTextColorLight
+        } else {
+            color
+        }
+    }
 }

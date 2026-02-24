@@ -1,6 +1,7 @@
 package com.inseong.composechart.line
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -70,6 +71,15 @@ fun LineChart(
     colors: List<Color> = ChartDefaults.colors,
     onPointSelected: ((seriesIndex: Int, pointIndex: Int, point: ChartPoint) -> Unit)? = null,
 ) {
+    // 다크 테마 감지 및 스타일 해석
+    val isDark = isSystemInDarkTheme()
+    val resolvedGridStyle = style.grid.copy(
+        lineColor = ChartDefaults.resolveGridLineColor(style.grid.lineColor, isDark),
+    )
+    val resolvedAxisStyle = style.axis.copy(
+        labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
+    )
+
     // 애니메이션 프로그레스 (0→1)
     val progress by rememberChartAnimation(style.animationDurationMs)
 
@@ -103,9 +113,9 @@ fun LineChart(
         val paddingPx = chartPaddingPx.toPx()
 
         // Y축 라벨 영역 폭 계산
-        val yAxisWidth = if (style.axis.showYAxis) 40.dp.toPx() else 0f
+        val yAxisWidth = if (resolvedAxisStyle.showYAxis) 40.dp.toPx() else 0f
         // X축 라벨 영역 높이 계산
-        val xAxisHeight = if (style.axis.showXAxis) 20.dp.toPx() else 0f
+        val xAxisHeight = if (resolvedAxisStyle.showXAxis) 20.dp.toPx() else 0f
 
         // 차트 데이터 영역 (축 라벨 및 패딩 제외)
         val chartArea = Rect(
@@ -116,16 +126,16 @@ fun LineChart(
         )
 
         // 그리드 그리기
-        drawGrid(style.grid, chartArea, style.axis.yLabelCount)
+        drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
 
         // Y축 라벨 그리기
-        if (style.axis.showYAxis) {
-            drawYAxisLabels(adjustedMinY, adjustedMaxY, style.axis, chartArea)
+        if (resolvedAxisStyle.showYAxis) {
+            drawYAxisLabels(adjustedMinY, adjustedMaxY, resolvedAxisStyle, chartArea)
         }
 
         // X축 라벨 그리기
-        if (style.axis.showXAxis && data.xLabels.isNotEmpty()) {
-            drawXAxisLabels(data.xLabels, style.axis, chartArea)
+        if (resolvedAxisStyle.showXAxis && data.xLabels.isNotEmpty()) {
+            drawXAxisLabels(data.xLabels, resolvedAxisStyle, chartArea)
         }
 
         if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas

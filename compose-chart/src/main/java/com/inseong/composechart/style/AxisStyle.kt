@@ -11,14 +11,14 @@ import androidx.compose.ui.unit.sp
  *
  * @param showXAxis X축 라벨 표시 여부
  * @param showYAxis Y축 라벨 표시 여부
- * @param labelColor 라벨 텍스트 색상
+ * @param labelColor 라벨 텍스트 색상. [Color.Unspecified]이면 라이트/다크 테마에 맞게 자동 적용
  * @param labelSize 라벨 텍스트 크기
  * @param yLabelCount Y축 참조 라벨 개수 (균등 분할)
  */
 data class AxisStyle(
     val showXAxis: Boolean = true,
     val showYAxis: Boolean = false,
-    val labelColor: Color = Color(0xFF9E9E9E),
+    val labelColor: Color = Color.Unspecified,
     val labelSize: TextUnit = 11.sp,
     val yLabelCount: Int = 5,
 )
