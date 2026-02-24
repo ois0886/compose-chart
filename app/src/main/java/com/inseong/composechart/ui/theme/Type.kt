@@ -1,4 +1,4 @@
-package com.example.compose_chart.ui.theme
+package com.inseong.composechart.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Set of Material typography styles to start with
+// Set of Material typography styles to start from
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,

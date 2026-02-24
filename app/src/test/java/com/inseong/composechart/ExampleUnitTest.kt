@@ -1,4 +1,4 @@
-package com.example.compose_chart
+package com.inseong.composechart
 
 import org.junit.Test
 

@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.compose_chart"
+    namespace = "com.inseong.composechart.sample"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.compose_chart"
+        applicationId = "com.inseong.composechart.sample"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -38,6 +38,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":compose-chart"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

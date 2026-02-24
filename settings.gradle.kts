@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Compose-Chart"
 include(":app")
+include(":compose-chart")
  
