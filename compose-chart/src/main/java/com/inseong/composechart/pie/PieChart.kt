@@ -31,7 +31,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * 토스 스타일의 파이/도넛 차트 Composable.
+ * 파이/도넛 차트 Composable.
  *
  * [PieChartStyle.holeRadius]를 조절하여 파이 차트(0)와 도넛 차트(0.6 등)를 전환할 수 있다.
  * 시계 방향 sweep 애니메이션, 터치 시 슬라이스 확대를 지원한다.

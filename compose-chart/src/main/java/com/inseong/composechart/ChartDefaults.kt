@@ -11,13 +11,13 @@ import androidx.compose.ui.graphics.Color
 object ChartDefaults {
 
     /**
-     * 토스 스타일 기본 색상 팔레트.
+     * 기본 색상 팔레트.
      *
      * 멀티 시리즈 차트에서 순서대로 할당되며,
      * 시리즈 수가 팔레트를 초과하면 처음부터 반복된다.
      */
     val colors = listOf(
-        Color(0xFF3182F6), // 토스 블루
+        Color(0xFF3182F6), // 블루
         Color(0xFF48BB78), // 그린
         Color(0xFFED8936), // 오렌지
         Color(0xFFE53E3E), // 레드

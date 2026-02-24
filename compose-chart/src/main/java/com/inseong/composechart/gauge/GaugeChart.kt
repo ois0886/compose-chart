@@ -17,7 +17,7 @@ import com.inseong.composechart.style.GaugeChartStyle
 import kotlin.math.min
 
 /**
- * 토스 스타일의 게이지/프로그레스 차트 Composable.
+ * 게이지/프로그레스 차트 Composable.
  *
  * 원형 프로그레스 또는 반원형 게이지를 표시하며,
  * 중앙에 값과 라벨 텍스트를 오버레이할 수 있다.
@@ -54,11 +54,13 @@ fun GaugeChart(
 ) {
     val progress by rememberChartAnimation(style.animationDurationMs)
 
-    val maxValue = if (data.maxValue == 0f) 1f else data.maxValue
-    val ratio = (data.value / maxValue).coerceIn(0f, 1f)
+    // 음수/NaN/Infinity/0 방어: 안전한 값으로 보정
+    val safeMax = if (data.maxValue.isFinite() && data.maxValue > 0f) data.maxValue else 1f
+    val safeValue = if (data.value.isFinite()) data.value.coerceIn(0f, safeMax) else 0f
+    val ratio = (safeValue / safeMax).coerceIn(0f, 1f)
 
     // 애니메이션 적용된 현재 값
-    val animatedValue = data.value * progress
+    val animatedValue = safeValue * progress
     val animatedRatio = ratio * progress
 
     // 시작 각도: 갭이 하단 중앙에 오도록 계산
@@ -75,6 +77,8 @@ fun GaugeChart(
             val strokeWidthPx = style.strokeWidth.toPx()
 
             val diameter = min(size.width, size.height) - paddingPx * 2 - strokeWidthPx
+            if (diameter <= 0f) return@Canvas
+
             val topLeft = Offset(
                 x = (size.width - diameter) / 2,
                 y = (size.height - diameter) / 2,

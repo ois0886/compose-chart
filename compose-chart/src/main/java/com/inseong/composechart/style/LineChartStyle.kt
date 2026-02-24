@@ -6,7 +6,7 @@ import androidx.compose.ui.unit.dp
 /**
  * 라인 차트의 스타일 설정.
  *
- * 토스 스타일 기본값: 베지어 곡선, 그라데이션 영역 채우기,
+ * 기본값: 베지어 곡선, 그라데이션 영역 채우기,
  * 터치 시 툴팁 표시, 부드러운 draw-in 애니메이션.
  *
  * @param lineWidth 라인 두께

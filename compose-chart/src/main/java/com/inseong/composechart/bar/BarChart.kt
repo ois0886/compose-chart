@@ -30,7 +30,7 @@ import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.BarChartStyle
 
 /**
- * 토스 스타일의 바 차트 Composable.
+ * 바 차트 Composable.
  *
  * 단일 바, 그룹 바(나란히), 스택 바(누적)를 모두 지원하며,
  * 세로/가로 방향 전환, 둥근 모서리, 성장 애니메이션, 터치 하이라이트를 제공한다.
@@ -72,15 +72,19 @@ fun BarChart(
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
     var selectedGroupIndex by remember { mutableIntStateOf(-1) }
 
-    if (data.groups.isEmpty()) return
+    // 유효한 그룹 필터링 (엔트리가 있는 그룹만)
+    val validGroups = remember(data) {
+        data.groups.filter { it.entries.isNotEmpty() }
+    }
+    if (validGroups.isEmpty()) return
 
-    // 데이터 범위 계산
-    val maxValue = data.groups.maxOf { group ->
+    // 데이터 범위 계산 (safeValues로 NaN/음수 방어)
+    val maxValue = validGroups.maxOf { group ->
         group.entries.maxOfOrNull { entry ->
-            entry.values.sum() // 스택의 경우 합계가 최대값
+            entry.safeValues.sum()
         } ?: 0f
     }
-    val adjustedMax = if (maxValue == 0f) 1f else maxValue * 1.1f // 상단 10% 여유
+    val adjustedMax = if (maxValue <= 0f) 1f else maxValue * 1.1f // 상단 10% 여유
 
     val chartPaddingPx = style.chart.chartPadding
 
@@ -112,18 +116,20 @@ fun BarChart(
 
         // X축 라벨 (그룹 라벨 사용)
         if (style.axis.showXAxis) {
-            val labels = data.groups.map { it.label }
+            val labels = validGroups.map { it.label }
             if (labels.any { it.isNotEmpty() }) {
                 drawXAxisLabels(labels, style.axis, chartArea)
             }
         }
 
         // 바 레이아웃 계산
-        val groupCount = data.groups.size
+        if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas
+
+        val groupCount = validGroups.size
         val groupSpacingPx = style.groupSpacing.toPx()
         val barSpacingPx = style.barSpacing.toPx()
         val totalGroupSpacing = groupSpacingPx * (groupCount - 1).coerceAtLeast(0)
-        val groupWidth = (chartArea.width - totalGroupSpacing) / groupCount
+        val groupWidth = ((chartArea.width - totalGroupSpacing) / groupCount).coerceAtLeast(1f)
 
         // 터치된 그룹 인덱스 계산
         val currentTouch = touchOffset
@@ -134,11 +140,11 @@ fun BarChart(
         }
 
         // 바 그리기에 필요한 정보 저장 (툴팁용)
-        data.groups.forEachIndexed { groupIndex, group ->
+        validGroups.forEachIndexed { groupIndex, group ->
             val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
             val entryCount = group.entries.size
             val totalBarSpacing = barSpacingPx * (entryCount - 1).coerceAtLeast(0)
-            val barWidth = (groupWidth - totalBarSpacing) / entryCount.coerceAtLeast(1)
+            val barWidth = ((groupWidth - totalBarSpacing) / entryCount.coerceAtLeast(1)).coerceAtLeast(1f)
 
             group.entries.forEachIndexed { entryIndex, entry ->
                 val barLeft = groupLeft + entryIndex * (barWidth + barSpacingPx)
@@ -152,7 +158,7 @@ fun BarChart(
                 if (style.horizontal) {
                     // 가로 바 차트
                     drawHorizontalStackedBar(
-                        entry.values,
+                        entry.safeValues,
                         entry.colors.ifEmpty { colors },
                         barLeft, barWidth,
                         chartArea, adjustedMax, progress, alpha,
@@ -161,7 +167,7 @@ fun BarChart(
                 } else {
                     // 세로 바 차트
                     drawVerticalStackedBar(
-                        entry.values,
+                        entry.safeValues,
                         entry.colors.ifEmpty { colors },
                         barLeft, barWidth,
                         chartArea, adjustedMax, progress, alpha,
@@ -173,7 +179,7 @@ fun BarChart(
             // 선택된 그룹의 툴팁 표시
             if (selectedGroupIndex == groupIndex && group.entries.isNotEmpty()) {
                 val firstEntry = group.entries[0]
-                val totalValue = firstEntry.values.sum()
+                val totalValue = firstEntry.safeValues.sum()
                 val tooltipText = group.label.ifEmpty {
                     if (totalValue == totalValue.toLong().toFloat()) {
                         totalValue.toLong().toString()

@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.sp
 /**
  * 차트 축(Axis) 라벨의 스타일 설정.
  *
- * 토스 스타일 기본값: X축 라벨만 표시, Y축 라인 없음.
+ * 기본값: X축 라벨만 표시, Y축 라인 없음.
  *
  * @param showXAxis X축 라벨 표시 여부
  * @param showYAxis Y축 라벨 표시 여부

@@ -9,7 +9,7 @@ import com.inseong.composechart.style.GridStyle
 /**
  * 차트 영역에 그리드 라인을 그린다.
  *
- * 토스 스타일 기본 설정에서는 수평 그리드만 얇은 회색 라인으로 표시된다.
+ * 기본 설정에서는 수평 그리드만 얇은 회색 라인으로 표시된다.
  *
  * @param style 그리드 스타일 설정
  * @param chartArea 차트 데이터가 그려지는 영역 (패딩 제외)

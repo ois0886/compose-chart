@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.dp
 /**
  * 차트 그리드 라인의 스타일 설정.
  *
- * 토스 스타일 기본값: 수평 그리드만 표시, 얇은 회색 실선.
+ * 기본값: 수평 그리드만 표시, 얇은 회색 실선.
  *
  * @param showHorizontalLines 수평 그리드 라인 표시 여부
  * @param showVerticalLines 수직 그리드 라인 표시 여부

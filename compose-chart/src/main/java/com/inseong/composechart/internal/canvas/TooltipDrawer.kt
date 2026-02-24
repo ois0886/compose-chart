@@ -48,10 +48,13 @@ internal fun DrawScope.drawTooltip(
     val textWidth = textPaint.measureText(text)
     val textHeight = textSizePx
 
-    // 툴팁 버블 크기
-    val bubbleWidth = textWidth + paddingH * 2
-    val bubbleHeight = textHeight + paddingV * 2
+    // 툴팁 버블 크기 — 캔버스보다 커지지 않도록 제한
+    val bubbleWidth = (textWidth + paddingH * 2).coerceAtMost(canvasSize.width)
+    val bubbleHeight = (textHeight + paddingV * 2).coerceAtMost(canvasSize.height)
     val arrowHeight = 6f
+
+    // 캔버스가 너무 작으면 툴팁 표시하지 않음
+    if (canvasSize.width < textSizePx || canvasSize.height < textSizePx) return
 
     // 기본 위치: 포인트 위
     var bubbleLeft = position.x - bubbleWidth / 2
@@ -60,11 +63,15 @@ internal fun DrawScope.drawTooltip(
     // 캔버스 경계 보정
     if (bubbleLeft < 0f) bubbleLeft = 0f
     if (bubbleLeft + bubbleWidth > canvasSize.width) {
-        bubbleLeft = canvasSize.width - bubbleWidth
+        bubbleLeft = (canvasSize.width - bubbleWidth).coerceAtLeast(0f)
     }
     if (bubbleTop < 0f) {
         // 위에 공간이 없으면 아래에 표시
         bubbleTop = position.y + style.indicatorRadius.toPx() + arrowHeight + 4f
+    }
+    // 하단 경계 보정
+    if (bubbleTop + bubbleHeight > canvasSize.height) {
+        bubbleTop = (canvasSize.height - bubbleHeight).coerceAtLeast(0f)
     }
 
     // 툴팁 배경 그리기

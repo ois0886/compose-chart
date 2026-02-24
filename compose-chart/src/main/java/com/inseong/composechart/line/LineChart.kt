@@ -32,7 +32,7 @@ import com.inseong.composechart.internal.touch.findNearestPointIndex
 import com.inseong.composechart.style.LineChartStyle
 
 /**
- * 토스 스타일의 라인 차트 Composable.
+ * 라인 차트 Composable.
  *
  * 하나 이상의 데이터 시리즈를 부드러운 곡선(또는 직선)으로 표시하며,
  * 그라데이션 영역 채우기, 진입 애니메이션, 터치 인터랙션을 지원한다.

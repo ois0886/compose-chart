@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.sp
  * [sweepAngle]로 원형 프로그레스(360)와 반원 게이지(240)를 전환할 수 있다.
  *
  * @param trackColor 배경 트랙(미채워진 영역)의 색상
- * @param progressColor 채워진 영역의 색상 (토스 블루 기본)
+ * @param progressColor 채워진 영역의 색상
  * @param strokeWidth 게이지 호(arc)의 두께
  * @param roundCap 호 끝을 둥글게 처리할지 여부
  * @param sweepAngle 전체 호의 각도. 360이면 원형, 240이면 하단이 열린 게이지
