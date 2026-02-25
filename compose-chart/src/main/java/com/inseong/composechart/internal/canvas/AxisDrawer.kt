@@ -8,18 +8,24 @@ import androidx.compose.ui.graphics.nativeCanvas
 import com.inseong.composechart.style.AxisStyle
 
 /**
- * 차트 하단에 X축 라벨을 그린다.
+ * Draws X-axis labels below the chart area.
  *
- * 각 라벨은 해당 데이터 포인트의 X 좌표에 가운데 정렬로 표시된다.
+ * When [groupWidth] and [groupSpacing] are provided (> 0), each label is centered
+ * under its corresponding bar group. Otherwise, labels are evenly distributed
+ * across the chart width (edge-to-edge), suitable for line charts.
  *
- * @param labels 표시할 라벨 텍스트 목록
- * @param style 축 스타일 설정
- * @param chartArea 차트 데이터 영역 (라벨은 이 영역 아래에 표시)
+ * @param labels List of label texts to display
+ * @param style Axis style configuration
+ * @param chartArea Chart data area (labels are drawn below this area)
+ * @param groupWidth Width of each bar group (0 for edge-to-edge distribution)
+ * @param groupSpacing Spacing between bar groups (0 for edge-to-edge distribution)
  */
 internal fun DrawScope.drawXAxisLabels(
     labels: List<String>,
     style: AxisStyle,
     chartArea: Rect,
+    groupWidth: Float = 0f,
+    groupSpacing: Float = 0f,
 ) {
     if (labels.isEmpty()) return
 
@@ -31,7 +37,7 @@ internal fun DrawScope.drawXAxisLabels(
         typeface = Typeface.DEFAULT
     }
 
-    val y = chartArea.bottom + style.labelSize.toPx() + 8f // 차트 영역 아래 여백
+    val y = chartArea.bottom + style.labelSize.toPx() + 8f
 
     if (labels.size == 1) {
         drawContext.canvas.nativeCanvas.drawText(
@@ -43,22 +49,31 @@ internal fun DrawScope.drawXAxisLabels(
         return
     }
 
-    val step = chartArea.width / (labels.size - 1)
-    labels.forEachIndexed { index, label ->
-        val x = chartArea.left + step * index
-        drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
+    if (groupWidth > 0f) {
+        // Center each label under its bar group
+        labels.forEachIndexed { index, label ->
+            val x = chartArea.left + index * (groupWidth + groupSpacing) + groupWidth / 2
+            drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
+        }
+    } else {
+        // Edge-to-edge distribution (for line charts)
+        val step = chartArea.width / (labels.size - 1)
+        labels.forEachIndexed { index, label ->
+            val x = chartArea.left + step * index
+            drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
+        }
     }
 }
 
 /**
- * 차트 좌측에 Y축 참조 라벨을 그린다.
+ * Draws Y-axis reference labels to the left of the chart area.
  *
- * 최소값과 최대값 사이를 균등 분할하여 라벨을 표시한다.
+ * Divides the range between min and max values into equal intervals.
  *
- * @param minValue Y축 최소값
- * @param maxValue Y축 최대값
- * @param style 축 스타일 설정
- * @param chartArea 차트 데이터 영역 (라벨은 이 영역 왼쪽에 표시)
+ * @param minValue Y-axis minimum value
+ * @param maxValue Y-axis maximum value
+ * @param style Axis style configuration
+ * @param chartArea Chart data area (labels are drawn to the left of this area)
  */
 internal fun DrawScope.drawYAxisLabels(
     minValue: Float,
@@ -83,7 +98,7 @@ internal fun DrawScope.drawYAxisLabels(
     for (i in 0..style.yLabelCount) {
         val yPos = chartArea.bottom - step * i
         val value = minValue + valueStep * i
-        // 정수로 표시 가능하면 정수, 아니면 소수점 1자리
+        // Display as integer if possible, otherwise one decimal place
         val text = if (value == value.toLong().toFloat()) {
             value.toLong().toString()
         } else {
@@ -91,8 +106,8 @@ internal fun DrawScope.drawYAxisLabels(
         }
         drawContext.canvas.nativeCanvas.drawText(
             text,
-            chartArea.left - 8f, // 차트 영역 왼쪽 여백
-            yPos + style.labelSize.toPx() / 3, // 수직 중앙 정렬 보정
+            chartArea.left - 8f,
+            yPos + style.labelSize.toPx() / 3, // Vertical centering adjustment
             paint,
         )
     }

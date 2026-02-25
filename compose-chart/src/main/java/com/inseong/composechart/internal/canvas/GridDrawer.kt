@@ -7,13 +7,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import com.inseong.composechart.style.GridStyle
 
 /**
- * 차트 영역에 그리드 라인을 그린다.
+ * Draws grid lines within the chart area.
  *
- * 기본 설정에서는 수평 그리드만 얇은 회색 라인으로 표시된다.
+ * By default, only thin gray horizontal grid lines are shown.
  *
- * @param style 그리드 스타일 설정
- * @param chartArea 차트 데이터가 그려지는 영역 (패딩 제외)
- * @param horizontalCount 수평 그리드 라인 개수
+ * @param style Grid style configuration
+ * @param chartArea Chart data area (excluding padding)
+ * @param horizontalCount Number of horizontal grid line intervals
  */
 internal fun DrawScope.drawGrid(
     style: GridStyle,
@@ -25,7 +25,7 @@ internal fun DrawScope.drawGrid(
         PathEffect.dashPathEffect(it, 0f)
     }
 
-    // 수평 그리드 라인
+    // Horizontal grid lines
     if (style.showHorizontalLines && horizontalCount > 0) {
         val step = chartArea.height / horizontalCount
         for (i in 0..horizontalCount) {
@@ -40,7 +40,7 @@ internal fun DrawScope.drawGrid(
         }
     }
 
-    // 수직 그리드 라인
+    // Vertical grid lines
     if (style.showVerticalLines && horizontalCount > 0) {
         val step = chartArea.width / horizontalCount
         for (i in 0..horizontalCount) {
