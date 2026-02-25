@@ -1,9 +1,11 @@
 package com.inseong.composechart.gauge
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -19,33 +22,33 @@ import com.inseong.composechart.style.GaugeChartStyle
 import kotlin.math.min
 
 /**
- * 게이지/프로그레스 차트 Composable.
+ * Gauge/progress chart Composable.
  *
- * 원형 프로그레스 또는 반원형 게이지를 표시하며,
- * 중앙에 값과 라벨 텍스트를 오버레이할 수 있다.
+ * Displays a circular progress or semicircular gauge,
+ * with optional value and label text overlaid at the center.
  *
- * 원형 프로그레스 (360도):
+ * Circular progress (360 degrees):
  * ```kotlin
  * GaugeChart(
- *     data = GaugeChartData(value = 72f, maxValue = 100f, label = "점수"),
+ *     data = GaugeChartData(value = 72f, maxValue = 100f, label = "Score"),
  *     modifier = Modifier.size(180.dp),
  *     style = GaugeChartStyle(sweepAngle = 360f),
  * )
  * ```
  *
- * 반원 게이지 (240도, 기본값):
+ * Semicircular gauge (240 degrees, default):
  * ```kotlin
  * GaugeChart(
- *     data = GaugeChartData(value = 72f, maxValue = 100f, label = "달성률"),
+ *     data = GaugeChartData(value = 72f, maxValue = 100f, label = "Progress"),
  *     modifier = Modifier.size(180.dp),
  * )
  * ```
  *
- * @param data 게이지에 표시할 데이터 (현재값, 최대값, 라벨)
- * @param modifier 레이아웃 Modifier (크기 지정 필수)
- * @param style 게이지 스타일 설정
- * @param centerContent 중앙에 표시할 커스텀 Composable. null이면 기본 텍스트 표시.
- *                      기본 텍스트는 [GaugeChartStyle.showCenterText]가 true일 때만 표시.
+ * @param data Data to display in the gauge (current value, max value, label)
+ * @param modifier Layout Modifier (size must be specified)
+ * @param style Gauge style configuration
+ * @param centerContent Custom Composable to display at the center. If null, default text is shown.
+ *                      Default text is only shown when [GaugeChartStyle.showCenterText] is true.
  */
 @Composable
 fun GaugeChart(
@@ -54,31 +57,36 @@ fun GaugeChart(
     style: GaugeChartStyle = GaugeChartStyle(),
     centerContent: (@Composable (animatedValue: Float) -> Unit)? = null,
 ) {
-    // 다크 테마 감지 및 색상 해석
+    // Detect dark theme and resolve colors
     val isDark = isSystemInDarkTheme()
     val resolvedTrackColor = ChartDefaults.resolveGaugeTrackColor(style.trackColor, isDark)
     val resolvedCenterTextColor = ChartDefaults.resolveGaugeCenterTextColor(style.centerTextColor, isDark)
 
     val progress by rememberChartAnimation(style.animationDurationMs)
 
-    // 음수/NaN/Infinity/0 방어: 안전한 값으로 보정
+    // Guard against negative/NaN/Infinity/zero: clamp to safe values
     val safeMax = if (data.maxValue.isFinite() && data.maxValue > 0f) data.maxValue else 1f
     val safeValue = if (data.value.isFinite()) data.value.coerceIn(0f, safeMax) else 0f
     val ratio = (safeValue / safeMax).coerceIn(0f, 1f)
 
-    // 애니메이션 적용된 현재 값
+    // Animated current value
     val animatedValue = safeValue * progress
     val animatedRatio = ratio * progress
 
-    // 시작 각도: 갭이 하단 중앙에 오도록 계산
-    // sweepAngle=240이면 갭=120도, 시작은 150도 (12시 = -90, 6시 = 90)
+    // Start angle: calculated so the gap is centered at the bottom
+    // e.g. sweepAngle=240 -> gap=120 degrees, start=150 degrees (12 o'clock=-90, 6 o'clock=90)
     val startAngle = 90f + (360f - style.sweepAngle) / 2
 
     Box(
-        modifier = modifier,
+        modifier = modifier
+            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+            .background(style.chart.backgroundColor),
         contentAlignment = Alignment.Center,
     ) {
-        // 게이지 호(arc) 그리기
+        // Reference diameter (in px) at which full-size text is displayed
+        val referenceDiameterDp = 120.dp
+
+        // Draw gauge arcs
         Canvas(modifier = Modifier.matchParentSize()) {
             val paddingPx = style.chart.chartPadding.toPx()
             val strokeWidthPx = style.strokeWidth.toPx()
@@ -93,7 +101,7 @@ fun GaugeChart(
             val arcSize = Size(diameter, diameter)
             val cap = if (style.roundCap) StrokeCap.Round else StrokeCap.Butt
 
-            // 배경 트랙 호
+            // Background track arc
             drawArc(
                 color = resolvedTrackColor,
                 startAngle = startAngle,
@@ -104,7 +112,7 @@ fun GaugeChart(
                 style = Stroke(width = strokeWidthPx, cap = cap),
             )
 
-            // 프로그레스 호 (애니메이션 적용)
+            // Progress arc (animated)
             val progressSweep = style.sweepAngle * animatedRatio
             if (progressSweep > 0f) {
                 drawArc(
@@ -119,37 +127,54 @@ fun GaugeChart(
             }
         }
 
-        // 중앙 컨텐츠 (Text 오버레이)
+        // Center content (text overlay)
         if (centerContent != null) {
             centerContent(animatedValue)
         } else if (style.showCenterText) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                // 값 텍스트
-                val valueText = if (animatedValue == animatedValue.toLong().toFloat()) {
-                    animatedValue.toLong().toString()
-                } else {
-                    String.format("%.1f", animatedValue)
+            // Use BoxWithConstraints to scale text proportionally to available diameter
+            androidx.compose.foundation.layout.BoxWithConstraints {
+                val density = androidx.compose.ui.platform.LocalDensity.current
+                val availableDiameter = with(density) {
+                    val paddingPx = style.chart.chartPadding.toPx()
+                    val strokeWidthPx = style.strokeWidth.toPx()
+                    min(maxWidth.toPx(), maxHeight.toPx()) - paddingPx * 2 - strokeWidthPx
                 }
-                androidx.compose.foundation.text.BasicText(
-                    text = valueText,
-                    style = androidx.compose.ui.text.TextStyle(
-                        fontSize = style.centerTextSize,
-                        color = resolvedCenterTextColor,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    ),
-                )
+                val referencePx = with(density) { referenceDiameterDp.toPx() }
+                val textScale = (availableDiameter / referencePx).coerceIn(0f, 1f)
 
-                // 라벨 텍스트
-                if (data.label.isNotEmpty()) {
-                    androidx.compose.foundation.text.BasicText(
-                        text = data.label,
-                        style = androidx.compose.ui.text.TextStyle(
-                            fontSize = style.centerTextSize * 0.5f,
-                            color = resolvedCenterTextColor.copy(alpha = 0.6f),
-                        ),
-                    )
+                // Hide text when component is too small to display legibly
+                if (textScale >= 0.3f) {
+                    val scaledTextSize = style.centerTextSize * textScale
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        // Value text
+                        val valueText = if (animatedValue == animatedValue.toLong().toFloat()) {
+                            animatedValue.toLong().toString()
+                        } else {
+                            String.format("%.1f", animatedValue)
+                        }
+                        androidx.compose.foundation.text.BasicText(
+                            text = valueText,
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontSize = scaledTextSize,
+                                color = resolvedCenterTextColor,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            ),
+                        )
+
+                        // Label text
+                        if (data.label.isNotEmpty()) {
+                            androidx.compose.foundation.text.BasicText(
+                                text = data.label,
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontSize = scaledTextSize * 0.5f,
+                                    color = resolvedCenterTextColor.copy(alpha = 0.6f),
+                                ),
+                            )
+                        }
+                    }
                 }
             }
         }

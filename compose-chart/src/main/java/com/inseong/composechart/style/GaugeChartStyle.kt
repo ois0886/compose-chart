@@ -7,20 +7,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * 게이지/프로그레스 차트의 스타일 설정.
+ * Style configuration for the gauge/progress chart.
  *
- * [sweepAngle]로 원형 프로그레스(360)와 반원 게이지(240)를 전환할 수 있다.
+ * Use [sweepAngle] to switch between circular progress (360) and semicircular gauge (240).
  *
- * @param trackColor 배경 트랙(미채워진 영역)의 색상. [Color.Unspecified]이면 테마에 맞게 자동 적용
- * @param progressColor 채워진 영역의 색상
- * @param strokeWidth 게이지 호(arc)의 두께
- * @param roundCap 호 끝을 둥글게 처리할지 여부
- * @param sweepAngle 전체 호의 각도. 360이면 원형, 240이면 하단이 열린 게이지
- * @param showCenterText 중앙에 값/라벨 텍스트 표시 여부
- * @param centerTextSize 중앙 값 텍스트 크기
- * @param centerTextColor 중앙 값 텍스트 색상. [Color.Unspecified]이면 테마에 맞게 자동 적용
- * @param animationDurationMs 채우기 애니메이션 지속 시간 (밀리초)
- * @param chart 공통 차트 스타일
+ * @param trackColor Color of the background track (unfilled area). Uses theme-aware default when [Color.Unspecified].
+ * @param progressColor Color of the filled area.
+ * @param strokeWidth Thickness of the gauge arc.
+ * @param roundCap Whether to round the arc endpoints.
+ * @param sweepAngle Total angle of the arc. 360 for circular, 240 for open-bottom gauge.
+ * @param showCenterText Whether to show value/label text at the center.
+ * @param centerTextSize Size of the center value text.
+ * @param centerTextColor Color of the center value text. Uses theme-aware default when [Color.Unspecified].
+ * @param animationDurationMs Duration of the fill animation in milliseconds.
+ * @param chart Common chart style.
  */
 data class GaugeChartStyle(
     val trackColor: Color = Color.Unspecified,

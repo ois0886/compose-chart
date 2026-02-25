@@ -1,13 +1,13 @@
 package com.inseong.composechart.data
 
 /**
- * 게이지/프로그레스 차트 데이터.
+ * Data for the gauge/progress chart.
  *
- * 잘못된 값(음수, NaN 등)은 차트 내부에서 안전하게 보정된다.
+ * Invalid values (negative, NaN, etc.) are safely clamped inside the chart.
  *
- * @param value 현재 값
- * @param maxValue 최대 값
- * @param label 중앙에 표시할 라벨 텍스트 (예: "Score", "달성률")
+ * @param value Current value.
+ * @param maxValue Maximum value.
+ * @param label Label text displayed at the center (e.g., "Score", "Progress").
  */
 data class GaugeChartData(
     val value: Float,
