@@ -74,7 +74,7 @@ object ChartDefaults {
         }
     }
 
-    internal fun resolveGaugeCenterTextColor(color: Color, isDark: Boolean): Color {
+    internal fun reso커밋veGaugeCenterTextColor(color: Color, isDark: Boolean): Color {
         return if (color == Color.Unspecified) {
             if (isDark) gaugeCenterTextColorDark else gaugeCenterTextColorLight
         } else {

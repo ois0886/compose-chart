@@ -189,12 +189,15 @@ fun BarChart(
             if (selectedGroupIndex == groupIndex && group.entries.isNotEmpty()) {
                 val firstEntry = group.entries[0]
                 val totalValue = firstEntry.safeValues.sum()
-                val tooltipText = group.label.ifEmpty {
-                    if (totalValue == totalValue.toLong().toFloat()) {
-                        totalValue.toLong().toString()
-                    } else {
-                        String.format("%.1f", totalValue)
-                    }
+                val formattedValue = if (totalValue == totalValue.toLong().toFloat()) {
+                    totalValue.toLong().toString()
+                } else {
+                    String.format("%.1f", totalValue)
+                }
+                val tooltipText = if (group.label.isNotEmpty()) {
+                    "${group.label}: $formattedValue"
+                } else {
+                    formattedValue
                 }
 
                 val barHeight = (totalValue / adjustedMax) * chartArea.height * progress

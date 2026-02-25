@@ -63,6 +63,20 @@ private val sampleDonutData = DonutChartData.fromValues(
 )
 private val sampleGaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "Progress")
 
+// ── Min/Max range samples (1 ~ 10000) ──
+private val extremeLineData = LineChartData.fromValues(
+    values = listOf(1f, 5000f, 10f, 10000f, 3f, 8000f),
+    xLabels = listOf("A", "B", "C", "D", "E", "F"),
+)
+private val extremeBarData = BarChartData.simple(
+    values = listOf(1f, 10000f, 50f, 7500f, 3f),
+    labels = listOf("A", "B", "C", "D", "E"),
+)
+private val extremeDonutData = DonutChartData.fromValues(
+    values = mapOf("Min" to 1f, "Max" to 10000f, "Mid" to 500f),
+)
+private val extremeGaugeData = GaugeChartData(value = 1f, maxValue = 10000f, label = "Score")
+
 @Composable
 fun ChartSampleScreen(modifier: Modifier = Modifier) {
     Column(
@@ -178,6 +192,55 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
             data = sampleGaugeData,
             modifier = Modifier.size(350.dp),
             style = GaugeChartStyle(sweepAngle = 360f),
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // ── Extreme values (1 ~ 10000) ──
+        Text(
+            text = "Extreme Values (1 ~ 10000)",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(text = "Line Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        LineChart(
+            data = extremeLineData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            style = LineChartStyle(curved = true, gradientFill = true),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Bar Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        BarChart(
+            data = extremeBarData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Donut Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        DonutChart(
+            data = extremeDonutData,
+            modifier = Modifier.size(200.dp),
+            style = DonutChartStyle(holeRadius = 0.6f),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Gauge Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        GaugeChart(
+            data = extremeGaugeData,
+            modifier = Modifier.size(180.dp),
         )
 
         Spacer(modifier = Modifier.height(32.dp))
