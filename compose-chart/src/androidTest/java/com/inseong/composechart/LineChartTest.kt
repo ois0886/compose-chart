@@ -17,10 +17,10 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * LineChart UI 테스트.
+ * LineChart UI tests.
  *
- * 정상 데이터, 빈 데이터, 비정상 데이터(NaN, Infinity, 음수)에 대해
- * 크래시 없이 렌더링되는지 검증한다.
+ * Verifies that the chart renders without crashing for
+ * normal data, empty data, and abnormal data (NaN, Infinity, negative).
  */
 class LineChartTest {
 
@@ -37,7 +37,7 @@ class LineChartTest {
             LineChart(
                 data = LineChartData.fromValues(
                     values = listOf(10f, 25f, 18f, 32f, 28f),
-                    xLabels = listOf("1월", "2월", "3월", "4월", "5월"),
+                    xLabels = listOf("Jan", "Feb", "Mar", "Apr", "May"),
                 ),
                 modifier = defaultModifier,
             )

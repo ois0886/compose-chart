@@ -1,22 +1,22 @@
 package com.inseong.composechart.data
 
 /**
- * 차트에서 사용하는 개별 데이터 포인트.
+ * Individual data point used in charts.
  *
- * NaN이나 Infinity 값은 0f로 자동 보정된다.
+ * NaN and Infinity values are automatically clamped to 0f.
  *
- * @param x X축 값 (예: 시간, 인덱스)
- * @param y Y축 값 (예: 금액, 수량)
- * @param label 해당 포인트의 라벨 (툴팁 등에 표시, 선택 사항)
+ * @param x X-axis value (e.g., time, index)
+ * @param y Y-axis value (e.g., amount, quantity)
+ * @param label Label for this point (shown in tooltip, optional)
  */
 data class ChartPoint(
     val x: Float,
     val y: Float,
     val label: String = "",
 ) {
-    /** NaN/Infinity가 보정된 안전한 X값 */
+    /** Safe X value with NaN/Infinity clamped to 0 */
     internal val safeX: Float get() = if (x.isFinite()) x else 0f
 
-    /** NaN/Infinity가 보정된 안전한 Y값 */
+    /** Safe Y value with NaN/Infinity clamped to 0 */
     internal val safeY: Float get() = if (y.isFinite()) y else 0f
 }

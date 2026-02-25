@@ -3,32 +3,32 @@ package com.inseong.composechart.data
 import androidx.compose.ui.graphics.Color
 
 /**
- * 바 차트의 개별 바 데이터.
+ * Individual bar data for the bar chart.
  *
- * [values]가 하나이면 단일 바, 여러 개이면 스택(누적) 바가 된다.
- * 음수나 NaN 값은 0으로 자동 보정된다.
+ * A single value in [values] creates a simple bar; multiple values create a stacked bar.
+ * Negative and NaN values are automatically clamped to 0.
  *
- * @param values 바의 값 목록. 스택 바의 경우 아래부터 위로 쌓인다.
- * @param label 바의 라벨 (툴팁에 표시)
- * @param colors 각 스택 세그먼트의 색상. 비어있으면 기본 팔레트에서 자동 할당
+ * @param values List of bar values. For stacked bars, values are stacked from bottom to top.
+ * @param label Bar label (shown in tooltip)
+ * @param colors Colors for each stack segment. Auto-assigned from default palette when empty.
  */
 data class BarEntry(
     val values: List<Float>,
     val label: String = "",
     val colors: List<Color> = emptyList(),
 ) {
-    /** 음수/NaN/Infinity를 0으로 보정한 안전한 값 목록 */
+    /** Safe values with negative/NaN/Infinity clamped to 0 */
     internal val safeValues: List<Float>
         get() = values.map { if (it.isFinite()) it.coerceAtLeast(0f) else 0f }
 }
 
 /**
- * 바 차트의 그룹 데이터.
+ * Group data for the bar chart.
  *
- * [entries]가 하나이면 단일 바, 여러 개이면 그룹(나란히) 바가 된다.
+ * A single entry creates a simple bar; multiple entries create grouped (side-by-side) bars.
  *
- * @param entries 그룹 내 바 목록
- * @param label 그룹 라벨 (X축에 표시)
+ * @param entries List of bars in the group
+ * @param label Group label (shown on X-axis)
  */
 data class BarGroup(
     val entries: List<BarEntry>,
@@ -36,23 +36,23 @@ data class BarGroup(
 )
 
 /**
- * 바 차트에 전달하는 전체 데이터.
+ * Complete data passed to the bar chart.
  *
- * groups가 비어있거나 유효한 값이 없으면 빈 화면이 표시된다.
+ * Displays an empty screen if groups is empty or has no valid values.
  *
- * @param groups 바 그룹 목록
+ * @param groups List of bar groups
  */
 data class BarChartData(
     val groups: List<BarGroup>,
 ) {
     companion object {
         /**
-         * 값 리스트와 라벨 리스트로 단순 바 차트를 간편하게 생성한다.
+         * Convenience factory to create a simple bar chart from values and labels.
          *
          * ```kotlin
          * BarChartData.simple(
          *     values = listOf(30f, 45f, 28f),
-         *     labels = listOf("1월", "2월", "3월"),
+         *     labels = listOf("Jan", "Feb", "Mar"),
          * )
          * ```
          */

@@ -27,13 +27,13 @@ import com.inseong.composechart.bar.BarChart
 import com.inseong.composechart.data.BarChartData
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.data.LineChartData
-import com.inseong.composechart.data.PieChartData
+import com.inseong.composechart.data.DonutChartData
+import com.inseong.composechart.donut.DonutChart
 import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.line.LineChart
-import com.inseong.composechart.pie.PieChart
+import com.inseong.composechart.style.DonutChartStyle
 import com.inseong.composechart.style.GaugeChartStyle
 import com.inseong.composechart.style.LineChartStyle
-import com.inseong.composechart.style.PieChartStyle
 import com.inseong.composechart.ui.theme.ComposeChartTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,16 +52,16 @@ class MainActivity : ComponentActivity() {
 
 private val sampleLineData = LineChartData.fromValues(
     values = listOf(15f, 28f, 22f, 35f, 30f, 42f),
-    xLabels = listOf("1월", "2월", "3월", "4월", "5월", "6월"),
+    xLabels = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun"),
 )
 private val sampleBarData = BarChartData.simple(
     values = listOf(30f, 45f, 28f, 55f, 38f),
-    labels = listOf("1월", "2월", "3월", "4월", "5월"),
+    labels = listOf("Jan", "Feb", "Mar", "Apr", "May"),
 )
-private val samplePieData = PieChartData.fromValues(
-    values = mapOf("식비" to 40f, "교통" to 25f, "쇼핑" to 20f, "기타" to 15f),
+private val sampleDonutData = DonutChartData.fromValues(
+    values = mapOf("Food" to 40f, "Transport" to 25f, "Shopping" to 20f, "Other" to 15f),
 )
-private val sampleGaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "달성률")
+private val sampleGaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "Progress")
 
 @Composable
 fun ChartSampleScreen(modifier: Modifier = Modifier) {
@@ -72,7 +72,7 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // ── 기본 크기 샘플 ──
+        // ── Default size samples ──
         Text(text = "Line Chart", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         LineChart(
@@ -98,10 +98,10 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
 
         Text(text = "Donut Chart", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        PieChart(
-            data = samplePieData,
+        DonutChart(
+            data = sampleDonutData,
             modifier = Modifier.size(200.dp),
-            style = PieChartStyle(holeRadius = 0.6f),
+            style = DonutChartStyle(holeRadius = 0.6f),
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -115,7 +115,7 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // ── 작은 크기 샘플 ──
+        // ── Small size samples ──
         Text(
             text = "Small Size (60dp)",
             style = MaterialTheme.typography.titleMedium,
@@ -133,10 +133,10 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.size(60.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
-            PieChart(
-                data = samplePieData,
+            DonutChart(
+                data = sampleDonutData,
                 modifier = Modifier.size(60.dp),
-                style = PieChartStyle(holeRadius = 0.6f),
+                style = DonutChartStyle(holeRadius = 0.6f),
             )
             Spacer(modifier = Modifier.width(8.dp))
             GaugeChart(
@@ -147,7 +147,7 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ── 큰 크기 샘플 ──
+        // ── Large size samples ──
         Text(
             text = "Large Size",
             style = MaterialTheme.typography.titleMedium,
@@ -168,10 +168,10 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
                 .height(400.dp),
         )
         Spacer(modifier = Modifier.height(16.dp))
-        PieChart(
-            data = samplePieData,
+        DonutChart(
+            data = sampleDonutData,
             modifier = Modifier.size(350.dp),
-            style = PieChartStyle(holeRadius = 0.6f),
+            style = DonutChartStyle(holeRadius = 0.6f),
         )
         Spacer(modifier = Modifier.height(16.dp))
         GaugeChart(

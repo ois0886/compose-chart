@@ -9,22 +9,22 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.bar.BarChart
 import com.inseong.composechart.data.BarChartData
+import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.data.LineChartData
-import com.inseong.composechart.data.PieChartData
+import com.inseong.composechart.donut.DonutChart
 import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.line.LineChart
-import com.inseong.composechart.pie.PieChart
+import com.inseong.composechart.style.DonutChartStyle
 import com.inseong.composechart.style.GaugeChartStyle
-import com.inseong.composechart.style.PieChartStyle
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * 차트 컴포넌트의 크기 변화에 대한 안정성 테스트.
+ * Stability tests for chart components under various sizes.
  *
- * 매우 작은 크기, 매우 큰 크기, 비대칭 크기 등
- * 다양한 크기 조건에서 크래시 없이 렌더링되는지 검증한다.
+ * Verifies that charts render without crashing at
+ * very small, very large, and asymmetric sizes.
  */
 class ChartSizeTest {
 
@@ -37,14 +37,14 @@ class ChartSizeTest {
     )
     private val barData = BarChartData.simple(
         values = listOf(30f, 45f, 28f),
-        labels = listOf("1월", "2월", "3월"),
+        labels = listOf("Jan", "Feb", "Mar"),
     )
-    private val pieData = PieChartData.fromValues(
-        values = mapOf("식비" to 40f, "교통" to 30f, "기타" to 30f),
+    private val donutData = DonutChartData.fromValues(
+        values = mapOf("Food" to 40f, "Transport" to 30f, "Other" to 30f),
     )
-    private val gaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "점수")
+    private val gaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "Score")
 
-    // ── 매우 작은 크기 ──
+    // ── Very small sizes ──
 
     @Test
     fun lineChart_verySmallSize_rendersWithoutCrash() {
@@ -69,10 +69,10 @@ class ChartSizeTest {
     }
 
     @Test
-    fun pieChart_verySmallSize_rendersWithoutCrash() {
+    fun donutChart_verySmallSize_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = pieData,
+            DonutChart(
+                data = donutData,
                 modifier = Modifier.size(10.dp),
             )
         }
@@ -90,7 +90,7 @@ class ChartSizeTest {
         composeTestRule.waitForIdle()
     }
 
-    // ── 1dp 크기 (극한) ──
+    // ── 1dp size (extreme) ──
 
     @Test
     fun lineChart_1dp_rendersWithoutCrash() {
@@ -115,10 +115,10 @@ class ChartSizeTest {
     }
 
     @Test
-    fun pieChart_1dp_rendersWithoutCrash() {
+    fun donutChart_1dp_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = pieData,
+            DonutChart(
+                data = donutData,
                 modifier = Modifier.size(1.dp),
             )
         }
@@ -136,7 +136,7 @@ class ChartSizeTest {
         composeTestRule.waitForIdle()
     }
 
-    // ── 매우 큰 크기 ──
+    // ── Very large sizes ──
 
     @Test
     fun lineChart_veryLargeSize_rendersWithoutCrash() {
@@ -165,10 +165,10 @@ class ChartSizeTest {
     }
 
     @Test
-    fun pieChart_veryLargeSize_rendersWithoutCrash() {
+    fun donutChart_veryLargeSize_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = pieData,
+            DonutChart(
+                data = donutData,
                 modifier = Modifier.size(1000.dp),
             )
         }
@@ -186,7 +186,7 @@ class ChartSizeTest {
         composeTestRule.waitForIdle()
     }
 
-    // ── 비대칭 크기 (가로 극대, 세로 극소 / 그 반대) ──
+    // ── Asymmetric sizes (very wide + short / narrow + tall) ──
 
     @Test
     fun lineChart_wideAndShort_rendersWithoutCrash() {
@@ -241,10 +241,10 @@ class ChartSizeTest {
     }
 
     @Test
-    fun pieChart_nonSquare_rendersWithoutCrash() {
+    fun donutChart_nonSquare_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = pieData,
+            DonutChart(
+                data = donutData,
                 modifier = Modifier
                     .width(300.dp)
                     .height(50.dp),
@@ -266,15 +266,15 @@ class ChartSizeTest {
         composeTestRule.waitForIdle()
     }
 
-    // ── 도넛 차트 작은 크기 ──
+    // ── Donut chart small size ──
 
     @Test
-    fun donutChart_verySmallSize_rendersWithoutCrash() {
+    fun donutChart_verySmallSize_donutMode_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = pieData,
+            DonutChart(
+                data = donutData,
                 modifier = Modifier.size(20.dp),
-                style = PieChartStyle(holeRadius = 0.6f),
+                style = DonutChartStyle(holeRadius = 0.6f),
             )
         }
         composeTestRule.waitForIdle()
@@ -283,16 +283,16 @@ class ChartSizeTest {
     @Test
     fun donutChart_largeSize_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = pieData,
+            DonutChart(
+                data = donutData,
                 modifier = Modifier.size(500.dp),
-                style = PieChartStyle(holeRadius = 0.6f),
+                style = DonutChartStyle(holeRadius = 0.6f),
             )
         }
         composeTestRule.waitForIdle()
     }
 
-    // ── 게이지 원형 모드 크기 변화 ──
+    // ── Gauge full circle mode size variations ──
 
     @Test
     fun gaugeChart_fullCircle_smallSize_rendersWithoutCrash() {
@@ -318,7 +318,7 @@ class ChartSizeTest {
         composeTestRule.waitForIdle()
     }
 
-    // ── 많은 데이터 + 작은 크기 ──
+    // ── Many data items + small size ──
 
     @Test
     fun barChart_manyBars_smallSize_rendersWithoutCrash() {
@@ -347,14 +347,14 @@ class ChartSizeTest {
     }
 
     @Test
-    fun pieChart_manySlices_smallSize_rendersWithoutCrash() {
+    fun donutChart_manySlices_smallSize_rendersWithoutCrash() {
         composeTestRule.setContent {
-            PieChart(
-                data = PieChartData.fromValues(
-                    values = (1..20).associate { "항목$it" to it.toFloat() },
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = (1..20).associate { "Item$it" to it.toFloat() },
                 ),
                 modifier = Modifier.size(30.dp),
-                style = PieChartStyle(holeRadius = 0.6f),
+                style = DonutChartStyle(holeRadius = 0.6f),
             )
         }
         composeTestRule.waitForIdle()

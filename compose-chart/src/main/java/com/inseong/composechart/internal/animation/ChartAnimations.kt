@@ -10,19 +10,19 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 
 /**
- * 차트 진입 애니메이션을 위한 0→1 프로그레스 값을 제공한다.
+ * Provides a 0-to-1 progress value for chart entry animations.
  *
- * 첫 컴포지션 시 자동으로 애니메이션이 시작되며,
- * 반환된 [State]를 통해 현재 진행률(0.0~1.0)을 참조할 수 있다.
+ * The animation starts automatically on first composition,
+ * and the current progress (0.0 to 1.0) can be observed via the returned [State].
  *
- * 사용 예시:
- * - Line Chart: progress 값으로 라인을 좌→우로 그리는 데 사용
- * - Bar Chart: progress 값으로 바 높이를 0에서 최종 높이로 성장
- * - Pie Chart: progress 값으로 sweep 각도를 0에서 360으로 확장
+ * Usage examples:
+ * - Line Chart: draws the line left-to-right using progress
+ * - Bar Chart: grows bar height from 0 to final using progress
+ * - Donut Chart: expands sweep angle from 0 to 360 using progress
  *
- * @param durationMs 애니메이션 지속 시간 (밀리초)
- * @param easing 애니메이션 이징 함수
- * @return 0.0에서 1.0으로 변하는 애니메이션 프로그레스 [State]
+ * @param durationMs Animation duration in milliseconds
+ * @param easing Animation easing function
+ * @return Animation progress [State] transitioning from 0.0 to 1.0
  */
 @Composable
 internal fun rememberChartAnimation(

@@ -1,4 +1,4 @@
-package com.inseong.composechart.pie
+package com.inseong.composechart.donut
 
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -19,11 +19,11 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.nativeCanvas
 import com.inseong.composechart.ChartDefaults
-import com.inseong.composechart.data.PieChartData
-import com.inseong.composechart.data.PieSlice
+import com.inseong.composechart.data.DonutChartData
+import com.inseong.composechart.data.DonutSlice
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.internal.touch.chartTouchHandler
-import com.inseong.composechart.style.PieChartStyle
+import com.inseong.composechart.style.DonutChartStyle
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
@@ -31,59 +31,52 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * 파이/도넛 차트 Composable.
+ * Donut chart Composable.
  *
- * [PieChartStyle.holeRadius]를 조절하여 파이 차트(0)와 도넛 차트(0.6 등)를 전환할 수 있다.
- * 시계 방향 sweep 애니메이션, 터치 시 슬라이스 확대를 지원한다.
+ * Adjust [DonutChartStyle.holeRadius] to control the center hole size.
+ * Set to 0 for a filled circle, or 0.6 for a typical donut.
+ * Supports clockwise sweep animation and slice expansion on touch.
  *
- * 파이 차트:
+ * Donut chart:
  * ```kotlin
- * PieChart(
- *     data = PieChartData(
+ * DonutChart(
+ *     data = DonutChartData(
  *         slices = listOf(
- *             PieSlice(40f, "식비"),
- *             PieSlice(25f, "교통"),
- *             PieSlice(35f, "기타"),
+ *             DonutSlice(40f, "Food"),
+ *             DonutSlice(25f, "Transport"),
+ *             DonutSlice(35f, "Other"),
  *         ),
  *     ),
  *     modifier = Modifier.size(200.dp),
  * )
  * ```
  *
- * 도넛 차트:
- * ```kotlin
- * PieChart(
- *     data = PieChartData.fromValues(mapOf("식비" to 40f, "교통" to 25f)),
- *     style = PieChartStyle(holeRadius = 0.6f),
- * )
- * ```
- *
- * @param data 차트에 표시할 데이터
- * @param modifier 레이아웃 Modifier (크기 지정 필수)
- * @param style 차트 스타일 설정
- * @param colors 슬라이스 색상 팔레트
- * @param onSliceSelected 슬라이스 터치 시 콜백
+ * @param data Data to display in the chart
+ * @param modifier Layout Modifier (size must be specified)
+ * @param style Chart style configuration
+ * @param colors Slice color palette
+ * @param onSliceSelected Callback on slice touch
  */
 @Composable
-fun PieChart(
-    data: PieChartData,
+fun DonutChart(
+    data: DonutChartData,
     modifier: Modifier = Modifier,
-    style: PieChartStyle = PieChartStyle(),
+    style: DonutChartStyle = DonutChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
-    onSliceSelected: ((index: Int, slice: PieSlice) -> Unit)? = null,
+    onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
     val progress by rememberChartAnimation(style.animationDurationMs)
     var selectedIndex by remember { mutableIntStateOf(-1) }
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
-    // 유효한 슬라이스만 필터링 (value > 0)
+    // Filter valid slices (value > 0)
     val validSlices = remember(data) { data.slices.filter { it.value > 0f } }
     if (validSlices.isEmpty()) return
 
     val total = validSlices.sumOf { it.value.toDouble() }.toFloat()
     if (total == 0f) return
 
-    // 선택된 슬라이스의 확대 애니메이션
+    // Scale animation for selected slice
     val selectedScales = validSlices.indices.map { index ->
         animateFloatAsState(
             targetValue = if (index == selectedIndex) style.selectedScale else 1f,
@@ -106,7 +99,7 @@ fun PieChart(
 
         val holeRadiusPx = radius * style.holeRadius.coerceIn(0f, 0.95f)
 
-        // 슬라이스 간 간격 (각도) — 단일 슬라이스면 간격 없음
+        // Spacing angle between slices — no spacing for single slice
         val spacingAngle = if (validSlices.size > 1) {
             val circumference = 2 * Math.PI.toFloat() * radius
             if (circumference > 0f) {
@@ -118,7 +111,7 @@ fun PieChart(
             0f
         }
 
-        // 터치 감지: 각도와 거리로 슬라이스 판별
+        // Touch detection: determine slice by angle and distance
         val currentTouch = touchOffset
         if (currentTouch != null) {
             val dx = currentTouch.x - centerX
@@ -146,7 +139,7 @@ fun PieChart(
             }
         }
 
-        // 슬라이스 그리기
+        // Draw slices
         var currentAngle = style.startAngle
 
         validSlices.forEachIndexed { index, slice ->
@@ -161,7 +154,7 @@ fun PieChart(
 
             val scale = selectedScales[index].value
 
-            // 선택된 슬라이스는 중심에서 약간 바깥으로 이동
+            // Selected slice is offset slightly outward from center
             val midAngle = currentAngle + sweepAngle / 2
             val midAngleRad = Math.toRadians(midAngle.toDouble())
             val offsetDistance = if (scale > 1f) radius * (scale - 1f) * 2 else 0f
@@ -172,7 +165,7 @@ fun PieChart(
             val arcCenterY = centerY + offsetY
 
             if (style.holeRadius > 0f) {
-                // 도넛 모드
+                // Donut mode
                 val strokeWidth = radius - holeRadiusPx
                 val arcRadius = holeRadiusPx + strokeWidth / 2
 
@@ -186,7 +179,7 @@ fun PieChart(
                     style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeWidth),
                 )
             } else {
-                // 파이 모드
+                // Filled mode
                 drawArc(
                     color = sliceColor,
                     startAngle = currentAngle + spacingAngle / 2,
@@ -198,11 +191,11 @@ fun PieChart(
                 )
             }
 
-            // 슬라이스 라벨 그리기
-            // 너무 작은 슬라이스(15도 미만)는 라벨 생략
+            // Draw slice label
+            // Skip label for very small slices (less than 15 degrees)
             val rawSweep = (slice.value / total) * 360f
             if (style.showLabels && slice.label.isNotEmpty() && progress > 0.8f && rawSweep >= 15f) {
-                // 도넛: hole과 외곽의 중간, 파이: 반지름의 65%
+                // Donut: midpoint between hole and outer edge, Filled: 65% of radius
                 val labelRadius = if (style.holeRadius > 0f) {
                     (holeRadiusPx + radius) / 2
                 } else {
@@ -227,10 +220,10 @@ fun PieChart(
 }
 
 /**
- * 슬라이스 중간 지점에 라벨 텍스트를 그린다.
+ * Draws label text at the midpoint of a slice.
  *
- * 차트 크기에 비례하여 텍스트 크기를 조정하고,
- * 텍스트가 캔버스 밖으로 벗어나면 표시하지 않는다.
+ * Text size scales proportionally to chart size.
+ * Text is not drawn if it would extend beyond canvas bounds.
  */
 private fun DrawScope.drawSliceLabel(
     label: String,
@@ -246,7 +239,7 @@ private fun DrawScope.drawSliceLabel(
     val labelX = centerX + (cos(midAngleRad) * labelRadius).toFloat()
     val labelY = centerY + (sin(midAngleRad) * labelRadius).toFloat()
 
-    // 차트 크기에 비례하는 텍스트 크기 (최소 8dp, 최대 14dp 상당)
+    // Text size proportional to chart size (min 8dp, max ~14dp)
     val scaledTextSize = (chartRadius * 0.12f).coerceIn(8f * density, 14f * density)
 
     val paint = Paint().apply {
@@ -257,11 +250,11 @@ private fun DrawScope.drawSliceLabel(
         typeface = Typeface.DEFAULT_BOLD
     }
 
-    // 텍스트 크기 측정
+    // Measure text size
     val textWidth = paint.measureText(label)
     val textHeight = scaledTextSize
 
-    // 텍스트가 캔버스 경계를 벗어나면 표시하지 않음
+    // Do not draw if text extends beyond canvas bounds
     val margin = 4f
     if (labelX - textWidth / 2 < margin || labelX + textWidth / 2 > canvasWidth - margin) return
     if (labelY - textHeight < margin || labelY + textHeight / 2 > canvasHeight - margin) return
@@ -269,7 +262,7 @@ private fun DrawScope.drawSliceLabel(
     drawContext.canvas.nativeCanvas.drawText(
         label,
         labelX,
-        labelY + textHeight / 3, // 수직 중앙 보정
+        labelY + textHeight / 3, // Vertical centering adjustment
         paint,
     )
 }

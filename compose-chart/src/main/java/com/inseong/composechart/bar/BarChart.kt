@@ -31,23 +31,24 @@ import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.BarChartStyle
 
 /**
- * 바 차트 Composable.
+ * Bar chart Composable.
  *
- * 단일 바, 그룹 바(나란히), 스택 바(누적)를 모두 지원하며,
- * 세로/가로 방향 전환, 둥근 모서리, 성장 애니메이션, 터치 하이라이트를 제공한다.
+ * Supports single bars, grouped bars (side-by-side), and stacked bars,
+ * with vertical/horizontal orientation, rounded corners, growth animation,
+ * and touch highlighting.
  *
- * 기본 사용법:
+ * Basic usage:
  * ```kotlin
  * BarChart(
  *     data = BarChartData(
  *         groups = listOf(
  *             BarGroup(
  *                 entries = listOf(BarEntry(values = listOf(30f))),
- *                 label = "1월",
+ *                 label = "Jan",
  *             ),
  *             BarGroup(
  *                 entries = listOf(BarEntry(values = listOf(45f))),
- *                 label = "2월",
+ *                 label = "Feb",
  *             ),
  *         ),
  *     ),
@@ -55,11 +56,11 @@ import com.inseong.composechart.style.BarChartStyle
  * )
  * ```
  *
- * @param data 차트에 표시할 데이터
- * @param modifier 레이아웃 Modifier (크기 지정 필수)
- * @param style 차트 스타일 설정
- * @param colors 바 색상 팔레트
- * @param onBarSelected 바 터치 시 콜백 (그룹 인덱스, 엔트리 인덱스, 스택 인덱스)
+ * @param data Data to display in the chart
+ * @param modifier Layout Modifier (size must be specified)
+ * @param style Chart style configuration
+ * @param colors Bar color palette
+ * @param onBarSelected Callback on bar touch (group index, entry index, stack index)
  */
 @Composable
 fun BarChart(
@@ -69,7 +70,7 @@ fun BarChart(
     colors: List<Color> = ChartDefaults.colors,
     onBarSelected: ((groupIndex: Int, entryIndex: Int, stackIndex: Int) -> Unit)? = null,
 ) {
-    // 다크 테마 감지 및 스타일 해석
+    // Detect dark theme and resolve styles
     val isDark = isSystemInDarkTheme()
     val resolvedGridStyle = style.grid.copy(
         lineColor = ChartDefaults.resolveGridLineColor(style.grid.lineColor, isDark),
@@ -82,19 +83,19 @@ fun BarChart(
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
     var selectedGroupIndex by remember { mutableIntStateOf(-1) }
 
-    // 유효한 그룹 필터링 (엔트리가 있는 그룹만)
+    // Filter valid groups (only groups with entries)
     val validGroups = remember(data) {
         data.groups.filter { it.entries.isNotEmpty() }
     }
     if (validGroups.isEmpty()) return
 
-    // 데이터 범위 계산 (safeValues로 NaN/음수 방어)
+    // Calculate data range (safeValues guard against NaN/negative)
     val maxValue = validGroups.maxOf { group ->
         group.entries.maxOfOrNull { entry ->
             entry.safeValues.sum()
         } ?: 0f
     }
-    val adjustedMax = if (maxValue <= 0f) 1f else maxValue * 1.1f // 상단 10% 여유
+    val adjustedMax = if (maxValue <= 0f) 1f else maxValue * 1.1f // 10% top margin
 
     val chartPaddingPx = style.chart.chartPadding
 
@@ -117,22 +118,14 @@ fun BarChart(
             bottom = size.height - paddingPx - xAxisHeight,
         )
 
-        // 그리드 및 축 그리기
+        // Draw grid and axes
         drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
 
         if (resolvedAxisStyle.showYAxis) {
             drawYAxisLabels(0f, adjustedMax, resolvedAxisStyle, chartArea)
         }
 
-        // X축 라벨 (그룹 라벨 사용)
-        if (resolvedAxisStyle.showXAxis) {
-            val labels = validGroups.map { it.label }
-            if (labels.any { it.isNotEmpty() }) {
-                drawXAxisLabels(labels, resolvedAxisStyle, chartArea)
-            }
-        }
-
-        // 바 레이아웃 계산
+        // Bar layout calculation
         if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas
 
         val groupCount = validGroups.size
@@ -141,7 +134,15 @@ fun BarChart(
         val totalGroupSpacing = groupSpacingPx * (groupCount - 1).coerceAtLeast(0)
         val groupWidth = ((chartArea.width - totalGroupSpacing) / groupCount).coerceAtLeast(1f)
 
-        // 터치된 그룹 인덱스 계산
+        // X-axis labels (centered under each bar group)
+        if (resolvedAxisStyle.showXAxis) {
+            val labels = validGroups.map { it.label }
+            if (labels.any { it.isNotEmpty() }) {
+                drawXAxisLabels(labels, resolvedAxisStyle, chartArea, groupWidth, groupSpacingPx)
+            }
+        }
+
+        // Calculate touched group index
         val currentTouch = touchOffset
         if (currentTouch != null) {
             val relativeX = currentTouch.x - chartArea.left
@@ -149,7 +150,7 @@ fun BarChart(
             selectedGroupIndex = groupIndex.coerceIn(0, groupCount - 1)
         }
 
-        // 바 그리기에 필요한 정보 저장 (툴팁용)
+        // Draw bars and tooltips
         validGroups.forEachIndexed { groupIndex, group ->
             val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
             val entryCount = group.entries.size
@@ -159,14 +160,13 @@ fun BarChart(
             group.entries.forEachIndexed { entryIndex, entry ->
                 val barLeft = groupLeft + entryIndex * (barWidth + barSpacingPx)
 
-                // 하이라이트 처리: 선택되지 않은 바는 투명도 적용
+                // Highlight: apply transparency to unselected bars
                 val isHighlighted = !style.highlightOnTouch ||
                     selectedGroupIndex == -1 ||
                     selectedGroupIndex == groupIndex
                 val alpha = if (isHighlighted) 1f else style.highlightAlpha
 
                 if (style.horizontal) {
-                    // 가로 바 차트
                     drawHorizontalStackedBar(
                         entry.safeValues,
                         entry.colors.ifEmpty { colors },
@@ -175,7 +175,6 @@ fun BarChart(
                         style.cornerRadius.toPx(),
                     )
                 } else {
-                    // 세로 바 차트
                     drawVerticalStackedBar(
                         entry.safeValues,
                         entry.colors.ifEmpty { colors },
@@ -186,7 +185,7 @@ fun BarChart(
                 }
             }
 
-            // 선택된 그룹의 툴팁 표시
+            // Show tooltip for selected group
             if (selectedGroupIndex == groupIndex && group.entries.isNotEmpty()) {
                 val firstEntry = group.entries[0]
                 val totalValue = firstEntry.safeValues.sum()
@@ -217,8 +216,8 @@ fun BarChart(
 }
 
 /**
- * 세로 방향 스택 바를 그린다.
- * 최상단 세그먼트에만 둥근 모서리를 적용한다.
+ * Draws a vertical stacked bar.
+ * Rounded corners are applied only to the topmost segment.
  */
 private fun DrawScope.drawVerticalStackedBar(
     values: List<Float>,
@@ -242,7 +241,7 @@ private fun DrawScope.drawVerticalStackedBar(
         val isTopSegment = index == totalSegments - 1
 
         if (isTopSegment && cornerRadius > 0f) {
-            // 최상단 세그먼트: 상단만 둥근 모서리
+            // Top segment: rounded top corners only
             val path = Path().apply {
                 addRoundRect(
                     RoundRect(
@@ -259,7 +258,7 @@ private fun DrawScope.drawVerticalStackedBar(
             }
             drawPath(path = path, color = color, style = Fill)
         } else {
-            // 하단 세그먼트: 직각 모서리
+            // Bottom segments: square corners
             drawRect(
                 color = color,
                 topLeft = Offset(barLeft, segmentTop),
@@ -272,8 +271,8 @@ private fun DrawScope.drawVerticalStackedBar(
 }
 
 /**
- * 가로 방향 스택 바를 그린다.
- * 최우측 세그먼트에만 둥근 모서리를 적용한다.
+ * Draws a horizontal stacked bar.
+ * Rounded corners are applied only to the rightmost segment.
  */
 private fun DrawScope.drawHorizontalStackedBar(
     values: List<Float>,
@@ -296,7 +295,7 @@ private fun DrawScope.drawHorizontalStackedBar(
         val isRightSegment = index == totalSegments - 1
 
         if (isRightSegment && cornerRadius > 0f) {
-            // 최우측 세그먼트: 오른쪽만 둥근 모서리
+            // Rightmost segment: rounded right corners only
             val path = Path().apply {
                 addRoundRect(
                     RoundRect(

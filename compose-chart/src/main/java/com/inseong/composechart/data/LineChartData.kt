@@ -3,14 +3,14 @@ package com.inseong.composechart.data
 import androidx.compose.ui.graphics.Color
 
 /**
- * 라인 차트의 개별 시리즈(선) 데이터.
+ * Individual series (line) data for the line chart.
  *
- * 하나의 라인 차트에 여러 시리즈를 추가하면
- * 멀티 라인 차트가 된다.
+ * Adding multiple series to a single line chart
+ * creates a multi-line chart.
  *
- * @param points 시리즈를 구성하는 데이터 포인트 목록. 비어있으면 해당 시리즈는 무시된다.
- * @param label 시리즈 이름 (범례 등에 사용)
- * @param color 시리즈 색상. [Color.Unspecified]이면 기본 팔레트에서 자동 할당
+ * @param points List of data points composing the series. Ignored if empty.
+ * @param label Series name (used in legends)
+ * @param color Series color. Auto-assigned from default palette when [Color.Unspecified].
  */
 data class LineSeries(
     val points: List<ChartPoint>,
@@ -19,12 +19,12 @@ data class LineSeries(
 )
 
 /**
- * 라인 차트에 전달하는 전체 데이터.
+ * Complete data passed to the line chart.
  *
- * series가 비어있거나 유효한 포인트가 없으면 빈 화면이 표시된다.
+ * Displays an empty screen if series is empty or has no valid points.
  *
- * @param series [LineSeries] 목록
- * @param xLabels X축 하단에 표시할 라벨 목록 (선택 사항)
+ * @param series List of [LineSeries]
+ * @param xLabels Labels to display below the X-axis (optional)
  */
 data class LineChartData(
     val series: List<LineSeries>,
@@ -32,12 +32,12 @@ data class LineChartData(
 ) {
     companion object {
         /**
-         * 단일 시리즈 라인 차트를 간편하게 생성한다.
+         * Convenience factory for a single-series line chart.
          *
          * ```kotlin
          * LineChartData.single(
          *     points = listOf(ChartPoint(0f, 10f), ChartPoint(1f, 25f)),
-         *     xLabels = listOf("1월", "2월"),
+         *     xLabels = listOf("Jan", "Feb"),
          * )
          * ```
          */
@@ -52,13 +52,13 @@ data class LineChartData(
         )
 
         /**
-         * Y값 리스트만으로 라인 차트를 생성한다.
-         * X값은 0부터 인덱스로 자동 할당된다.
+         * Creates a line chart from a list of Y values.
+         * X values are auto-assigned as indices starting from 0.
          *
          * ```kotlin
          * LineChartData.fromValues(
          *     values = listOf(10f, 25f, 18f, 32f),
-         *     xLabels = listOf("1월", "2월", "3월", "4월"),
+         *     xLabels = listOf("Jan", "Feb", "Mar", "Apr"),
          * )
          * ```
          */

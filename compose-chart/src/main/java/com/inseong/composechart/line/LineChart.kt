@@ -33,35 +33,35 @@ import com.inseong.composechart.internal.touch.findNearestPointIndex
 import com.inseong.composechart.style.LineChartStyle
 
 /**
- * 라인 차트 Composable.
+ * Line chart Composable.
  *
- * 하나 이상의 데이터 시리즈를 부드러운 곡선(또는 직선)으로 표시하며,
- * 그라데이션 영역 채우기, 진입 애니메이션, 터치 인터랙션을 지원한다.
+ * Displays one or more data series as smooth curves (or straight lines),
+ * with gradient area fill, entry animation, and touch interaction.
  *
- * 기본 사용법:
+ * Basic usage:
  * ```kotlin
  * LineChart(
  *     data = LineChartData(
  *         series = listOf(
  *             LineSeries(
  *                 points = listOf(
- *                     ChartPoint(0f, 10f, "1월"),
- *                     ChartPoint(1f, 25f, "2월"),
- *                     ChartPoint(2f, 18f, "3월"),
+ *                     ChartPoint(0f, 10f, "Jan"),
+ *                     ChartPoint(1f, 25f, "Feb"),
+ *                     ChartPoint(2f, 18f, "Mar"),
  *                 )
  *             )
  *         ),
- *         xLabels = listOf("1월", "2월", "3월"),
+ *         xLabels = listOf("Jan", "Feb", "Mar"),
  *     ),
  *     modifier = Modifier.fillMaxWidth().height(200.dp),
  * )
  * ```
  *
- * @param data 차트에 표시할 데이터
- * @param modifier 레이아웃 Modifier (크기 지정 필수)
- * @param style 차트 스타일 설정
- * @param colors 시리즈 색상 팔레트. 시리즈에 색상이 지정되지 않은 경우 순서대로 사용
- * @param onPointSelected 데이터 포인트 터치 시 콜백. null이면 콜백 없음
+ * @param data Data to display in the chart
+ * @param modifier Layout Modifier (size must be specified)
+ * @param style Chart style configuration
+ * @param colors Series color palette. Used in order when no color is specified per series.
+ * @param onPointSelected Callback on data point touch. null for no callback.
  */
 @Composable
 fun LineChart(
@@ -71,7 +71,7 @@ fun LineChart(
     colors: List<Color> = ChartDefaults.colors,
     onPointSelected: ((seriesIndex: Int, pointIndex: Int, point: ChartPoint) -> Unit)? = null,
 ) {
-    // 다크 테마 감지 및 스타일 해석
+    // Detect dark theme and resolve styles
     val isDark = isSystemInDarkTheme()
     val resolvedGridStyle = style.grid.copy(
         lineColor = ChartDefaults.resolveGridLineColor(style.grid.lineColor, isDark),
@@ -80,23 +80,23 @@ fun LineChart(
         labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
     )
 
-    // 애니메이션 프로그레스 (0→1)
+    // Animation progress (0 -> 1)
     val progress by rememberChartAnimation(style.animationDurationMs)
 
-    // 터치 상태
+    // Touch state
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
-    // 유효한 시리즈만 필터링 (포인트가 있는 시리즈)
+    // Filter valid series only (series with points)
     val validSeries = remember(data) { data.series.filter { it.points.isNotEmpty() } }
     if (validSeries.isEmpty()) return
 
-    // 데이터 범위 계산 (safeX/safeY로 NaN/Infinity 방어)
+    // Calculate data range (safeX/safeY guard against NaN/Infinity)
     val allPoints = validSeries.flatMap { it.points }
     val minX = allPoints.minOf { it.safeX }
     val maxX = allPoints.maxOf { it.safeX }
     val minY = allPoints.minOf { it.safeY }
     val maxY = allPoints.maxOf { it.safeY }
-    // Y축 여유 공간 (상하 10%)
+    // Y-axis margin (top/bottom 10%)
     val yRange = (maxY - minY).let { if (it == 0f) 1f else it }
     val yPadding = yRange * 0.1f
     val adjustedMinY = minY - yPadding
@@ -112,12 +112,12 @@ fun LineChart(
     ) {
         val paddingPx = chartPaddingPx.toPx()
 
-        // Y축 라벨 영역 폭 계산
+        // Y-axis label area width
         val yAxisWidth = if (resolvedAxisStyle.showYAxis) 40.dp.toPx() else 0f
-        // X축 라벨 영역 높이 계산
+        // X-axis label area height
         val xAxisHeight = if (resolvedAxisStyle.showXAxis) 20.dp.toPx() else 0f
 
-        // 차트 데이터 영역 (축 라벨 및 패딩 제외)
+        // Chart data area (excluding axis labels and padding)
         val chartArea = Rect(
             left = paddingPx + yAxisWidth,
             top = paddingPx,
@@ -125,32 +125,32 @@ fun LineChart(
             bottom = size.height - paddingPx - xAxisHeight,
         )
 
-        // 그리드 그리기
+        // Draw grid
         drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
 
-        // Y축 라벨 그리기
+        // Draw Y-axis labels
         if (resolvedAxisStyle.showYAxis) {
             drawYAxisLabels(adjustedMinY, adjustedMaxY, resolvedAxisStyle, chartArea)
         }
 
-        // X축 라벨 그리기
+        // Draw X-axis labels
         if (resolvedAxisStyle.showXAxis && data.xLabels.isNotEmpty()) {
             drawXAxisLabels(data.xLabels, resolvedAxisStyle, chartArea)
         }
 
         if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas
 
-        // 각 시리즈 그리기
+        // Draw each series
         validSeries.forEachIndexed { seriesIndex, series ->
 
-            // 시리즈 색상 결정
+            // Determine series color
             val seriesColor = if (series.color == Color.Unspecified) {
                 colors[seriesIndex % colors.size]
             } else {
                 series.color
             }
 
-            // 데이터 포인트를 캔버스 좌표로 변환 (safeX/safeY 사용)
+            // Map data points to canvas coordinates (using safeX/safeY)
             val mappedPoints = series.points.map { point ->
                 Offset(
                     x = chartArea.left + ((point.safeX - minX) / xRange) * chartArea.width,
@@ -158,14 +158,14 @@ fun LineChart(
                 )
             }
 
-            // 라인 경로 생성 (곡선 또는 직선)
+            // Create line path (curved or straight)
             val linePath = if (style.curved) {
                 mappedPoints.toBezierPath()
             } else {
                 mappedPoints.toLinearPath()
             }
 
-            // 애니메이션: progress에 따라 좌→우로 클리핑
+            // Animation: clip left-to-right based on progress
             val clipRight = chartArea.left + chartArea.width * progress
 
             clipRect(
@@ -174,7 +174,7 @@ fun LineChart(
                 right = clipRight,
                 bottom = chartArea.bottom,
             ) {
-                // 그라데이션 영역 채우기
+                // Gradient area fill
                 if (style.gradientFill && mappedPoints.size >= 2) {
                     drawGradientFill(
                         linePath = linePath,
@@ -186,14 +186,14 @@ fun LineChart(
                     )
                 }
 
-                // 라인 그리기
+                // Draw line
                 drawPath(
                     path = linePath,
                     color = seriesColor,
                     style = Stroke(width = style.lineWidth.toPx()),
                 )
 
-                // 데이터 포인트 도트 그리기
+                // Draw data point dots
                 if (style.showDots) {
                     mappedPoints.forEach { point ->
                         drawCircle(
@@ -205,7 +205,7 @@ fun LineChart(
                 }
             }
 
-            // 터치 인터랙션 처리
+            // Touch interaction handling
             val currentTouch = touchOffset
             if (currentTouch != null && style.showTooltipOnTouch) {
                 val pointXPositions = mappedPoints.map { it.x }
@@ -215,7 +215,7 @@ fun LineChart(
                     val nearestPoint = mappedPoints[nearestIndex]
                     val dataPoint = series.points[nearestIndex]
 
-                    // 첫 번째 시리즈일 때만 수직 인디케이터 라인 그리기 (중복 방지)
+                    // Draw vertical indicator line only for the first series (avoid duplicates)
                     if (seriesIndex == 0) {
                         drawVerticalIndicatorLine(
                             x = nearestPoint.x,
@@ -224,7 +224,7 @@ fun LineChart(
                         )
                     }
 
-                    // 툴팁 텍스트 결정
+                    // Determine tooltip text
                     val tooltipText = dataPoint.label.ifEmpty {
                         if (dataPoint.y == dataPoint.y.toLong().toFloat()) {
                             dataPoint.y.toLong().toString()
@@ -233,7 +233,7 @@ fun LineChart(
                         }
                     }
 
-                    // 툴팁 그리기
+                    // Draw tooltip
                     drawTooltip(
                         position = nearestPoint,
                         text = tooltipText,
@@ -242,7 +242,7 @@ fun LineChart(
                         canvasSize = size,
                     )
 
-                    // 콜백 호출
+                    // Invoke callback
                     onPointSelected?.invoke(seriesIndex, nearestIndex, dataPoint)
                 }
             }

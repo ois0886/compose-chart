@@ -8,13 +8,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 
 /**
- * 데이터 포인트 목록을 부드러운 베지어 곡선 [Path]로 변환한다.
+ * Converts a list of data points into a smooth bezier curve [Path].
  *
- * Catmull-Rom 스플라인을 큐빅 베지어로 변환하는 방식을 사용하며,
- * tension 값으로 곡선의 부드러움을 조절한다.
+ * Uses Catmull-Rom spline to cubic bezier conversion,
+ * with tension controlling the curve smoothness.
  *
- * @param tension 곡선 장력 (0.0 = 직선에 가까움, 1.0 = 매우 부드러움). 기본값 0.3
- * @return 베지어 곡선이 적용된 [Path]
+ * @param tension Curve tension (0.0 = nearly straight, 1.0 = very smooth). Default: 0.3
+ * @return [Path] with bezier curves applied
  */
 internal fun List<Offset>.toBezierPath(tension: Float = 0.3f): Path {
     val path = Path()
@@ -34,7 +34,7 @@ internal fun List<Offset>.toBezierPath(tension: Float = 0.3f): Path {
         val p2 = this[i + 1]
         val p3 = if (i < size - 2) this[i + 2] else this[i + 1]
 
-        // 제어점 계산 (Catmull-Rom → Cubic Bezier)
+        // Control point calculation (Catmull-Rom -> Cubic Bezier)
         val cp1x = p1.x + (p2.x - p0.x) * tension
         val cp1y = p1.y + (p2.y - p0.y) * tension
         val cp2x = p2.x - (p3.x - p1.x) * tension
@@ -47,9 +47,9 @@ internal fun List<Offset>.toBezierPath(tension: Float = 0.3f): Path {
 }
 
 /**
- * 직선으로 연결된 데이터 포인트 [Path]를 생성한다.
+ * Creates a [Path] connecting data points with straight lines.
  *
- * @return 직선 연결 [Path]
+ * @return [Path] with linear connections
  */
 internal fun List<Offset>.toLinearPath(): Path {
     val path = Path()
@@ -63,17 +63,17 @@ internal fun List<Offset>.toLinearPath(): Path {
 }
 
 /**
- * 라인 [Path] 아래 영역을 그라데이션으로 채운다.
+ * Fills the area below a line [Path] with a gradient.
  *
- * 라인 경로를 복제한 뒤, 하단 경계까지 닫힌 영역을 만들어
- * 위에서 아래로 투명해지는 그라데이션 브러시로 채운다.
+ * Clones the line path, then creates a closed area down to the bottom boundary,
+ * filling it with a top-to-bottom gradient that fades to transparent.
  *
- * @param linePath 라인 경로 (닫히지 않은 상태)
- * @param color 그라데이션의 시작 색상 (상단)
- * @param alpha 그라데이션 시작 투명도
- * @param bottomY 채울 영역의 하단 Y 좌표 (차트 영역 바닥)
- * @param startX 라인의 시작 X 좌표
- * @param endX 라인의 끝 X 좌표
+ * @param linePath Line path (unclosed)
+ * @param color Gradient start color (top)
+ * @param alpha Gradient start opacity
+ * @param bottomY Bottom Y coordinate of the fill area (chart area bottom)
+ * @param startX Start X coordinate of the line
+ * @param endX End X coordinate of the line
  */
 internal fun DrawScope.drawGradientFill(
     linePath: Path,
@@ -85,7 +85,7 @@ internal fun DrawScope.drawGradientFill(
 ) {
     val fillPath = Path().apply {
         addPath(linePath)
-        // 라인 끝에서 바닥으로 내려간 뒤, 시작점 바닥으로 돌아가서 닫기
+        // From line end, go down to bottom, back to start bottom, then close
         lineTo(endX, bottomY)
         lineTo(startX, bottomY)
         close()

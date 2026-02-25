@@ -8,12 +8,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.abs
 
 /**
- * 차트 터치 인터랙션을 처리하는 Modifier 확장.
+ * Modifier extension for handling chart touch interactions.
  *
- * 탭과 드래그(스크러빙) 제스처를 감지하여 터치 위치를 콜백으로 전달한다.
- * 터치 종료 시 null을 전달한다.
+ * Detects tap and drag (scrubbing) gestures and passes the touch position via callback.
+ * Passes null when the touch ends.
  *
- * @param onTouch 터치 위치 [Offset] 또는 터치 종료 시 null
+ * @param onTouch Touch position [Offset] or null on touch end
  */
 internal fun Modifier.chartTouchHandler(
     onTouch: (Offset?) -> Unit,
@@ -22,7 +22,7 @@ internal fun Modifier.chartTouchHandler(
         detectTapGestures(
             onPress = { offset ->
                 onTouch(offset)
-                // 손가락을 떼면 터치 해제
+                // Release touch when finger is lifted
                 tryAwaitRelease()
                 onTouch(null)
             },
@@ -41,11 +41,11 @@ internal fun Modifier.chartTouchHandler(
     }
 
 /**
- * 터치 X 좌표에서 가장 가까운 데이터 포인트의 인덱스를 찾는다.
+ * Finds the index of the nearest data point to the touch X coordinate.
  *
- * @param touchX 터치한 X 좌표 (픽셀)
- * @param pointXPositions 각 데이터 포인트의 X 좌표 목록 (픽셀)
- * @return 가장 가까운 포인트의 인덱스. 목록이 비어있으면 -1
+ * @param touchX Touch X coordinate (pixels)
+ * @param pointXPositions X coordinate list of each data point (pixels)
+ * @return Index of the nearest point. Returns -1 if the list is empty.
  */
 internal fun findNearestPointIndex(touchX: Float, pointXPositions: List<Float>): Int {
     if (pointXPositions.isEmpty()) return -1

@@ -15,16 +15,16 @@ import androidx.compose.ui.graphics.nativeCanvas
 import com.inseong.composechart.style.TooltipStyle
 
 /**
- * 터치한 데이터 포인트 위에 툴팁 버블을 그린다.
+ * Draws a tooltip bubble above the touched data point.
  *
- * 툴팁은 데이터 포인트 위에 둥근 사각형으로 표시되며,
- * 캔버스 경계를 벗어나지 않도록 자동으로 위치가 조정된다.
+ * The tooltip is displayed as a rounded rectangle above the data point,
+ * with automatic position adjustment to stay within canvas bounds.
  *
- * @param position 데이터 포인트의 캔버스 좌표
- * @param text 툴팁에 표시할 텍스트
- * @param style 툴팁 스타일 설정
- * @param lineColor 해당 시리즈의 색상 (인디케이터 테두리에 사용)
- * @param canvasSize 캔버스 전체 크기 (경계 제한용)
+ * @param position Canvas coordinates of the data point
+ * @param text Text to display in the tooltip
+ * @param style Tooltip style configuration
+ * @param lineColor Series color (used for indicator border)
+ * @param canvasSize Total canvas size (for bounds clamping)
  */
 internal fun DrawScope.drawTooltip(
     position: Offset,
@@ -38,7 +38,7 @@ internal fun DrawScope.drawTooltip(
     val cornerRadius = style.cornerRadius.toPx()
     val textSizePx = style.textSize.toPx()
 
-    // 텍스트 크기 측정
+    // Measure text size
     val textPaint = Paint().apply {
         color = android.graphics.Color.WHITE
         textSize = textSizePx
@@ -48,33 +48,33 @@ internal fun DrawScope.drawTooltip(
     val textWidth = textPaint.measureText(text)
     val textHeight = textSizePx
 
-    // 툴팁 버블 크기 — 캔버스보다 커지지 않도록 제한
+    // Clamp bubble size to not exceed canvas
     val bubbleWidth = (textWidth + paddingH * 2).coerceAtMost(canvasSize.width)
     val bubbleHeight = (textHeight + paddingV * 2).coerceAtMost(canvasSize.height)
     val arrowHeight = 6f
 
-    // 캔버스가 너무 작으면 툴팁 표시하지 않음
+    // Skip tooltip if canvas is too small
     if (canvasSize.width < textSizePx || canvasSize.height < textSizePx) return
 
-    // 기본 위치: 포인트 위
+    // Default position: above the point
     var bubbleLeft = position.x - bubbleWidth / 2
     var bubbleTop = position.y - bubbleHeight - arrowHeight - style.indicatorRadius.toPx() - 4f
 
-    // 캔버스 경계 보정
+    // Canvas bounds adjustment
     if (bubbleLeft < 0f) bubbleLeft = 0f
     if (bubbleLeft + bubbleWidth > canvasSize.width) {
         bubbleLeft = (canvasSize.width - bubbleWidth).coerceAtLeast(0f)
     }
     if (bubbleTop < 0f) {
-        // 위에 공간이 없으면 아래에 표시
+        // Show below when no space above
         bubbleTop = position.y + style.indicatorRadius.toPx() + arrowHeight + 4f
     }
-    // 하단 경계 보정
+    // Bottom bounds adjustment
     if (bubbleTop + bubbleHeight > canvasSize.height) {
         bubbleTop = (canvasSize.height - bubbleHeight).coerceAtLeast(0f)
     }
 
-    // 툴팁 배경 그리기
+    // Draw tooltip background
     val bubblePath = Path().apply {
         addRoundRect(
             RoundRect(
@@ -88,28 +88,28 @@ internal fun DrawScope.drawTooltip(
     }
     drawPath(path = bubblePath, color = style.backgroundColor, style = Fill)
 
-    // 툴팁 텍스트 그리기
+    // Draw tooltip text
     drawContext.canvas.nativeCanvas.drawText(
         text,
         bubbleLeft + paddingH,
-        bubbleTop + paddingV + textHeight * 0.85f, // baseline 보정
+        bubbleTop + paddingV + textHeight * 0.85f, // Baseline adjustment
         textPaint,
     )
 
-    // 데이터 포인트 인디케이터 (도트) 그리기
+    // Draw data point indicator (dot)
     val indicatorBorderColor = if (style.indicatorBorderColor == Color.Unspecified) {
         lineColor
     } else {
         style.indicatorBorderColor
     }
 
-    // 바깥 원 (테두리)
+    // Outer circle (border)
     drawCircle(
         color = indicatorBorderColor,
         radius = style.indicatorRadius.toPx() + style.indicatorBorderWidth.toPx(),
         center = position,
     )
-    // 안쪽 원 (채우기)
+    // Inner circle (fill)
     drawCircle(
         color = style.indicatorColor,
         radius = style.indicatorRadius.toPx(),
@@ -118,12 +118,12 @@ internal fun DrawScope.drawTooltip(
 }
 
 /**
- * 터치 지점에서 차트 영역 전체를 관통하는 수직 인디케이터 라인을 그린다.
+ * Draws a vertical indicator line spanning the full chart area at the touch point.
  *
- * @param x 수직선의 X 좌표
- * @param topY 수직선 상단 Y 좌표
- * @param bottomY 수직선 하단 Y 좌표
- * @param color 수직선 색상
+ * @param x X coordinate of the vertical line
+ * @param topY Top Y coordinate of the vertical line
+ * @param bottomY Bottom Y coordinate of the vertical line
+ * @param color Vertical line color
  */
 internal fun DrawScope.drawVerticalIndicatorLine(
     x: Float,

@@ -5,15 +5,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 차트 그리드 라인의 스타일 설정.
+ * Style configuration for chart grid lines.
  *
- * 기본값: 수평 그리드만 표시, 얇은 회색 실선.
+ * Defaults: horizontal grid only, thin gray solid lines.
  *
- * @param showHorizontalLines 수평 그리드 라인 표시 여부
- * @param showVerticalLines 수직 그리드 라인 표시 여부
- * @param lineColor 그리드 라인 색상. [Color.Unspecified]이면 라이트/다크 테마에 맞게 자동 적용
- * @param strokeWidth 그리드 라인 두께
- * @param dashPattern 점선 패턴 (null이면 실선). 예: floatArrayOf(10f, 5f)
+ * @param showHorizontalLines Whether to show horizontal grid lines
+ * @param showVerticalLines Whether to show vertical grid lines
+ * @param lineColor Grid line color. Uses theme-aware default when [Color.Unspecified].
+ * @param strokeWidth Grid line thickness
+ * @param dashPattern Dash pattern (null = solid line). e.g. floatArrayOf(10f, 5f)
  */
 data class GridStyle(
     val showHorizontalLines: Boolean = true,

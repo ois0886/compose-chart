@@ -5,10 +5,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 모든 차트에 공통으로 적용되는 기본 스타일.
+ * Base style applied to all charts.
  *
- * @param backgroundColor 차트 영역의 배경색
- * @param chartPadding 차트 컨텐츠 영역의 내부 패딩
+ * @param backgroundColor Background color of the chart area
+ * @param chartPadding Internal padding of the chart content area
  */
 data class ChartStyle(
     val backgroundColor: Color = Color.Transparent,

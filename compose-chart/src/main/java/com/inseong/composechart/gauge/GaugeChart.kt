@@ -83,9 +83,6 @@ fun GaugeChart(
             .background(style.chart.backgroundColor),
         contentAlignment = Alignment.Center,
     ) {
-        // Reference diameter (in px) at which full-size text is displayed
-        val referenceDiameterDp = 120.dp
-
         // Draw gauge arcs
         Canvas(modifier = Modifier.matchParentSize()) {
             val paddingPx = style.chart.chartPadding.toPx()
@@ -131,7 +128,7 @@ fun GaugeChart(
         if (centerContent != null) {
             centerContent(animatedValue)
         } else if (style.showCenterText) {
-            // Use BoxWithConstraints to scale text proportionally to available diameter
+            // Hide text when component is too small to display legibly
             androidx.compose.foundation.layout.BoxWithConstraints {
                 val density = androidx.compose.ui.platform.LocalDensity.current
                 val availableDiameter = with(density) {
@@ -139,13 +136,9 @@ fun GaugeChart(
                     val strokeWidthPx = style.strokeWidth.toPx()
                     min(maxWidth.toPx(), maxHeight.toPx()) - paddingPx * 2 - strokeWidthPx
                 }
-                val referencePx = with(density) { referenceDiameterDp.toPx() }
-                val textScale = (availableDiameter / referencePx).coerceIn(0f, 1f)
+                val minDiameterPx = with(density) { 80.dp.toPx() }
 
-                // Hide text when component is too small to display legibly
-                if (textScale >= 0.3f) {
-                    val scaledTextSize = style.centerTextSize * textScale
-
+                if (availableDiameter >= minDiameterPx) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -158,7 +151,7 @@ fun GaugeChart(
                         androidx.compose.foundation.text.BasicText(
                             text = valueText,
                             style = androidx.compose.ui.text.TextStyle(
-                                fontSize = scaledTextSize,
+                                fontSize = style.centerTextSize,
                                 color = resolvedCenterTextColor,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             ),
@@ -169,7 +162,7 @@ fun GaugeChart(
                             androidx.compose.foundation.text.BasicText(
                                 text = data.label,
                                 style = androidx.compose.ui.text.TextStyle(
-                                    fontSize = scaledTextSize * 0.5f,
+                                    fontSize = style.centerTextSize * 0.5f,
                                     color = resolvedCenterTextColor.copy(alpha = 0.6f),
                                 ),
                             )

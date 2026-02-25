@@ -4,22 +4,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 바 차트의 스타일 설정.
+ * Style configuration for the bar chart.
  *
- * 기본값: 둥근 상단 모서리, 세로 방향,
- * 터치 시 하이라이트, 부드러운 성장 애니메이션.
+ * Defaults: rounded top corners, vertical orientation,
+ * touch highlight, smooth growth animation.
  *
- * @param cornerRadius 바 상단 모서리 둥글기 (세로 바 기준. 가로 바에서는 오른쪽 모서리)
- * @param barSpacing 같은 그룹 내 바 간 간격
- * @param groupSpacing 그룹 간 간격
- * @param horizontal 가로 방향 바 차트 여부 (true이면 좌→우 성장)
- * @param animationDurationMs 성장 애니메이션 지속 시간 (밀리초)
- * @param highlightOnTouch 터치 시 선택된 바 하이라이트 여부
- * @param highlightAlpha 비선택 바의 투명도 (하이라이트 시)
- * @param chart 공통 차트 스타일
- * @param axis 축 라벨 스타일
- * @param grid 그리드 라인 스타일
- * @param tooltip 툴팁 스타일
+ * @param cornerRadius Corner radius for bar tops (vertical) or right edges (horizontal)
+ * @param barSpacing Spacing between bars within the same group
+ * @param groupSpacing Spacing between groups
+ * @param horizontal Whether to render as horizontal bar chart (true = left-to-right growth)
+ * @param animationDurationMs Duration of the growth animation in milliseconds
+ * @param highlightOnTouch Whether to highlight the selected bar on touch
+ * @param highlightAlpha Opacity of unselected bars when highlighting
+ * @param chart Common chart style
+ * @param axis Axis label style
+ * @param grid Grid line style
+ * @param tooltip Tooltip style
  */
 data class BarChartStyle(
     val cornerRadius: Dp = 6.dp,

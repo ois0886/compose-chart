@@ -5,15 +5,15 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 /**
- * 차트 축(Axis) 라벨의 스타일 설정.
+ * Style configuration for chart axis labels.
  *
- * 기본값: X축 라벨만 표시, Y축 라인 없음.
+ * Defaults: X-axis labels shown, no Y-axis labels.
  *
- * @param showXAxis X축 라벨 표시 여부
- * @param showYAxis Y축 라벨 표시 여부
- * @param labelColor 라벨 텍스트 색상. [Color.Unspecified]이면 라이트/다크 테마에 맞게 자동 적용
- * @param labelSize 라벨 텍스트 크기
- * @param yLabelCount Y축 참조 라벨 개수 (균등 분할)
+ * @param showXAxis Whether to show X-axis labels
+ * @param showYAxis Whether to show Y-axis labels
+ * @param labelColor Label text color. Uses theme-aware default when [Color.Unspecified].
+ * @param labelSize Label text size
+ * @param yLabelCount Number of Y-axis reference labels (evenly divided)
  */
 data class AxisStyle(
     val showXAxis: Boolean = true,

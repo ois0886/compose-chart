@@ -14,10 +14,10 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * BarChart UI 테스트.
+ * BarChart UI tests.
  *
- * 정상 데이터, 빈 데이터, 비정상 데이터(NaN, 음수)에 대해
- * 크래시 없이 렌더링되는지 검증한다.
+ * Verifies that the chart renders without crashing for
+ * normal data, empty data, and abnormal data (NaN, negative).
  */
 class BarChartTest {
 
@@ -34,7 +34,7 @@ class BarChartTest {
             BarChart(
                 data = BarChartData.simple(
                     values = listOf(30f, 45f, 28f, 55f),
-                    labels = listOf("1월", "2월", "3월", "4월"),
+                    labels = listOf("Jan", "Feb", "Mar", "Apr"),
                 ),
                 modifier = defaultModifier,
             )
@@ -69,7 +69,7 @@ class BarChartTest {
         composeTestRule.setContent {
             BarChart(
                 data = BarChartData(
-                    groups = listOf(BarGroup(entries = emptyList(), label = "빈")),
+                    groups = listOf(BarGroup(entries = emptyList(), label = "Empty")),
                 ),
                 modifier = defaultModifier,
             )
@@ -160,14 +160,14 @@ class BarChartTest {
                                 BarEntry(values = listOf(20f)),
                                 BarEntry(values = listOf(30f)),
                             ),
-                            label = "그룹A",
+                            label = "GroupA",
                         ),
                         BarGroup(
                             entries = listOf(
                                 BarEntry(values = listOf(25f)),
                                 BarEntry(values = listOf(35f)),
                             ),
-                            label = "그룹B",
+                            label = "GroupB",
                         ),
                     ),
                 ),

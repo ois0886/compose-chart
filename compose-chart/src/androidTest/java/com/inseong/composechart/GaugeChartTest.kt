@@ -12,10 +12,10 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * GaugeChart UI 테스트.
+ * GaugeChart UI tests.
  *
- * 정상 데이터, 비정상 데이터(NaN, Infinity, 음수, 0)에 대해
- * 크래시 없이 렌더링되는지 검증한다.
+ * Verifies that the chart renders without crashing for
+ * normal data and abnormal data (NaN, Infinity, negative, 0).
  */
 class GaugeChartTest {
 
@@ -28,7 +28,7 @@ class GaugeChartTest {
     fun gaugeChart_normalData_rendersWithoutCrash() {
         composeTestRule.setContent {
             GaugeChart(
-                data = GaugeChartData(value = 72f, maxValue = 100f, label = "달성률"),
+                data = GaugeChartData(value = 72f, maxValue = 100f, label = "Progress"),
                 modifier = defaultModifier,
             )
         }
@@ -199,7 +199,7 @@ class GaugeChartTest {
     fun gaugeChart_decimalValue_rendersWithoutCrash() {
         composeTestRule.setContent {
             GaugeChart(
-                data = GaugeChartData(value = 33.7f, maxValue = 100f, label = "점수"),
+                data = GaugeChartData(value = 33.7f, maxValue = 100f, label = "Score"),
                 modifier = defaultModifier,
             )
         }

@@ -7,18 +7,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * 터치 시 표시되는 툴팁 버블의 스타일 설정.
+ * Style configuration for the tooltip bubble shown on touch.
  *
- * @param backgroundColor 툴팁 배경색 (다크 계열 권장)
- * @param textColor 툴팁 텍스트 색상
- * @param textSize 툴팁 텍스트 크기
- * @param cornerRadius 툴팁 모서리 둥글기
- * @param paddingHorizontal 툴팁 내부 가로 패딩
- * @param paddingVertical 툴팁 내부 세로 패딩
- * @param indicatorRadius 데이터 포인트 인디케이터(원형 도트)의 반지름
- * @param indicatorColor 인디케이터 내부 색상
- * @param indicatorBorderColor 인디케이터 테두리 색상. [Color.Unspecified]이면 라인 색상 사용
- * @param indicatorBorderWidth 인디케이터 테두리 두께
+ * @param backgroundColor Tooltip background color (dark shades recommended)
+ * @param textColor Tooltip text color
+ * @param textSize Tooltip text size
+ * @param cornerRadius Tooltip corner radius
+ * @param paddingHorizontal Horizontal padding inside the tooltip
+ * @param paddingVertical Vertical padding inside the tooltip
+ * @param indicatorRadius Radius of the data point indicator (circle dot)
+ * @param indicatorColor Fill color of the indicator
+ * @param indicatorBorderColor Border color of the indicator. Uses line color when [Color.Unspecified].
+ * @param indicatorBorderWidth Border width of the indicator
  */
 data class TooltipStyle(
     val backgroundColor: Color = Color(0xFF333333),
