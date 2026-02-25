@@ -208,24 +208,6 @@ class DonutChartTest {
     // ── Touch interaction tests ──
 
     @Test
-    fun donutChart_touch_invokesOnSliceSelected() {
-        var callbackInvoked = false
-        composeTestRule.setContent {
-            DonutChart(
-                data = DonutChartData.fromValues(
-                    values = mapOf("A" to 50f, "B" to 50f),
-                ),
-                modifier = defaultModifier,
-                onSliceSelected = { _, _ -> callbackInvoked = true },
-            )
-        }
-        composeTestRule.waitForIdle()
-        composeTestRule.onRoot().performTouchInput { down(center); up() }
-        composeTestRule.waitForIdle()
-        // Note: center might be in the hole for donut mode, so test with pie mode (holeRadius=0)
-    }
-
-    @Test
     fun donutChart_touch_pieMode_invokesCallback() {
         var callbackInvoked = false
         composeTestRule.setContent {
