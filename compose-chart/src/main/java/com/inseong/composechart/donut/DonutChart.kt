@@ -192,9 +192,10 @@ fun DonutChart(
             }
 
             // Draw slice label
-            // Skip label for very small slices (less than 15 degrees)
+            // Skip labels when chart is too small or slice is too narrow (< 15 degrees)
             val rawSweep = (slice.value / total) * 360f
-            if (style.showLabels && slice.label.isNotEmpty() && progress > 0.8f && rawSweep >= 15f) {
+            val minLabelRadius = 40f * density
+            if (style.showLabels && slice.label.isNotEmpty() && progress > 0.8f && rawSweep >= 15f && radius >= minLabelRadius) {
                 // Donut: midpoint between hole and outer edge, Filled: 65% of radius
                 val labelRadius = if (style.holeRadius > 0f) {
                     (holeRadiusPx + radius) / 2

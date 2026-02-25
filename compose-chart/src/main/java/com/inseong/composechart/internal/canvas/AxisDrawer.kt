@@ -28,6 +28,8 @@ internal fun DrawScope.drawXAxisLabels(
     groupSpacing: Float = 0f,
 ) {
     if (labels.isEmpty()) return
+    // Hide labels when chart area is too narrow
+    if (chartArea.width < 80f * density) return
 
     val paint = Paint().apply {
         color = style.labelColor.hashCode()
@@ -82,6 +84,8 @@ internal fun DrawScope.drawYAxisLabels(
     chartArea: Rect,
 ) {
     if (style.yLabelCount <= 0) return
+    // Hide labels when chart area is too short
+    if (chartArea.height < 80f * density) return
 
     val paint = Paint().apply {
         color = style.labelColor.hashCode()
