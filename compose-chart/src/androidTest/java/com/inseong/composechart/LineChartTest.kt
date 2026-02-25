@@ -2,17 +2,24 @@ package com.inseong.composechart
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performTouchInput
+
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
 import com.inseong.composechart.data.LineSeries
 import com.inseong.composechart.line.LineChart
+import com.inseong.composechart.style.AxisStyle
+import com.inseong.composechart.style.GridStyle
 import com.inseong.composechart.style.LineChartStyle
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -200,6 +207,198 @@ class LineChartTest {
         composeTestRule.setContent {
             LineChart(
                 data = LineChartData.fromValues(values = values),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Touch interaction tests ──
+
+    @Test
+    fun lineChart_touch_invokesOnPointSelected() {
+        var callbackInvoked = false
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(
+                    values = listOf(10f, 25f, 18f, 32f),
+                    xLabels = listOf("A", "B", "C", "D"),
+                ),
+                modifier = defaultModifier,
+                onPointSelected = { _, _, _ -> callbackInvoked = true },
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.waitForIdle()
+        assertTrue("onPointSelected should be invoked on touch", callbackInvoked)
+    }
+
+    @Test
+    fun lineChart_touch_nullCallback_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 25f, 18f)),
+                modifier = defaultModifier,
+                onPointSelected = null,
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Style configuration tests ──
+
+    @Test
+    fun lineChart_customColors_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 20f, 15f)),
+                modifier = defaultModifier,
+                colors = listOf(Color.Magenta),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_noGrid_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 20f, 15f)),
+                modifier = defaultModifier,
+                style = LineChartStyle(
+                    grid = GridStyle(showHorizontalLines = false, showVerticalLines = false),
+                ),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_noAxes_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 20f, 15f)),
+                modifier = defaultModifier,
+                style = LineChartStyle(
+                    axis = AxisStyle(showXAxis = false, showYAxis = false),
+                ),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_noGradient_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 20f, 15f)),
+                modifier = defaultModifier,
+                style = LineChartStyle(gradientFill = false),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_noTooltip_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 20f, 15f)),
+                modifier = defaultModifier,
+                style = LineChartStyle(showTooltipOnTouch = false),
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Data change stability tests ──
+
+    @Test
+    fun lineChart_dataChange_rendersWithoutCrash() {
+        var data by mutableStateOf(
+            LineChartData.fromValues(values = listOf(10f, 20f, 30f)),
+        )
+        composeTestRule.setContent {
+            LineChart(data = data, modifier = defaultModifier)
+        }
+        composeTestRule.waitForIdle()
+        data = LineChartData.fromValues(values = listOf(50f, 60f))
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_dataChangeToEmpty_rendersWithoutCrash() {
+        var data by mutableStateOf(
+            LineChartData.fromValues(values = listOf(10f, 20f)),
+        )
+        composeTestRule.setContent {
+            LineChart(data = data, modifier = defaultModifier)
+        }
+        composeTestRule.waitForIdle()
+        data = LineChartData(series = emptyList())
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Mixed data tests ──
+
+    @Test
+    fun lineChart_mixedNanAndValid_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(
+                    values = listOf(Float.NaN, 15f, Float.NaN, 30f),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_mixedInfinityAndValid_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(
+                    values = listOf(Float.POSITIVE_INFINITY, 15f, Float.NEGATIVE_INFINITY, 30f),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_extremeValues_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(1f, 10000f, 0.001f)),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_multiSeries_customColors_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData(
+                    series = listOf(
+                        LineSeries(
+                            points = listOf(ChartPoint(0f, 10f), ChartPoint(1f, 20f)),
+                            color = Color.Red,
+                        ),
+                        LineSeries(
+                            points = listOf(ChartPoint(0f, 15f), ChartPoint(1f, 25f)),
+                            color = Color.Blue,
+                        ),
+                    ),
+                ),
                 modifier = defaultModifier,
             )
         }

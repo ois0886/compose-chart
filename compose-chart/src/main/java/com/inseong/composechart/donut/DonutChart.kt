@@ -143,7 +143,8 @@ fun DonutChart(
         var currentAngle = style.startAngle
 
         validSlices.forEachIndexed { index, slice ->
-            val sweepAngle = (slice.value / total) * 360f * progress
+            val rawSweep = (slice.value / total) * 360f
+            val sweepAngle = rawSweep * progress
             val actualSweep = (sweepAngle - spacingAngle).coerceAtLeast(0.1f)
 
             val sliceColor = if (slice.color == Color.Unspecified) {
@@ -193,7 +194,6 @@ fun DonutChart(
 
             // Draw slice label
             // Skip labels when chart is too small or slice is too narrow (< 15 degrees)
-            val rawSweep = (slice.value / total) * 360f
             val minLabelRadius = 40f * density
             if (style.showLabels && slice.label.isNotEmpty() && progress > 0.8f && rawSweep >= 15f && radius >= minLabelRadius) {
                 // Donut: midpoint between hole and outer edge, Filled: 65% of radius

@@ -2,9 +2,14 @@ package com.inseong.composechart
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.style.GaugeChartStyle
@@ -201,6 +206,138 @@ class GaugeChartTest {
             GaugeChart(
                 data = GaugeChartData(value = 33.7f, maxValue = 100f, label = "Score"),
                 modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Style configuration tests ──
+
+    @Test
+    fun gaugeChart_customProgressColor_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f),
+                modifier = defaultModifier,
+                style = GaugeChartStyle(progressColor = Color.Red),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_customStrokeWidth_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f),
+                modifier = defaultModifier,
+                style = GaugeChartStyle(strokeWidth = 24.dp),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_flatCap_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f),
+                modifier = defaultModifier,
+                style = GaugeChartStyle(roundCap = false),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_customTextSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f),
+                modifier = defaultModifier,
+                style = GaugeChartStyle(centerTextSize = 32.sp),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_narrowSweepAngle_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f),
+                modifier = defaultModifier,
+                style = GaugeChartStyle(sweepAngle = 90f),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Data change stability tests ──
+
+    @Test
+    fun gaugeChart_dataChange_rendersWithoutCrash() {
+        var data by mutableStateOf(GaugeChartData(value = 30f, maxValue = 100f))
+        composeTestRule.setContent {
+            GaugeChart(data = data, modifier = defaultModifier)
+        }
+        composeTestRule.waitForIdle()
+        data = GaugeChartData(value = 90f, maxValue = 200f, label = "Updated")
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_dataChangeToInvalid_rendersWithoutCrash() {
+        var data by mutableStateOf(GaugeChartData(value = 50f, maxValue = 100f))
+        composeTestRule.setContent {
+            GaugeChart(data = data, modifier = defaultModifier)
+        }
+        composeTestRule.waitForIdle()
+        data = GaugeChartData(value = Float.NaN, maxValue = Float.NaN)
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Mixed/extreme data tests ──
+
+    @Test
+    fun gaugeChart_verySmallValue_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 0.001f, maxValue = 10000f),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_veryLargeValues_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 999999f, maxValue = 1000000f),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_noLabel_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 50f, maxValue = 100f, label = ""),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_tinySize_hidesText_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f, label = "Score"),
+                modifier = Modifier.size(20.dp),
             )
         }
         composeTestRule.waitForIdle()

@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import com.inseong.composechart.style.AxisStyle
 
 /**
@@ -32,7 +33,7 @@ internal fun DrawScope.drawXAxisLabels(
     if (chartArea.width < 80f * density) return
 
     val paint = Paint().apply {
-        color = style.labelColor.hashCode()
+        color = style.labelColor.toArgb()
         textSize = style.labelSize.toPx()
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
@@ -88,7 +89,7 @@ internal fun DrawScope.drawYAxisLabels(
     if (chartArea.height < 80f * density) return
 
     val paint = Paint().apply {
-        color = style.labelColor.hashCode()
+        color = style.labelColor.toArgb()
         textSize = style.labelSize.toPx()
         textAlign = Paint.Align.RIGHT
         isAntiAlias = true

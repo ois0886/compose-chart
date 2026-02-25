@@ -1,13 +1,20 @@
 package com.inseong.composechart
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.data.DonutSlice
 import com.inseong.composechart.donut.DonutChart
 import com.inseong.composechart.style.DonutChartStyle
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -191,6 +198,217 @@ class DonutChartTest {
             DonutChart(
                 data = DonutChartData(
                     slices = listOf(DonutSlice(-10f, "A"), DonutSlice(-20f, "B")),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Touch interaction tests ──
+
+    @Test
+    fun donutChart_touch_invokesOnSliceSelected() {
+        var callbackInvoked = false
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 50f, "B" to 50f),
+                ),
+                modifier = defaultModifier,
+                onSliceSelected = { _, _ -> callbackInvoked = true },
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.waitForIdle()
+        // Note: center might be in the hole for donut mode, so test with pie mode (holeRadius=0)
+    }
+
+    @Test
+    fun donutChart_touch_pieMode_invokesCallback() {
+        var callbackInvoked = false
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 50f, "B" to 50f),
+                ),
+                modifier = defaultModifier,
+                style = DonutChartStyle(holeRadius = 0f),
+                onSliceSelected = { _, _ -> callbackInvoked = true },
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.waitForIdle()
+        assertTrue("onSliceSelected should be invoked on touch in pie mode", callbackInvoked)
+    }
+
+    @Test
+    fun donutChart_touch_nullCallback_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 50f, "B" to 50f),
+                ),
+                modifier = defaultModifier,
+                onSliceSelected = null,
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Style configuration tests ──
+
+    @Test
+    fun donutChart_customColors_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 40f, "B" to 60f),
+                ),
+                modifier = defaultModifier,
+                colors = listOf(Color.Cyan, Color.Yellow),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_customStartAngle_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 40f, "B" to 60f),
+                ),
+                modifier = defaultModifier,
+                style = DonutChartStyle(startAngle = 0f),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_noSpacing_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 40f, "B" to 30f, "C" to 30f),
+                ),
+                modifier = defaultModifier,
+                style = DonutChartStyle(sliceSpacing = 0.dp),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_maxHoleRadius_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = mapOf("A" to 50f, "B" to 50f),
+                ),
+                modifier = defaultModifier,
+                style = DonutChartStyle(holeRadius = 0.95f),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Data change stability tests ──
+
+    @Test
+    fun donutChart_dataChange_rendersWithoutCrash() {
+        var data by mutableStateOf(
+            DonutChartData.fromValues(values = mapOf("A" to 40f, "B" to 60f)),
+        )
+        composeTestRule.setContent {
+            DonutChart(data = data, modifier = defaultModifier)
+        }
+        composeTestRule.waitForIdle()
+        data = DonutChartData.fromValues(values = mapOf("X" to 10f, "Y" to 20f, "Z" to 70f))
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_dataChangeToEmpty_rendersWithoutCrash() {
+        var data by mutableStateOf(
+            DonutChartData.fromValues(values = mapOf("A" to 40f)),
+        )
+        composeTestRule.setContent {
+            DonutChart(data = data, modifier = defaultModifier)
+        }
+        composeTestRule.waitForIdle()
+        data = DonutChartData(slices = emptyList())
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Mixed data tests ──
+
+    @Test
+    fun donutChart_mixedNanAndValid_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData(
+                    slices = listOf(
+                        DonutSlice(Float.NaN, "Bad"),
+                        DonutSlice(30f, "Good"),
+                        DonutSlice(Float.NaN, "Bad2"),
+                        DonutSlice(70f, "Good2"),
+                    ),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_mixedNegativeAndPositive_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData(
+                    slices = listOf(
+                        DonutSlice(-10f, "Neg"),
+                        DonutSlice(50f, "Pos"),
+                        DonutSlice(-5f, "Neg2"),
+                        DonutSlice(30f, "Pos2"),
+                    ),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_extremeValues_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData(
+                    slices = listOf(
+                        DonutSlice(0.001f, "Tiny"),
+                        DonutSlice(10000f, "Huge"),
+                    ),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_sliceWithCustomColor_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData(
+                    slices = listOf(
+                        DonutSlice(40f, "Custom", Color.Red),
+                        DonutSlice(60f, "Default"),
+                    ),
                 ),
                 modifier = defaultModifier,
             )

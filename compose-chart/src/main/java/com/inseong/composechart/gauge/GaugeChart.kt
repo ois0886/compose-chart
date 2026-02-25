@@ -4,8 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -14,6 +16,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.GaugeChartData
@@ -129,8 +134,8 @@ fun GaugeChart(
             centerContent(animatedValue)
         } else if (style.showCenterText) {
             // Hide text when component is too small to display legibly
-            androidx.compose.foundation.layout.BoxWithConstraints {
-                val density = androidx.compose.ui.platform.LocalDensity.current
+            BoxWithConstraints {
+                val density = LocalDensity.current
                 val availableDiameter = with(density) {
                     val paddingPx = style.chart.chartPadding.toPx()
                     val strokeWidthPx = style.strokeWidth.toPx()
@@ -148,20 +153,20 @@ fun GaugeChart(
                         } else {
                             String.format("%.1f", animatedValue)
                         }
-                        androidx.compose.foundation.text.BasicText(
+                        BasicText(
                             text = valueText,
-                            style = androidx.compose.ui.text.TextStyle(
+                            style = TextStyle(
                                 fontSize = style.centerTextSize,
                                 color = resolvedCenterTextColor,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                fontWeight = FontWeight.Bold,
                             ),
                         )
 
                         // Label text
                         if (data.label.isNotEmpty()) {
-                            androidx.compose.foundation.text.BasicText(
+                            BasicText(
                                 text = data.label,
-                                style = androidx.compose.ui.text.TextStyle(
+                                style = TextStyle(
                                     fontSize = style.centerTextSize * 0.5f,
                                     color = resolvedCenterTextColor.copy(alpha = 0.6f),
                                 ),

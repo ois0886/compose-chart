@@ -187,8 +187,16 @@ fun BarChart(
 
             // Show tooltip for selected group
             if (selectedGroupIndex == groupIndex && group.entries.isNotEmpty()) {
-                val firstEntry = group.entries[0]
-                val totalValue = firstEntry.safeValues.sum()
+                // Determine which entry was touched within the group
+                val touchedEntryIndex = if (currentTouch != null && entryCount > 1) {
+                    val relativeInGroup = currentTouch.x - groupLeft
+                    (relativeInGroup / (barWidth + barSpacingPx)).toInt().coerceIn(0, entryCount - 1)
+                } else {
+                    0
+                }
+
+                val entry = group.entries[touchedEntryIndex]
+                val totalValue = entry.safeValues.sum()
                 val formattedValue = if (totalValue == totalValue.toLong().toFloat()) {
                     totalValue.toLong().toString()
                 } else {
@@ -200,19 +208,20 @@ fun BarChart(
                     formattedValue
                 }
 
+                val barLeft = groupLeft + touchedEntryIndex * (barWidth + barSpacingPx)
                 val barHeight = (totalValue / adjustedMax) * chartArea.height * progress
-                val tooltipX = groupLeft + groupWidth / 2
+                val tooltipX = barLeft + barWidth / 2
                 val tooltipY = chartArea.bottom - barHeight
 
                 drawTooltip(
                     position = Offset(tooltipX, tooltipY),
                     text = tooltipText,
                     style = style.tooltip,
-                    lineColor = colors[0],
+                    lineColor = colors[touchedEntryIndex % colors.size],
                     canvasSize = size,
                 )
 
-                onBarSelected?.invoke(groupIndex, 0, 0)
+                onBarSelected?.invoke(groupIndex, touchedEntryIndex, 0)
             }
         }
     }
