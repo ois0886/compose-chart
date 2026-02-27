@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.nativeCanvas
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.DonutChartData
+import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.data.DonutSlice
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.DonutChartStyle

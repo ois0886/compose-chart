@@ -8,13 +8,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.bar.BarChart
+import com.inseong.composechart.bubble.BubbleChart
 import com.inseong.composechart.data.BarChartData
+import com.inseong.composechart.data.BubbleChartData
 import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.data.LineChartData
+import com.inseong.composechart.data.RadarChartData
+import com.inseong.composechart.data.ScatterChartData
 import com.inseong.composechart.donut.DonutChart
 import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.line.LineChart
+import com.inseong.composechart.pie.PieChart
+import com.inseong.composechart.radar.RadarChart
+import com.inseong.composechart.scatter.ScatterChart
 import com.inseong.composechart.style.DonutChartStyle
 import com.inseong.composechart.style.GaugeChartStyle
 import org.junit.Rule
@@ -43,6 +50,22 @@ class ChartSizeTest {
         values = mapOf("Food" to 40f, "Transport" to 30f, "Other" to 30f),
     )
     private val gaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "Score")
+    private val scatterData = ScatterChartData.fromValues(
+        xValues = listOf(1f, 2f, 3f, 4f),
+        yValues = listOf(10f, 25f, 18f, 32f),
+    )
+    private val bubbleData = BubbleChartData.fromValues(
+        xValues = listOf(1f, 2f, 3f),
+        yValues = listOf(10f, 25f, 18f),
+        sizes = listOf(5f, 15f, 10f),
+    )
+    private val radarData = RadarChartData.single(
+        values = listOf(80f, 65f, 90f, 70f, 85f),
+        axisLabels = listOf("A", "B", "C", "D", "E"),
+    )
+    private val pieData = DonutChartData.fromValues(
+        values = mapOf("Food" to 40f, "Transport" to 30f, "Other" to 30f),
+    )
 
     // ── Very small sizes ──
 
@@ -356,6 +379,95 @@ class ChartSizeTest {
                 modifier = Modifier.size(30.dp),
                 style = DonutChartStyle(holeRadius = 0.6f),
             )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Scatter chart sizes ──
+
+    @Test
+    fun scatterChart_verySmallSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            ScatterChart(data = scatterData, modifier = Modifier.size(10.dp))
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun scatterChart_veryLargeSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            ScatterChart(
+                data = scatterData,
+                modifier = Modifier.fillMaxWidth().height(2000.dp),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Bubble chart sizes ──
+
+    @Test
+    fun bubbleChart_verySmallSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            BubbleChart(data = bubbleData, modifier = Modifier.size(10.dp))
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun bubbleChart_veryLargeSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            BubbleChart(
+                data = bubbleData,
+                modifier = Modifier.fillMaxWidth().height(2000.dp),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Radar chart sizes ──
+
+    @Test
+    fun radarChart_verySmallSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            RadarChart(data = radarData, modifier = Modifier.size(10.dp))
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun radarChart_veryLargeSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            RadarChart(data = radarData, modifier = Modifier.size(1000.dp))
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun radarChart_nonSquare_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            RadarChart(
+                data = radarData,
+                modifier = Modifier.width(300.dp).height(50.dp),
+            )
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    // ── Pie chart sizes ──
+
+    @Test
+    fun pieChart_verySmallSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            PieChart(data = pieData, modifier = Modifier.size(10.dp))
+        }
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun pieChart_veryLargeSize_rendersWithoutCrash() {
+        composeTestRule.setContent {
+            PieChart(data = pieData, modifier = Modifier.size(1000.dp))
         }
         composeTestRule.waitForIdle()
     }

@@ -24,13 +24,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.bar.BarChart
+import com.inseong.composechart.bubble.BubbleChart
 import com.inseong.composechart.data.BarChartData
+import com.inseong.composechart.data.BubbleChartData
+import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.data.LineChartData
-import com.inseong.composechart.data.DonutChartData
+import com.inseong.composechart.data.RadarChartData
+import com.inseong.composechart.data.ScatterChartData
 import com.inseong.composechart.donut.DonutChart
 import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.line.LineChart
+import com.inseong.composechart.pie.PieChart
+import com.inseong.composechart.radar.RadarChart
+import com.inseong.composechart.scatter.ScatterChart
 import com.inseong.composechart.style.DonutChartStyle
 import com.inseong.composechart.style.GaugeChartStyle
 import com.inseong.composechart.style.LineChartStyle
@@ -62,6 +69,24 @@ private val sampleDonutData = DonutChartData.fromValues(
     values = mapOf("Food" to 40f, "Transport" to 25f, "Shopping" to 20f, "Other" to 15f),
 )
 private val sampleGaugeData = GaugeChartData(value = 72f, maxValue = 100f, label = "Progress")
+private val sampleScatterData = ScatterChartData.fromValues(
+    xValues = listOf(1f, 2f, 3f, 4f, 5f, 6f),
+    yValues = listOf(12f, 28f, 15f, 35f, 22f, 40f),
+    xLabels = listOf("A", "B", "C", "D", "E", "F"),
+)
+private val sampleBubbleData = BubbleChartData.fromValues(
+    xValues = listOf(1f, 2f, 3f, 4f, 5f),
+    yValues = listOf(20f, 35f, 15f, 45f, 28f),
+    sizes = listOf(8f, 20f, 5f, 30f, 12f),
+    xLabels = listOf("A", "B", "C", "D", "E"),
+)
+private val sampleRadarData = RadarChartData.single(
+    values = listOf(80f, 65f, 90f, 70f, 85f),
+    axisLabels = listOf("STR", "DEX", "INT", "WIS", "CHA"),
+)
+private val samplePieData = DonutChartData.fromValues(
+    values = mapOf("Food" to 35f, "Transport" to 20f, "Shopping" to 25f, "Other" to 20f),
+)
 
 // ── Min/Max range samples (1 ~ 10000) ──
 private val extremeLineData = LineChartData.fromValues(
@@ -76,6 +101,22 @@ private val extremeDonutData = DonutChartData.fromValues(
     values = mapOf("Min" to 1f, "Max" to 10000f, "Mid" to 500f),
 )
 private val extremeGaugeData = GaugeChartData(value = 1f, maxValue = 10000f, label = "Score")
+private val extremeScatterData = ScatterChartData.fromValues(
+    xValues = listOf(1f, 500f, 10f, 10000f, 3f),
+    yValues = listOf(1f, 5000f, 10f, 10000f, 3f),
+)
+private val extremeBubbleData = BubbleChartData.fromValues(
+    xValues = listOf(1f, 500f, 10000f),
+    yValues = listOf(1f, 5000f, 10000f),
+    sizes = listOf(1f, 500f, 10000f),
+)
+private val extremeRadarData = RadarChartData.single(
+    values = listOf(1f, 10000f, 50f, 7500f, 3f),
+    axisLabels = listOf("A", "B", "C", "D", "E"),
+)
+private val extremePieData = DonutChartData.fromValues(
+    values = mapOf("Min" to 1f, "Max" to 10000f, "Mid" to 500f),
+)
 
 @Composable
 fun ChartSampleScreen(modifier: Modifier = Modifier) {
@@ -127,6 +168,46 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.size(180.dp),
         )
 
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(text = "Scatter Chart", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        ScatterChart(
+            data = sampleScatterData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(text = "Bubble Chart", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        BubbleChart(
+            data = sampleBubbleData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(text = "Radar Chart", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        RadarChart(
+            data = sampleRadarData,
+            modifier = Modifier.size(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(text = "Pie Chart", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        PieChart(
+            data = samplePieData,
+            modifier = Modifier.size(200.dp),
+        )
+
         Spacer(modifier = Modifier.height(48.dp))
 
         // ── Small size samples ──
@@ -155,6 +236,28 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.width(8.dp))
             GaugeChart(
                 data = sampleGaugeData,
+                modifier = Modifier.size(60.dp),
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ScatterChart(
+                data = sampleScatterData,
+                modifier = Modifier.size(60.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            BubbleChart(
+                data = sampleBubbleData,
+                modifier = Modifier.size(60.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            RadarChart(
+                data = sampleRadarData,
+                modifier = Modifier.size(60.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            PieChart(
+                data = samplePieData,
                 modifier = Modifier.size(60.dp),
             )
         }
@@ -192,6 +295,30 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
             data = sampleGaugeData,
             modifier = Modifier.size(350.dp),
             style = GaugeChartStyle(sweepAngle = 360f),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        ScatterChart(
+            data = sampleScatterData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        BubbleChart(
+            data = sampleBubbleData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        RadarChart(
+            data = sampleRadarData,
+            modifier = Modifier.size(350.dp),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        PieChart(
+            data = samplePieData,
+            modifier = Modifier.size(350.dp),
         )
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -241,6 +368,46 @@ fun ChartSampleScreen(modifier: Modifier = Modifier) {
         GaugeChart(
             data = extremeGaugeData,
             modifier = Modifier.size(180.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Scatter Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        ScatterChart(
+            data = extremeScatterData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Bubble Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        BubbleChart(
+            data = extremeBubbleData,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Radar Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        RadarChart(
+            data = extremeRadarData,
+            modifier = Modifier.size(200.dp),
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Pie Chart", style = MaterialTheme.typography.bodySmall)
+        Spacer(modifier = Modifier.height(4.dp))
+        PieChart(
+            data = extremePieData,
+            modifier = Modifier.size(200.dp),
         )
 
         Spacer(modifier = Modifier.height(32.dp))

@@ -47,6 +47,11 @@ object ChartDefaults {
     /** Gauge center text color (dark) */
     internal val gaugeCenterTextColorDark = Color(0xFFE8E8E8)
 
+    /** Radar web line color (light) */
+    internal val radarWebColorLight = Color(0xFFDDDDDD)
+    /** Radar web line color (dark) */
+    internal val radarWebColorDark = Color(0xFF444444)
+
     /**
      * Returns a theme-appropriate default color when [Color.Unspecified] is provided.
      */
@@ -77,6 +82,14 @@ object ChartDefaults {
     internal fun resolveGaugeCenterTextColor(color: Color, isDark: Boolean): Color {
         return if (color == Color.Unspecified) {
             if (isDark) gaugeCenterTextColorDark else gaugeCenterTextColorLight
+        } else {
+            color
+        }
+    }
+
+    internal fun resolveRadarWebColor(color: Color, isDark: Boolean): Color {
+        return if (color == Color.Unspecified) {
+            if (isDark) radarWebColorDark else radarWebColorLight
         } else {
             color
         }
