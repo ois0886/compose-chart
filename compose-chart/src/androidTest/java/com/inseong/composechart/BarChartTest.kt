@@ -239,7 +239,9 @@ class BarChartTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(center); advanceEventTime(200); up() }
+        composeTestRule.onRoot().performTouchInput { down(center) }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.waitForIdle()
         assertTrue("onBarSelected should be invoked on touch", callbackInvoked)
     }
