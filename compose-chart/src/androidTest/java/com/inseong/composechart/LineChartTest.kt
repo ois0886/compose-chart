@@ -229,7 +229,7 @@ class LineChartTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { click(center) }
+        composeTestRule.onRoot().performTouchInput { down(center); advanceEventTime(200); up() }
         composeTestRule.waitForIdle()
         assertTrue("onPointSelected should be invoked on touch", callbackInvoked)
     }
