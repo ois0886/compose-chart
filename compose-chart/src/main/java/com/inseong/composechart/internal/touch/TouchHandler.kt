@@ -1,6 +1,6 @@
 package com.inseong.composechart.internal.touch
 
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -10,7 +10,8 @@ import kotlin.math.abs
 /**
  * Modifier extension for handling chart touch interactions.
  *
- * Detects tap and drag (scrubbing) gestures and passes the touch position via callback.
+ * Detects tap and horizontal drag (scrubbing) gestures and passes the touch position via callback.
+ * Vertical drags are not consumed, allowing parent scroll containers to work normally.
  * Passes null when the touch ends.
  *
  * @param onTouch Touch position [Offset] or null on touch end
@@ -22,16 +23,15 @@ internal fun Modifier.chartTouchHandler(
         detectTapGestures(
             onPress = { offset ->
                 onTouch(offset)
-                // Release touch when finger is lifted
                 tryAwaitRelease()
                 onTouch(null)
             },
         )
     }
     .pointerInput(Unit) {
-        detectDragGestures(
-            onDragStart = { offset -> onTouch(offset) },
-            onDrag = { change, _ ->
+        detectHorizontalDragGestures(
+            onDragStart = { offset -> onTouch(Offset(offset.x, offset.y)) },
+            onHorizontalDrag = { change, _ ->
                 change.consume()
                 onTouch(change.position)
             },
