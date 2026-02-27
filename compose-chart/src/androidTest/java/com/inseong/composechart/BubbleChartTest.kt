@@ -146,7 +146,8 @@ class BubbleChartTest {
             )
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule.onRoot().performTouchInput { click(center) }
         composeTestRule.waitForIdle()
         assertTrue("onBubbleSelected should be invoked", callbackInvoked)
     }

@@ -168,7 +168,8 @@ class RadarChartTest {
             )
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule.onRoot().performTouchInput { click(center) }
         composeTestRule.waitForIdle()
         assertTrue("onAxisSelected should be invoked", callbackInvoked)
     }
