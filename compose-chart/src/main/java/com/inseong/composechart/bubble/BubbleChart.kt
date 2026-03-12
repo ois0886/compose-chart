@@ -13,6 +13,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.BubbleChartData
 import com.inseong.composechart.data.BubblePoint
@@ -67,7 +69,7 @@ fun BubbleChart(
         labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
     )
 
-    val progress by rememberChartAnimation(style.animationDurationMs)
+    val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
 
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
@@ -87,8 +89,11 @@ fun BubbleChart(
 
     val chartPaddingPx = style.chart.chartPadding
 
+    val accessibilityDescription = "버블 차트, ${validPoints.size}개 데이터 포인트"
+
     Canvas(
         modifier = modifier
+            .semantics { contentDescription = accessibilityDescription }
             .fillMaxWidth()
             .chartTouchHandler { offset -> touchOffset = offset },
     ) {

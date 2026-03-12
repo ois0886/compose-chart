@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -62,7 +64,7 @@ fun RadarChart(
     val resolvedWebColor = ChartDefaults.resolveRadarWebColor(style.webLineColor, isDark)
     val resolvedLabelColor = ChartDefaults.resolveAxisLabelColor(style.labelColor, isDark)
 
-    val progress by rememberChartAnimation(style.animationDurationMs)
+    val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
 
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
@@ -80,11 +82,15 @@ fun RadarChart(
         validEntries.flatMap { it.safeValues }.maxOrNull() ?: 1f
     }
 
+    val accessibilityDescription = "레이더 차트, ${axisCount}개 축"
+
     Canvas(
-        modifier = modifier.chartTouchHandler { offset ->
-            touchOffset = offset
-            if (offset == null) { /* no-op */ }
-        },
+        modifier = modifier
+            .semantics { contentDescription = accessibilityDescription }
+            .chartTouchHandler { offset ->
+                touchOffset = offset
+                if (offset == null) { /* no-op */ }
+            },
     ) {
         val paddingPx = style.chart.chartPadding.toPx()
         val centerX = size.width / 2

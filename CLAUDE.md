@@ -54,6 +54,7 @@ Publish to Maven Central:
 | BubbleChart | `bubble/` | `BubbleChartData` | `BubbleChartStyle` |
 | RadarChart | `radar/` | `RadarChartData` | `RadarChartStyle` |
 | PieChart | `pie/` | `DonutChartData` (재사용) | `PieChartStyle` |
+| ChartLegend | `legend/` | `LegendItem` | `LegendStyle` |
 
 ### Internal Math Modules (순수 함수)
 

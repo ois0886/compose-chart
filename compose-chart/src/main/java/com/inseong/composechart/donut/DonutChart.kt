@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -64,7 +66,7 @@ fun DonutChart(
     colors: List<Color> = ChartDefaults.colors,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
-    val progress by rememberChartAnimation(style.animationDurationMs)
+    val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
     var selectedIndex by remember { mutableIntStateOf(-1) }
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
@@ -84,11 +86,15 @@ fun DonutChart(
         )
     }
 
+    val accessibilityDescription = "도넛 차트, ${validSlices.size}개 항목"
+
     Canvas(
-        modifier = modifier.chartTouchHandler { offset ->
-            touchOffset = offset
-            if (offset == null) selectedIndex = -1
-        },
+        modifier = modifier
+            .semantics { contentDescription = accessibilityDescription }
+            .chartTouchHandler { offset ->
+                touchOffset = offset
+                if (offset == null) selectedIndex = -1
+            },
     ) {
         val paddingPx = style.chart.chartPadding.toPx()
         val centerX = size.width / 2

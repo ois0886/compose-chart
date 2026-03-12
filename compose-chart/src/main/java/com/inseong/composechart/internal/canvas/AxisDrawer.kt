@@ -103,11 +103,13 @@ internal fun DrawScope.drawYAxisLabels(
     for (i in 0..style.yLabelCount) {
         val yPos = chartArea.bottom - step * i
         val value = minValue + valueStep * i
-        // Display as integer if possible, otherwise one decimal place
-        val text = if (value == value.toLong().toFloat()) {
-            value.toLong().toString()
-        } else {
-            String.format("%.1f", value)
+        val text = style.yAxisFormatter?.invoke(value) ?: run {
+            // Display as integer if possible, otherwise one decimal place
+            if (value == value.toLong().toFloat()) {
+                value.toLong().toString()
+            } else {
+                String.format("%.1f", value)
+            }
         }
         drawContext.canvas.nativeCanvas.drawText(
             text,

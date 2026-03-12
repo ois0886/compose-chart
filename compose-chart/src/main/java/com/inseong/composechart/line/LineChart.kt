@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.internal.math.ChartMath
 import com.inseong.composechart.internal.canvas.drawGradientFill
@@ -82,7 +84,7 @@ fun LineChart(
     )
 
     // Animation progress (0 -> 1)
-    val progress by rememberChartAnimation(style.animationDurationMs)
+    val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
 
     // Touch state
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
@@ -100,8 +102,11 @@ fun LineChart(
 
     val chartPaddingPx = style.chart.chartPadding
 
+    val accessibilityDescription = "선 차트, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트"
+
     Canvas(
         modifier = modifier
+            .semantics { contentDescription = accessibilityDescription }
             .fillMaxWidth()
             .chartTouchHandler { offset -> touchOffset = offset },
     ) {

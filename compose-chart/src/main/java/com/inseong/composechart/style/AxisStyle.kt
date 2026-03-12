@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.sp
  * @param labelColor Label text color. Uses theme-aware default when [Color.Unspecified].
  * @param labelSize Label text size
  * @param yLabelCount Number of Y-axis reference labels (evenly divided)
+ * @param yAxisFormatter Custom formatter for Y-axis labels. When null, default formatting is used.
  */
 data class AxisStyle(
     val showXAxis: Boolean = true,
@@ -21,4 +22,5 @@ data class AxisStyle(
     val labelColor: Color = Color.Unspecified,
     val labelSize: TextUnit = 11.sp,
     val yLabelCount: Int = 5,
+    val yAxisFormatter: ((Float) -> String)? = null,
 )

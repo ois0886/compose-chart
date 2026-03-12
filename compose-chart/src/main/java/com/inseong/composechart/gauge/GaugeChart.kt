@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -69,7 +71,7 @@ fun GaugeChart(
     val resolvedTrackColor = ChartDefaults.resolveGaugeTrackColor(style.trackColor, isDark)
     val resolvedCenterTextColor = ChartDefaults.resolveGaugeCenterTextColor(style.centerTextColor, isDark)
 
-    val progress by rememberChartAnimation(style.animationDurationMs)
+    val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
 
     // Guard against negative/NaN/Infinity/zero: clamp to safe values
     val normalized = GaugeMath.normalizeValue(data.value, data.maxValue)
@@ -81,8 +83,11 @@ fun GaugeChart(
     // Start angle: calculated so the gap is centered at the bottom
     val startAngle = GaugeMath.calculateStartAngle(style.sweepAngle)
 
+    val accessibilityDescription = "게이지 차트, 값 ${ChartMath.formatValue(normalized.safeValue)}/${ChartMath.formatValue(normalized.safeMax)}"
+
     Box(
         modifier = modifier
+            .semantics { contentDescription = accessibilityDescription }
             .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
             .background(style.chart.backgroundColor),
         contentAlignment = Alignment.Center,

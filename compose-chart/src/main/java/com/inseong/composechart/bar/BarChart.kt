@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.BarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -81,7 +83,7 @@ fun BarChart(
         labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
     )
 
-    val progress by rememberChartAnimation(style.animationDurationMs)
+    val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
     var selectedGroupIndex by remember { mutableIntStateOf(-1) }
 
@@ -101,8 +103,11 @@ fun BarChart(
 
     val chartPaddingPx = style.chart.chartPadding
 
+    val accessibilityDescription = "막대 차트, ${validGroups.size}개 그룹"
+
     Canvas(
         modifier = modifier
+            .semantics { contentDescription = accessibilityDescription }
             .fillMaxWidth()
             .chartTouchHandler { offset ->
                 touchOffset = offset

@@ -15,6 +15,9 @@ import androidx.compose.runtime.remember
  * The animation starts automatically on first composition,
  * and the current progress (0.0 to 1.0) can be observed via the returned [State].
  *
+ * When [animationKey] changes, the animation resets and replays from 0.
+ * Pass `data` as the key to re-animate on data changes.
+ *
  * Usage examples:
  * - Line Chart: draws the line left-to-right using progress
  * - Bar Chart: grows bar height from 0 to final using progress
@@ -22,15 +25,18 @@ import androidx.compose.runtime.remember
  *
  * @param durationMs Animation duration in milliseconds
  * @param easing Animation easing function
+ * @param animationKey Key to trigger re-animation. When this value changes, animation replays.
  * @return Animation progress [State] transitioning from 0.0 to 1.0
  */
 @Composable
 internal fun rememberChartAnimation(
     durationMs: Int,
     easing: Easing = FastOutSlowInEasing,
+    animationKey: Any = Unit,
 ): State<Float> {
     val animatable = remember { Animatable(0f) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(animationKey) {
+        animatable.snapTo(0f)
         animatable.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = durationMs, easing = easing),
