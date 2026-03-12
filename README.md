@@ -15,7 +15,7 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 기존 접근 방식들은 Material3에 의존하거나, 설정이 복잡하거나, 특정 프로젝트와 강하게 결합되어 있었습니다. **compose-chart**는 이 문제를 해결하기 위해 만들었습니다:
 
 - **UI 의존성 제로** — Compose Foundation만 사용합니다. Material3가 필요 없습니다.
-- **8가지 차트** — Line, Bar, Donut, Gauge, Scatter, Bubble, Radar, Pie를 하나의 라이브러리로.
+- **6가지 차트** — Line, Bar, Donut, Gauge, Radar, Pie를 하나의 라이브러리로.
 - **완전한 커스터마이징** — 색상, 축, 애니메이션, 터치 상호작용까지 모든 것을 파라미터로 설정할 수 있고, 기본값도 잘 잡혀 있습니다.
 - **안전한 입력 처리** — NaN, Infinity, 음수, 빈 데이터도 크래시 없이 안전하게 처리합니다.
 
@@ -75,31 +75,6 @@ DonutChart(
 GaugeChart(
     data = GaugeChartData(value = 72f, maxValue = 100f, label = "점수"),
     modifier = Modifier.size(180.dp),
-)
-```
-
-### 산점도 차트
-
-```kotlin
-ScatterChart(
-    data = ScatterChartData.fromValues(
-        xValues = listOf(1f, 2f, 3f, 4f, 5f),
-        yValues = listOf(10f, 25f, 18f, 32f, 22f),
-    ),
-    modifier = Modifier.fillMaxWidth().height(200.dp),
-)
-```
-
-### 버블 차트
-
-```kotlin
-BubbleChart(
-    data = BubbleChartData.fromValues(
-        xValues = listOf(1f, 2f, 3f),
-        yValues = listOf(10f, 25f, 18f),
-        sizes = listOf(5f, 15f, 10f),
-    ),
-    modifier = Modifier.fillMaxWidth().height(200.dp),
 )
 ```
 
@@ -209,8 +184,6 @@ Column {
 | 막대 차트 | `BarChart` | `BarChartData` | 비교, 분포 |
 | 도넛 차트 | `DonutChart` | `DonutChartData` | 비율, 구성 |
 | 게이지 차트 | `GaugeChart` | `GaugeChartData` | 진행도, 달성률 |
-| 산점도 차트 | `ScatterChart` | `ScatterChartData` | 상관관계 |
-| 버블 차트 | `BubbleChart` | `BubbleChartData` | 3차원 비교 |
 | 레이더 차트 | `RadarChart` | `RadarChartData` | 다축 비교 |
 | 파이 차트 | `PieChart` | `DonutChartData` | 비율 (도넛의 특수 케이스) |
 

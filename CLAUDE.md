@@ -50,8 +50,6 @@ Publish to Maven Central:
 | BarChart | `bar/` | `BarChartData` | `BarChartStyle` |
 | DonutChart | `donut/` | `DonutChartData` | `DonutChartStyle` |
 | GaugeChart | `gauge/` | `GaugeChartData` | `GaugeChartStyle` |
-| ScatterChart | `scatter/` | `ScatterChartData` | `ScatterChartStyle` |
-| BubbleChart | `bubble/` | `BubbleChartData` | `BubbleChartStyle` |
 | RadarChart | `radar/` | `RadarChartData` | `RadarChartStyle` |
 | PieChart | `pie/` | `DonutChartData` (재사용) | `PieChartStyle` |
 | ChartLegend | `legend/` | `LegendItem` | `LegendStyle` |
@@ -62,12 +60,11 @@ Publish to Maven Central:
 
 | 모듈 | 역할 | 사용 차트 |
 |------|------|----------|
-| `internal/math/ChartMath.kt` | XY 범위 계산, 좌표 매핑, 값 포맷팅, 버블 반경 | Line, Scatter, Bubble, Bar |
+| `internal/math/ChartMath.kt` | XY 범위 계산, 좌표 매핑, 값 포맷팅 | Line, Bar |
 | `internal/math/BarMath.kt` | 막대 레이아웃, 터치 그룹 인덱스, 세그먼트 높이 | Bar |
 | `internal/math/DonutMath.kt` | 터치 슬라이스 찾기, 슬라이스 offset, 간격 각도 | Donut, Pie |
 | `internal/math/GaugeMath.kt` | 값 정규화, 시작 각도 | Gauge |
 | `internal/math/RadarMath.kt` | 극좌표→직교, 데이터 다각형, 최근접 축 | Radar |
-| `internal/touch/TouchMath.kt` | 2D 거리 기반 최근접 점 찾기 | Scatter, Bubble |
 
 ### Key Directories
 

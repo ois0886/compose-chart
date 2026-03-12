@@ -20,7 +20,7 @@
 ## [0.1.0] - 초기 릴리스
 
 ### Added
-- 8개 차트 컴포넌트 (Line, Bar, Donut, Gauge, Scatter, Bubble, Radar, Pie)
+- 6개 차트 컴포넌트 (Line, Bar, Donut, Gauge, Radar, Pie)
 - 터치 상호작용 및 툴팁
 - 진입 애니메이션
 - 다크/라이트 테마 지원

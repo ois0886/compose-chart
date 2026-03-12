@@ -58,28 +58,6 @@ class NavigationTest {
     }
 
     @Test
-    fun navigation_clickScatterChart_showsScatterChartScreen() {
-        composeTestRule.setContent {
-            ComposeChartTheme { ChartApp() }
-        }
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Scatter Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
-    }
-
-    @Test
-    fun navigation_clickBubbleChart_showsBubbleChartScreen() {
-        composeTestRule.setContent {
-            ComposeChartTheme { ChartApp() }
-        }
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Bubble Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
-    }
-
-    @Test
     fun navigation_clickRadarChart_showsRadarChartScreen() {
         composeTestRule.setContent {
             ComposeChartTheme { ChartApp() }

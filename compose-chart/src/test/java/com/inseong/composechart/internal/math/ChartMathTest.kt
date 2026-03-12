@@ -101,40 +101,4 @@ class ChartMathTest {
         assertEquals("25.3", ChartMath.formatValue(25.3f))
         assertEquals("0.1", ChartMath.formatValue(0.1f))
     }
-
-    @Test
-    fun normalizeBubbleRadius_minValue_returnsMinRadius() {
-        val result = ChartMath.normalizeBubbleRadius(
-            sizeValue = 5f, minSize = 5f, sizeRange = 10f,
-            minRadius = 4f, maxRadius = 20f,
-        )
-        assertEquals(4f, result, 0.001f)
-    }
-
-    @Test
-    fun normalizeBubbleRadius_maxValue_returnsMaxRadius() {
-        val result = ChartMath.normalizeBubbleRadius(
-            sizeValue = 15f, minSize = 5f, sizeRange = 10f,
-            minRadius = 4f, maxRadius = 20f,
-        )
-        assertEquals(20f, result, 0.001f)
-    }
-
-    @Test
-    fun normalizeBubbleRadius_midValue_interpolatesCorrectly() {
-        val result = ChartMath.normalizeBubbleRadius(
-            sizeValue = 10f, minSize = 5f, sizeRange = 10f,
-            minRadius = 4f, maxRadius = 20f,
-        )
-        assertEquals(12f, result, 0.001f) // 4 + 0.5 * 16 = 12
-    }
-
-    @Test
-    fun normalizeBubbleRadius_zeroSizeRange_returnsMinRadius() {
-        val result = ChartMath.normalizeBubbleRadius(
-            sizeValue = 5f, minSize = 5f, sizeRange = 0f,
-            minRadius = 4f, maxRadius = 20f,
-        )
-        assertEquals(4f, result, 0.001f)
-    }
 }

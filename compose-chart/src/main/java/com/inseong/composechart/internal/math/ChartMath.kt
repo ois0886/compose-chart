@@ -12,7 +12,7 @@ internal data class XYRange(
 )
 
 /**
- * Pure math functions shared across XY-axis charts (Line, Scatter, Bubble, Bar).
+ * Pure math functions shared across XY-axis charts (Line, Bar).
  *
  * All functions are free of Compose/Android dependencies and can run on JVM.
  */
@@ -76,19 +76,5 @@ internal object ChartMath {
         } else {
             String.format("%.1f", value)
         }
-    }
-
-    /**
-     * Normalizes a bubble size value to a pixel radius using linear interpolation.
-     */
-    fun normalizeBubbleRadius(
-        sizeValue: Float,
-        minSize: Float,
-        sizeRange: Float,
-        minRadius: Float,
-        maxRadius: Float,
-    ): Float {
-        val safeSizeRange = if (sizeRange == 0f) 1f else sizeRange
-        return minRadius + ((sizeValue - minSize) / safeSizeRange) * (maxRadius - minRadius)
     }
 }
