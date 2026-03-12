@@ -1,7 +1,7 @@
 # Changelog
 
 이 프로젝트의 모든 주요 변경 사항을 기록합니다.
-[Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따릅니다.
+[Keep a Changelog](https://keepachangelog.com/ko/1.0.0/) 형식을 따릅니다.
 
 ## [1.0.0] - 2026-03-12
 
