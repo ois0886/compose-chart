@@ -3,6 +3,16 @@
 이 프로젝트의 모든 주요 변경 사항을 기록합니다.
 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식을 따릅니다.
 
+## [1.0.0] - 2026-03-12
+
+### Changed
+- groupId를 `io.github.ois0886`로 통일
+- ScatterChart, BubbleChart 제거 — 6개 차트로 정리
+- 버전 1.0.0 정식 릴리스
+
+### Added
+- GitHub Actions CD 워크플로우 — Release 생성 시 Maven Central 자동 배포
+
 ## [0.2.0] - 2026-03-12
 
 ### Added

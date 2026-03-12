@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-compose-chart is an Android open-source library for custom chart UI components built with Jetpack Compose. Published to Maven Central via `io.github.oinseong:compose-chart`.
+compose-chart is an Android open-source library for custom chart UI components built with Jetpack Compose. Published to Maven Central via `io.github.ois0886:compose-chart`.
 
 ## Module Structure
 
@@ -35,7 +35,7 @@ Publish to Maven Central:
 ## Architecture
 
 - **Package**: `com.inseong.composechart`
-- **groupId**: `io.github.oinseong` / **artifactId**: `compose-chart`
+- **groupId**: `io.github.ois0886` / **artifactId**: `compose-chart`
 - **UI framework**: Jetpack Compose (no Material3 dependency in library — consumer decides)
 - **Min SDK**: 24 | **Compile/Target SDK**: 36
 - **Kotlin JVM target**: 11
@@ -96,8 +96,15 @@ Publish to Maven Central:
 - 모든 작업이 완료되면 반드시 git commit을 수행한다.
 - 커밋 메시지는 한국어로, conventional commit 형식을 따른다 (예: `feat:`, `fix:`, `refactor:`, `docs:`).
 
-## CI
+## CI/CD
 
+### CI
 GitHub Actions (`.github/workflows/ci.yml`) — `main` 브랜치 push/PR 시 자동 실행:
 - **build** job: 라이브러리 빌드, 샘플 앱 빌드, 유닛 테스트, 린트
 - **ui-test** job: Android 에뮬레이터에서 Compose UI 테스트 (`connectedAndroidTest`)
+
+### CD
+GitHub Actions (`.github/workflows/publish.yml`) — GitHub Release 생성 시 자동 실행:
+- 유닛 테스트 → 린트 → Maven Central 배포 (`publishAndReleaseToMavenCentral`)
+- `workflow_dispatch`로 수동 실행도 가능
+- 시크릿: `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY_ID`, `SIGNING_PASSWORD`, `SIGNING_KEY`

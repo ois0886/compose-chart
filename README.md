@@ -4,7 +4,7 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 
 데이터만 넘기면 끝입니다.
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.oinseong/compose-chart)](https://central.sonatype.com/artifact/io.github.oinseong/compose-chart)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.ois0886/compose-chart)](https://central.sonatype.com/artifact/io.github.ois0886/compose-chart)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg)](https://developer.android.com/about/versions/nougat)
 
@@ -24,7 +24,7 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.oinseong:compose-chart:0.1.0")
+    implementation("io.github.ois0886:compose-chart:1.0.0")
 }
 ```
 
@@ -191,7 +191,7 @@ Column {
 
 - **Pure Compose Foundation** — Material3 의존 없이 Foundation의 `Canvas`, `BasicText`만 사용하여, 어떤 디자인 시스템을 쓰는 프로젝트에서도 충돌 없이 동작합니다.
 - **안전한 데이터 처리** — NaN, Infinity, 음수, 빈 데이터를 모든 차트에서 방어적으로 처리합니다. `safeX`, `safeY` 패턴으로 잘못된 입력이 크래시를 일으키지 않습니다.
-- **순수 함수 & 테스트** — 좌표 계산, 범위 계산, 터치 감지 로직이 `internal/math/` 에 순수 함수로 분리되어 있으며, 62개의 JVM 유닛 테스트와 196개의 UI 테스트가 전체 차트를 검증합니다.
+- **순수 함수 & 테스트** — 좌표 계산, 범위 계산, 터치 감지 로직이 `internal/math/` 에 순수 함수로 분리되어 있으며, 56개의 JVM 유닛 테스트와 195개의 UI 테스트가 전체 차트를 검증합니다.
 - **테마 인식** — `Color.Unspecified` 패턴으로 다크/라이트 테마에 맞는 기본 색상을 자동 적용합니다.
 - **접근성 지원** — 각 차트에 `semantics`로 콘텐츠 설명을 제공하여 스크린 리더(TalkBack)를 지원합니다.
 
