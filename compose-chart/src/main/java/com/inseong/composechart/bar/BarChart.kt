@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.BarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
+import com.inseong.composechart.internal.math.BarMath
+import com.inseong.composechart.internal.math.ChartMath
 import com.inseong.composechart.internal.canvas.drawGrid
 import com.inseong.composechart.internal.canvas.drawTooltip
 import com.inseong.composechart.internal.canvas.drawXAxisLabels
@@ -95,7 +97,7 @@ fun BarChart(
             entry.safeValues.sum()
         } ?: 0f
     }
-    val adjustedMax = if (maxValue <= 0f) 1f else maxValue * 1.1f // 10% top margin
+    val adjustedMax = BarMath.calculateAdjustedMax(maxValue)
 
     val chartPaddingPx = style.chart.chartPadding
 
@@ -131,8 +133,7 @@ fun BarChart(
         val groupCount = validGroups.size
         val groupSpacingPx = style.groupSpacing.toPx()
         val barSpacingPx = style.barSpacing.toPx()
-        val totalGroupSpacing = groupSpacingPx * (groupCount - 1).coerceAtLeast(0)
-        val groupWidth = ((chartArea.width - totalGroupSpacing) / groupCount).coerceAtLeast(1f)
+        val groupWidth = BarMath.calculateGroupWidth(chartArea.width, groupCount, groupSpacingPx)
 
         // X-axis labels (centered under each bar group)
         if (resolvedAxisStyle.showXAxis) {
@@ -145,17 +146,17 @@ fun BarChart(
         // Calculate touched group index
         val currentTouch = touchOffset
         if (currentTouch != null) {
-            val relativeX = currentTouch.x - chartArea.left
-            val groupIndex = ((relativeX + groupSpacingPx / 2) / (groupWidth + groupSpacingPx)).toInt()
-            selectedGroupIndex = groupIndex.coerceIn(0, groupCount - 1)
+            selectedGroupIndex = BarMath.findTouchedGroupIndex(
+                touchX = currentTouch.x, chartLeft = chartArea.left,
+                groupWidth = groupWidth, groupSpacingPx = groupSpacingPx, groupCount = groupCount,
+            )
         }
 
         // Draw bars and tooltips
         validGroups.forEachIndexed { groupIndex, group ->
             val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
             val entryCount = group.entries.size
-            val totalBarSpacing = barSpacingPx * (entryCount - 1).coerceAtLeast(0)
-            val barWidth = ((groupWidth - totalBarSpacing) / entryCount.coerceAtLeast(1)).coerceAtLeast(1f)
+            val barWidth = BarMath.calculateBarWidth(groupWidth, entryCount, barSpacingPx)
 
             group.entries.forEachIndexed { entryIndex, entry ->
                 val barLeft = groupLeft + entryIndex * (barWidth + barSpacingPx)
@@ -189,19 +190,17 @@ fun BarChart(
             if (selectedGroupIndex == groupIndex && group.entries.isNotEmpty()) {
                 // Determine which entry was touched within the group
                 val touchedEntryIndex = if (currentTouch != null && entryCount > 1) {
-                    val relativeInGroup = currentTouch.x - groupLeft
-                    (relativeInGroup / (barWidth + barSpacingPx)).toInt().coerceIn(0, entryCount - 1)
+                    BarMath.findTouchedEntryIndex(
+                        touchX = currentTouch.x, groupLeft = groupLeft,
+                        barWidth = barWidth, barSpacingPx = barSpacingPx, entryCount = entryCount,
+                    )
                 } else {
                     0
                 }
 
                 val entry = group.entries[touchedEntryIndex]
                 val totalValue = entry.safeValues.sum()
-                val formattedValue = if (totalValue == totalValue.toLong().toFloat()) {
-                    totalValue.toLong().toString()
-                } else {
-                    String.format("%.1f", totalValue)
-                }
+                val formattedValue = ChartMath.formatValue(totalValue)
                 val tooltipText = if (group.label.isNotEmpty()) {
                     "${group.label}: $formattedValue"
                 } else {
@@ -246,7 +245,7 @@ private fun DrawScope.drawVerticalStackedBar(
     val totalSegments = values.size
 
     values.forEachIndexed { index, value ->
-        val segmentHeight = (value / maxValue) * chartArea.height * progress
+        val segmentHeight = BarMath.calculateSegmentHeight(value, maxValue, chartArea.height, progress)
         val segmentTop = currentBottom - segmentHeight
         val color = colors[index % colors.size].copy(alpha = alpha)
 
@@ -301,7 +300,7 @@ private fun DrawScope.drawHorizontalStackedBar(
     val totalSegments = values.size
 
     values.forEachIndexed { index, value ->
-        val segmentWidth = (value / maxValue) * chartArea.width * progress
+        val segmentWidth = BarMath.calculateSegmentHeight(value, maxValue, chartArea.width, progress)
         val color = colors[index % colors.size].copy(alpha = alpha)
 
         val isRightSegment = index == totalSegments - 1

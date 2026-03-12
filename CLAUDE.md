@@ -55,9 +55,24 @@ Publish to Maven Central:
 | RadarChart | `radar/` | `RadarChartData` | `RadarChartStyle` |
 | PieChart | `pie/` | `DonutChartData` (재사용) | `PieChartStyle` |
 
+### Internal Math Modules (순수 함수)
+
+비즈니스 로직을 Compose 의존성 없이 순수 함수로 분리하여 JVM 유닛 테스트 가능.
+
+| 모듈 | 역할 | 사용 차트 |
+|------|------|----------|
+| `internal/math/ChartMath.kt` | XY 범위 계산, 좌표 매핑, 값 포맷팅, 버블 반경 | Line, Scatter, Bubble, Bar |
+| `internal/math/BarMath.kt` | 막대 레이아웃, 터치 그룹 인덱스, 세그먼트 높이 | Bar |
+| `internal/math/DonutMath.kt` | 터치 슬라이스 찾기, 슬라이스 offset, 간격 각도 | Donut, Pie |
+| `internal/math/GaugeMath.kt` | 값 정규화, 시작 각도 | Gauge |
+| `internal/math/RadarMath.kt` | 극좌표→직교, 데이터 다각형, 최근접 축 | Radar |
+| `internal/touch/TouchMath.kt` | 2D 거리 기반 최근접 점 찾기 | Scatter, Bubble |
+
 ### Key Directories
 
 - `compose-chart/src/main/java/com/inseong/composechart/` — 차트 라이브러리 소스
+- `compose-chart/src/main/java/com/inseong/composechart/internal/math/` — 순수 함수 (테스트 가능한 비즈니스 로직)
+- `compose-chart/src/test/` — JVM 유닛 테스트 (순수 함수 대상)
 - `compose-chart/src/androidTest/` — Compose UI 테스트 (전체 차트 + ChartSize)
 - `app/src/main/java/com/inseong/composechart/` — 샘플 앱 소스
 - `app/src/main/java/com/inseong/composechart/ui/theme/` — Material3 테마
@@ -78,6 +93,10 @@ Publish to Maven Central:
 - **순수 함수 우선**: 부수 효과(side effect) 없는 순수 함수를 우선 사용한다. 입력 → 출력이 명확한 함수는 테스트가 쉽다.
 - **작은 단위**: 하나의 함수/컴포저블은 하나의 책임만 가진다. 큰 함수는 테스트 가능한 작은 함수로 분리한다.
 - **테스트 작성**: 새로운 기능 추가 시 유닛 테스트를 함께 작성한다. 기존 테스트가 깨지지 않는지 확인한다.
+
+### 4. 작업 완료 시 커밋
+- 모든 작업이 완료되면 반드시 git commit을 수행한다.
+- 커밋 메시지는 한국어로, conventional commit 형식을 따른다 (예: `feat:`, `fix:`, `refactor:`, `docs:`).
 
 ## CI
 

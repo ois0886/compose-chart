@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
+import com.inseong.composechart.internal.math.RadarMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.RadarChartStyle
 import kotlin.math.cos
@@ -99,9 +100,7 @@ fun RadarChart(
             val levelRadius = radius * level / style.webLevels
             val webPath = Path()
             for (i in 0 until axisCount) {
-                val angle = Math.toRadians((startAngle + angleStep * i).toDouble())
-                val x = centerX + (cos(angle) * levelRadius).toFloat()
-                val y = centerY + (sin(angle) * levelRadius).toFloat()
+                val (x, y) = RadarMath.polarToCartesian(centerX, centerY, startAngle + angleStep * i, levelRadius)
                 if (i == 0) webPath.moveTo(x, y) else webPath.lineTo(x, y)
             }
             webPath.close()
@@ -114,9 +113,7 @@ fun RadarChart(
 
         // Draw axis lines from center to each vertex
         for (i in 0 until axisCount) {
-            val angle = Math.toRadians((startAngle + angleStep * i).toDouble())
-            val x = centerX + (cos(angle) * radius).toFloat()
-            val y = centerY + (sin(angle) * radius).toFloat()
+            val (x, y) = RadarMath.polarToCartesian(centerX, centerY, startAngle + angleStep * i, radius)
             drawLine(
                 color = resolvedWebColor,
                 start = Offset(centerX, centerY),
@@ -146,16 +143,14 @@ fun RadarChart(
             }
 
             val safeValues = entry.safeValues
+            val vertices = RadarMath.calculateDataPolygonVertices(
+                values = safeValues, maxValue = resolvedMaxValue,
+                axisCount = axisCount, centerX = centerX, centerY = centerY,
+                radius = radius, startAngle = startAngle, progress = progress,
+            )
             val dataPath = Path()
             val dotPositions = mutableListOf<Offset>()
-
-            for (i in 0 until axisCount) {
-                val value = safeValues[i].coerceIn(0f, resolvedMaxValue)
-                val normalizedValue = value / resolvedMaxValue * progress
-                val angle = Math.toRadians((startAngle + angleStep * i).toDouble())
-                val x = centerX + (cos(angle) * radius * normalizedValue).toFloat()
-                val y = centerY + (sin(angle) * radius * normalizedValue).toFloat()
-
+            vertices.forEachIndexed { i, (x, y) ->
                 if (i == 0) dataPath.moveTo(x, y) else dataPath.lineTo(x, y)
                 dotPositions.add(Offset(x, y))
             }
@@ -191,21 +186,11 @@ fun RadarChart(
         // Touch interaction: find nearest axis
         val currentTouch = touchOffset
         if (currentTouch != null) {
-            var nearestAxis = -1
-            var minDistance = Float.MAX_VALUE
-
-            for (i in 0 until axisCount) {
-                val angle = Math.toRadians((startAngle + angleStep * i).toDouble())
-                val x = centerX + (cos(angle) * radius).toFloat()
-                val y = centerY + (sin(angle) * radius).toFloat()
-                val dx = currentTouch.x - x
-                val dy = currentTouch.y - y
-                val distance = dx * dx + dy * dy
-                if (distance < minDistance) {
-                    minDistance = distance
-                    nearestAxis = i
-                }
-            }
+            val nearestAxis = RadarMath.findNearestAxisIndex(
+                touchX = currentTouch.x, touchY = currentTouch.y,
+                axisCount = axisCount, centerX = centerX, centerY = centerY,
+                radius = radius, startAngle = startAngle,
+            )
 
             if (nearestAxis >= 0) {
                 onAxisSelected?.invoke(nearestAxis)

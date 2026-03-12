@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
+import com.inseong.composechart.internal.math.ChartMath
+import com.inseong.composechart.internal.math.GaugeMath
 import com.inseong.composechart.style.GaugeChartStyle
 import kotlin.math.min
 
@@ -70,17 +72,14 @@ fun GaugeChart(
     val progress by rememberChartAnimation(style.animationDurationMs)
 
     // Guard against negative/NaN/Infinity/zero: clamp to safe values
-    val safeMax = if (data.maxValue.isFinite() && data.maxValue > 0f) data.maxValue else 1f
-    val safeValue = if (data.value.isFinite()) data.value.coerceIn(0f, safeMax) else 0f
-    val ratio = (safeValue / safeMax).coerceIn(0f, 1f)
+    val normalized = GaugeMath.normalizeValue(data.value, data.maxValue)
 
     // Animated current value
-    val animatedValue = safeValue * progress
-    val animatedRatio = ratio * progress
+    val animatedValue = normalized.safeValue * progress
+    val animatedRatio = normalized.ratio * progress
 
     // Start angle: calculated so the gap is centered at the bottom
-    // e.g. sweepAngle=240 -> gap=120 degrees, start=150 degrees (12 o'clock=-90, 6 o'clock=90)
-    val startAngle = 90f + (360f - style.sweepAngle) / 2
+    val startAngle = GaugeMath.calculateStartAngle(style.sweepAngle)
 
     Box(
         modifier = modifier
@@ -148,11 +147,7 @@ fun GaugeChart(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         // Value text
-                        val valueText = if (animatedValue == animatedValue.toLong().toFloat()) {
-                            animatedValue.toLong().toString()
-                        } else {
-                            String.format("%.1f", animatedValue)
-                        }
+                        val valueText = ChartMath.formatValue(animatedValue)
                         BasicText(
                             text = valueText,
                             style = TextStyle(

@@ -22,13 +22,12 @@ import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.data.DonutSlice
+import com.inseong.composechart.internal.math.DonutMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.DonutChartStyle
-import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import kotlin.math.sqrt
 
 /**
  * Donut chart Composable.
@@ -99,40 +98,27 @@ fun DonutChart(
 
         val holeRadiusPx = radius * style.holeRadius.coerceIn(0f, 0.95f)
 
-        // Spacing angle between slices — no spacing for single slice
-        val spacingAngle = if (validSlices.size > 1) {
-            val circumference = 2 * Math.PI.toFloat() * radius
-            if (circumference > 0f) {
-                (style.sliceSpacing.toPx() / circumference) * 360f
-            } else {
-                0f
-            }
-        } else {
-            0f
-        }
+        // Spacing angle between slices
+        val spacingAngle = DonutMath.calculateSpacingAngle(
+            sliceCount = validSlices.size,
+            spacingPx = style.sliceSpacing.toPx(),
+            radius = radius,
+        )
 
         // Touch detection: determine slice by angle and distance
         val currentTouch = touchOffset
         if (currentTouch != null) {
-            val dx = currentTouch.x - centerX
-            val dy = currentTouch.y - centerY
-            val distance = sqrt(dx * dx + dy * dy)
-
-            if (distance <= radius && distance >= holeRadiusPx) {
-                var touchAngle = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
-                touchAngle = (touchAngle - style.startAngle + 720f) % 360f
-
-                var accumulatedAngle = 0f
-                validSlices.forEachIndexed { index, slice ->
-                    val sweepAngle = (slice.value / total) * 360f
-                    if (touchAngle >= accumulatedAngle && touchAngle < accumulatedAngle + sweepAngle) {
-                        if (selectedIndex != index) {
-                            selectedIndex = index
-                            onSliceSelected?.invoke(index, slice)
-                        }
-                        return@forEachIndexed
-                    }
-                    accumulatedAngle += sweepAngle
+            val touchedIndex = DonutMath.findTouchedSliceIndex(
+                touchX = currentTouch.x, touchY = currentTouch.y,
+                centerX = centerX, centerY = centerY,
+                outerRadius = radius, holeRadius = holeRadiusPx,
+                sliceValues = validSlices.map { it.value },
+                total = total, startAngle = style.startAngle,
+            )
+            if (touchedIndex >= 0) {
+                if (selectedIndex != touchedIndex) {
+                    selectedIndex = touchedIndex
+                    onSliceSelected?.invoke(touchedIndex, validSlices[touchedIndex])
                 }
             } else {
                 selectedIndex = -1
@@ -157,10 +143,7 @@ fun DonutChart(
 
             // Selected slice is offset slightly outward from center
             val midAngle = currentAngle + sweepAngle / 2
-            val midAngleRad = Math.toRadians(midAngle.toDouble())
-            val offsetDistance = if (scale > 1f) radius * (scale - 1f) * 2 else 0f
-            val offsetX = (cos(midAngleRad) * offsetDistance).toFloat()
-            val offsetY = (sin(midAngleRad) * offsetDistance).toFloat()
+            val (offsetX, offsetY) = DonutMath.calculateSliceOffset(midAngle, scale, radius)
 
             val arcCenterX = centerX + offsetX
             val arcCenterY = centerY + offsetY

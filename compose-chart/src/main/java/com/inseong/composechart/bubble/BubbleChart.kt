@@ -17,14 +17,15 @@ import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.BubbleChartData
 import com.inseong.composechart.data.BubblePoint
 import com.inseong.composechart.internal.animation.rememberChartAnimation
+import com.inseong.composechart.internal.math.ChartMath
 import com.inseong.composechart.internal.canvas.drawGrid
 import com.inseong.composechart.internal.canvas.drawTooltip
 import com.inseong.composechart.internal.canvas.drawVerticalIndicatorLine
 import com.inseong.composechart.internal.canvas.drawXAxisLabels
 import com.inseong.composechart.internal.canvas.drawYAxisLabels
+import com.inseong.composechart.internal.touch.TouchMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.BubbleChartStyle
-import kotlin.math.sqrt
 
 /**
  * Bubble chart Composable.
@@ -75,15 +76,10 @@ fun BubbleChart(
     }
     if (validPoints.isEmpty()) return
 
-    val minX = validPoints.minOf { it.safeX }
-    val maxX = validPoints.maxOf { it.safeX }
-    val minY = validPoints.minOf { it.safeY }
-    val maxY = validPoints.maxOf { it.safeY }
-    val yRange = (maxY - minY).let { if (it == 0f) 1f else it }
-    val yPadding = yRange * 0.1f
-    val adjustedMinY = minY - yPadding
-    val adjustedMaxY = maxY + yPadding
-    val xRange = (maxX - minX).let { if (it == 0f) 1f else it }
+    val xyRange = ChartMath.calculateXYRange(
+        xValues = validPoints.map { it.safeX },
+        yValues = validPoints.map { it.safeY },
+    )
 
     val minSize = validPoints.minOf { it.safeSize }
     val maxSize = validPoints.maxOf { it.safeSize }
@@ -111,7 +107,7 @@ fun BubbleChart(
         drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
 
         if (resolvedAxisStyle.showYAxis) {
-            drawYAxisLabels(adjustedMinY, adjustedMaxY, resolvedAxisStyle, chartArea)
+            drawYAxisLabels(xyRange.adjustedMinY, xyRange.adjustedMaxY, resolvedAxisStyle, chartArea)
         }
 
         if (resolvedAxisStyle.showXAxis && data.xLabels.isNotEmpty()) {
@@ -125,14 +121,20 @@ fun BubbleChart(
 
         // Map points to canvas coordinates and calculate bubble radii
         val mappedPoints = validPoints.map { point ->
-            Offset(
-                x = chartArea.left + ((point.safeX - minX) / xRange) * chartArea.width,
-                y = chartArea.bottom - ((point.safeY - adjustedMinY) / (adjustedMaxY - adjustedMinY)) * chartArea.height,
+            val (cx, cy) = ChartMath.mapToCanvas(
+                dataX = point.safeX, dataY = point.safeY,
+                range = xyRange,
+                chartLeft = chartArea.left, chartBottom = chartArea.bottom,
+                chartWidth = chartArea.width, chartHeight = chartArea.height,
             )
+            Offset(cx, cy)
         }
 
         val bubbleRadii = validPoints.map { point ->
-            minRadiusPx + ((point.safeSize - minSize) / sizeRange) * (maxRadiusPx - minRadiusPx)
+            ChartMath.normalizeBubbleRadius(
+                sizeValue = point.safeSize, minSize = minSize, sizeRange = sizeRange,
+                minRadius = minRadiusPx, maxRadius = maxRadiusPx,
+            )
         }
 
         // Draw bubbles with animation
@@ -154,18 +156,11 @@ fun BubbleChart(
         // Touch interaction
         val currentTouch = touchOffset
         if (currentTouch != null && style.showTooltipOnTouch) {
-            var nearestIndex = -1
-            var minDistance = Float.MAX_VALUE
-
-            mappedPoints.forEachIndexed { index, point ->
-                val dx = currentTouch.x - point.x
-                val dy = currentTouch.y - point.y
-                val distance = sqrt(dx * dx + dy * dy)
-                if (distance < minDistance) {
-                    minDistance = distance
-                    nearestIndex = index
-                }
-            }
+            val nearestIndex = TouchMath.findNearest2DPointIndex(
+                touchX = currentTouch.x, touchY = currentTouch.y,
+                pointXPositions = mappedPoints.map { it.x },
+                pointYPositions = mappedPoints.map { it.y },
+            )
 
             if (nearestIndex >= 0) {
                 val nearestPoint = mappedPoints[nearestIndex]
@@ -178,12 +173,7 @@ fun BubbleChart(
                 )
 
                 val tooltipText = dataPoint.label.ifEmpty {
-                    val yText = if (dataPoint.y == dataPoint.y.toLong().toFloat()) {
-                        dataPoint.y.toLong().toString()
-                    } else {
-                        String.format("%.1f", dataPoint.y)
-                    }
-                    yText
+                    ChartMath.formatValue(dataPoint.y)
                 }
 
                 drawTooltip(

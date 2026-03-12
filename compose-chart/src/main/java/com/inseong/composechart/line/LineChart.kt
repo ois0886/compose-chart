@@ -20,6 +20,7 @@ import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
+import com.inseong.composechart.internal.math.ChartMath
 import com.inseong.composechart.internal.canvas.drawGradientFill
 import com.inseong.composechart.internal.canvas.drawGrid
 import com.inseong.composechart.internal.canvas.drawTooltip
@@ -92,16 +93,10 @@ fun LineChart(
 
     // Calculate data range (safeX/safeY guard against NaN/Infinity)
     val allPoints = validSeries.flatMap { it.points }
-    val minX = allPoints.minOf { it.safeX }
-    val maxX = allPoints.maxOf { it.safeX }
-    val minY = allPoints.minOf { it.safeY }
-    val maxY = allPoints.maxOf { it.safeY }
-    // Y-axis margin (top/bottom 10%)
-    val yRange = (maxY - minY).let { if (it == 0f) 1f else it }
-    val yPadding = yRange * 0.1f
-    val adjustedMinY = minY - yPadding
-    val adjustedMaxY = maxY + yPadding
-    val xRange = (maxX - minX).let { if (it == 0f) 1f else it }
+    val xyRange = ChartMath.calculateXYRange(
+        xValues = allPoints.map { it.safeX },
+        yValues = allPoints.map { it.safeY },
+    )
 
     val chartPaddingPx = style.chart.chartPadding
 
@@ -130,7 +125,7 @@ fun LineChart(
 
         // Draw Y-axis labels
         if (resolvedAxisStyle.showYAxis) {
-            drawYAxisLabels(adjustedMinY, adjustedMaxY, resolvedAxisStyle, chartArea)
+            drawYAxisLabels(xyRange.adjustedMinY, xyRange.adjustedMaxY, resolvedAxisStyle, chartArea)
         }
 
         // Draw X-axis labels
@@ -152,10 +147,13 @@ fun LineChart(
 
             // Map data points to canvas coordinates (using safeX/safeY)
             val mappedPoints = series.points.map { point ->
-                Offset(
-                    x = chartArea.left + ((point.safeX - minX) / xRange) * chartArea.width,
-                    y = chartArea.bottom - ((point.safeY - adjustedMinY) / (adjustedMaxY - adjustedMinY)) * chartArea.height,
+                val (cx, cy) = ChartMath.mapToCanvas(
+                    dataX = point.safeX, dataY = point.safeY,
+                    range = xyRange,
+                    chartLeft = chartArea.left, chartBottom = chartArea.bottom,
+                    chartWidth = chartArea.width, chartHeight = chartArea.height,
                 )
+                Offset(cx, cy)
             }
 
             // Create line path (curved or straight)
@@ -226,11 +224,7 @@ fun LineChart(
 
                     // Determine tooltip text
                     val tooltipText = dataPoint.label.ifEmpty {
-                        if (dataPoint.y == dataPoint.y.toLong().toFloat()) {
-                            dataPoint.y.toLong().toString()
-                        } else {
-                            String.format("%.1f", dataPoint.y)
-                        }
+                        ChartMath.formatValue(dataPoint.y)
                     }
 
                     // Draw tooltip
