@@ -8,6 +8,31 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg)](https://developer.android.com/about/versions/nougat)
 
+## Charts
+
+<table>
+  <tr>
+    <td align="center"><b>Line Chart</b></td>
+    <td align="center"><b>Bar Chart</b></td>
+    <td align="center"><b>Donut Chart</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/Line%20Chart.png" width="280"/></td>
+    <td><img src="screenshots/Bar%20Chart.png" width="280"/></td>
+    <td><img src="screenshots/Donut%20Chart.png" width="280"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Gauge Chart</b></td>
+    <td align="center"><b>Radar Chart</b></td>
+    <td align="center"><b>Pie Chart</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/Gauge%20Chart.png" width="280"/></td>
+    <td><img src="screenshots/Radar%20Chart.png" width="280"/></td>
+    <td><img src="screenshots/Pie%20Chart.png" width="280"/></td>
+  </tr>
+</table>
+
 ## Why?
 
 데이터 시각화는 앱의 핵심 기능이지만, Compose에서 바로 쓸 수 있는 가벼운 차트 라이브러리가 부족했습니다.
@@ -24,13 +49,15 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-chart:1.0.0")
+    implementation("io.github.ois0886:compose-chart:1.1.0")
 }
 ```
 
 ## Quick Start
 
 ### 선 차트
+
+<img src="screenshots/Line%20Chart.png" width="400"/>
 
 ```kotlin
 LineChart(
@@ -44,6 +71,8 @@ LineChart(
 
 ### 막대 차트
 
+<img src="screenshots/Bar%20Chart.png" width="400"/>
+
 ```kotlin
 BarChart(
     data = BarChartData.simple(
@@ -55,6 +84,8 @@ BarChart(
 ```
 
 ### 도넛 차트
+
+<img src="screenshots/Donut%20Chart.png" width="300"/>
 
 ```kotlin
 DonutChart(
@@ -71,6 +102,8 @@ DonutChart(
 
 ### 게이지 차트
 
+<img src="screenshots/Gauge%20Chart.png" width="300"/>
+
 ```kotlin
 GaugeChart(
     data = GaugeChartData(value = 72f, maxValue = 100f, label = "점수"),
@@ -79,6 +112,8 @@ GaugeChart(
 ```
 
 ### 레이더 차트
+
+<img src="screenshots/Radar%20Chart.png" width="300"/>
 
 ```kotlin
 RadarChart(
@@ -92,10 +127,116 @@ RadarChart(
 
 ### 파이 차트
 
+<img src="screenshots/Pie%20Chart.png" width="300"/>
+
 ```kotlin
 PieChart(
     data = DonutChartData.fromValues(30f, 25f, 45f),
     modifier = Modifier.size(200.dp),
+)
+```
+
+## Features (v1.1.0)
+
+### 줌 & 팬
+
+Line, Bar 차트에서 핀치 줌과 드래그 팬을 지원합니다. 더블탭으로 초기화됩니다.
+
+```kotlin
+val zoomState = rememberChartZoomState()
+
+LineChart(
+    data = data,
+    zoomState = zoomState,
+)
+```
+
+### 차트 이미지 캡처
+
+차트를 `ImageBitmap`으로 내보낼 수 있습니다.
+
+```kotlin
+val captureState = rememberChartCaptureState()
+
+LineChart(
+    data = data,
+    modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+        .chartCaptureModifier(captureState),
+)
+
+// 캡처 (suspend)
+val bitmap: ImageBitmap = captureState.capture()
+```
+
+### 인터랙티브 범례
+
+범례 항목을 탭하여 시리즈를 토글할 수 있습니다.
+
+```kotlin
+val items = remember {
+    mutableStateListOf(
+        LegendItem(color = Color.Blue, label = "매출", enabled = true),
+        LegendItem(color = Color.Red, label = "비용", enabled = true),
+    )
+}
+
+ChartLegend(
+    items = items,
+    onItemClick = { index ->
+        items[index] = items[index].copy(enabled = !items[index].enabled)
+    },
+)
+```
+
+### 팩토리 메서드
+
+데이터 객체를 간결하게 생성할 수 있습니다.
+
+```kotlin
+// 그룹 막대 차트
+BarChartData.grouped(
+    seriesValues = listOf(listOf(10f, 20f), listOf(15f, 25f)),
+    labels = listOf("1월", "2월"),
+)
+
+// Map에서 멀티 시리즈 라인 차트
+LineChartData.fromMap(
+    seriesMap = mapOf("매출" to listOf(10f, 20f), "비용" to listOf(5f, 15f)),
+    xLabels = listOf("Q1", "Q2"),
+)
+
+// 값만으로 도넛 차트
+DonutChartData.fromValues(40f, 25f, 20f, 15f)
+```
+
+### Y축 범위 수동 설정
+
+```kotlin
+LineChart(
+    data = data,
+    style = LineChartStyle(
+        axis = AxisStyle(
+            showYAxis = true,
+            yAxisMin = 0f,    // 최솟값 고정
+            yAxisMax = 100f,  // 최댓값 고정
+        ),
+    ),
+)
+```
+
+### 폰트 커스텀
+
+축, 툴팁, 범례, 게이지 중앙 텍스트의 폰트 굵기를 설정할 수 있습니다.
+
+```kotlin
+LineChart(
+    data = data,
+    style = LineChartStyle(
+        axis = AxisStyle(fontWeight = FontWeight.Bold),
+        tooltip = TooltipStyle(fontWeight = FontWeight.Medium),
+    ),
 )
 ```
 
@@ -135,11 +276,11 @@ LineChart(
         axis = AxisStyle(
             showYAxis = true,
             yLabelCount = 5,
-            yAxisFormatter = { value -> "₩${value.toLong()}" }, // Y축 커스텀 포맷
+            yAxisFormatter = { value -> "${value.toLong()}%" },
         ),
         grid = GridStyle(
             showHorizontalLines = true,
-            dashPattern = floatArrayOf(10f, 5f), // 점선
+            dashPattern = floatArrayOf(10f, 5f),
         ),
     ),
 )
@@ -191,7 +332,9 @@ Column {
 
 - **Pure Compose Foundation** — Material3 의존 없이 Foundation의 `Canvas`, `BasicText`만 사용하여, 어떤 디자인 시스템을 쓰는 프로젝트에서도 충돌 없이 동작합니다.
 - **안전한 데이터 처리** — NaN, Infinity, 음수, 빈 데이터를 모든 차트에서 방어적으로 처리합니다. `safeX`, `safeY` 패턴으로 잘못된 입력이 크래시를 일으키지 않습니다.
-- **순수 함수 & 테스트** — 좌표 계산, 범위 계산, 터치 감지 로직이 `internal/math/` 에 순수 함수로 분리되어 있으며, 56개의 JVM 유닛 테스트와 195개의 UI 테스트가 전체 차트를 검증합니다.
+- **순수 함수 & 테스트** — 좌표 계산, 범위 계산, 터치 감지 로직이 `internal/math/`에 순수 함수로 분리되어 있으며, 72개의 JVM 유닛 테스트와 183개의 UI 테스트가 전체 차트를 검증합니다.
+- **줌 & 팬** — `ChartZoomState`를 통한 핀치 줌/드래그 팬 지원. Canvas `withTransform`으로 좌표 역변환 처리.
+- **이미지 캡처** — `GraphicsLayer` API를 활용하여 차트를 `ImageBitmap`으로 내보내기.
 - **테마 인식** — `Color.Unspecified` 패턴으로 다크/라이트 테마에 맞는 기본 색상을 자동 적용합니다.
 - **접근성 지원** — 각 차트에 `semantics`로 콘텐츠 설명을 제공하여 스크린 리더(TalkBack)를 지원합니다.
 
