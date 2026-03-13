@@ -15,8 +15,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
+import com.inseong.composechart.ChartZoomState
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
 import androidx.compose.ui.semantics.contentDescription
@@ -32,6 +34,7 @@ import com.inseong.composechart.internal.canvas.drawYAxisLabels
 import com.inseong.composechart.internal.canvas.toBezierPath
 import com.inseong.composechart.internal.canvas.toLinearPath
 import com.inseong.composechart.internal.touch.chartTouchHandler
+import com.inseong.composechart.internal.touch.chartTouchHandlerWithZoom
 import com.inseong.composechart.internal.touch.findNearestPointIndex
 import com.inseong.composechart.style.LineChartStyle
 
@@ -64,6 +67,7 @@ import com.inseong.composechart.style.LineChartStyle
  * @param modifier Layout Modifier (size must be specified)
  * @param style Chart style configuration
  * @param colors Series color palette. Used in order when no color is specified per series.
+ * @param zoomState Optional zoom/pan state. Pass [rememberChartZoomState] to enable pinch-to-zoom and pan.
  * @param onPointSelected Callback on data point touch. null for no callback.
  */
 @Composable
@@ -72,6 +76,7 @@ fun LineChart(
     modifier: Modifier = Modifier,
     style: LineChartStyle = LineChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
+    zoomState: ChartZoomState? = null,
     onPointSelected: ((seriesIndex: Int, pointIndex: Int, point: ChartPoint) -> Unit)? = null,
 ) {
     // Detect dark theme and resolve styles
@@ -98,17 +103,25 @@ fun LineChart(
     val xyRange = ChartMath.calculateXYRange(
         xValues = allPoints.map { it.safeX },
         yValues = allPoints.map { it.safeY },
+        yAxisMin = style.axis.yAxisMin,
+        yAxisMax = style.axis.yAxisMax,
     )
 
     val chartPaddingPx = style.chart.chartPadding
 
     val accessibilityDescription = "선 차트, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트"
 
+    val touchModifier = if (zoomState != null) {
+        Modifier.chartTouchHandlerWithZoom(zoomState) { offset -> touchOffset = offset }
+    } else {
+        Modifier.chartTouchHandler { offset -> touchOffset = offset }
+    }
+
     Canvas(
         modifier = modifier
             .semantics { contentDescription = accessibilityDescription }
             .fillMaxWidth()
-            .chartTouchHandler { offset -> touchOffset = offset },
+            .then(touchModifier),
     ) {
         val paddingPx = chartPaddingPx.toPx()
 
@@ -140,109 +153,139 @@ fun LineChart(
 
         if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas
 
-        // Draw each series
-        validSeries.forEachIndexed { seriesIndex, series ->
+        // Clamp zoom offsets
+        zoomState?.clampOffset(chartArea.width, chartArea.height)
+        val zScale = zoomState?.scale ?: 1f
+        val zOffsetX = zoomState?.offsetX ?: 0f
+        val zOffsetY = zoomState?.offsetY ?: 0f
 
-            // Determine series color
-            val seriesColor = if (series.color == Color.Unspecified) {
-                colors[seriesIndex % colors.size]
-            } else {
-                series.color
-            }
-
-            // Map data points to canvas coordinates (using safeX/safeY)
-            val mappedPoints = series.points.map { point ->
-                val (cx, cy) = ChartMath.mapToCanvas(
-                    dataX = point.safeX, dataY = point.safeY,
-                    range = xyRange,
-                    chartLeft = chartArea.left, chartBottom = chartArea.bottom,
-                    chartWidth = chartArea.width, chartHeight = chartArea.height,
+        // Inverse-transform touch coordinates for accurate hit testing under zoom
+        val currentTouch = touchOffset?.let { touch ->
+            if (zoomState != null && zoomState.isZoomed) {
+                Offset(
+                    (touch.x - zOffsetX) / zScale,
+                    (touch.y - zOffsetY) / zScale,
                 )
-                Offset(cx, cy)
-            }
-
-            // Create line path (curved or straight)
-            val linePath = if (style.curved) {
-                mappedPoints.toBezierPath()
             } else {
-                mappedPoints.toLinearPath()
+                touch
             }
+        }
 
-            // Animation: clip left-to-right based on progress
-            val clipRight = chartArea.left + chartArea.width * progress
+        // Clip to chart area and apply zoom transform
+        clipRect(
+            left = chartArea.left,
+            top = chartArea.top,
+            right = chartArea.right,
+            bottom = chartArea.bottom,
+        ) {
+            withTransform({
+                translate(zOffsetX, zOffsetY)
+                scale(zScale, zScale, Offset(chartArea.left, chartArea.top))
+            }) {
+                // Draw each series
+                validSeries.forEachIndexed { seriesIndex, series ->
 
-            clipRect(
-                left = chartArea.left,
-                top = chartArea.top,
-                right = clipRight,
-                bottom = chartArea.bottom,
-            ) {
-                // Gradient area fill
-                if (style.gradientFill && mappedPoints.size >= 2) {
-                    drawGradientFill(
-                        linePath = linePath,
-                        color = seriesColor,
-                        alpha = style.gradientAlpha,
-                        bottomY = chartArea.bottom,
-                        startX = mappedPoints.first().x,
-                        endX = mappedPoints.last().x,
-                    )
-                }
+                    // Determine series color
+                    val seriesColor = if (series.color == Color.Unspecified) {
+                        colors[seriesIndex % colors.size]
+                    } else {
+                        series.color
+                    }
 
-                // Draw line
-                drawPath(
-                    path = linePath,
-                    color = seriesColor,
-                    style = Stroke(width = style.lineWidth.toPx()),
-                )
+                    // Map data points to canvas coordinates (using safeX/safeY)
+                    val mappedPoints = series.points.map { point ->
+                        val (cx, cy) = ChartMath.mapToCanvas(
+                            dataX = point.safeX, dataY = point.safeY,
+                            range = xyRange,
+                            chartLeft = chartArea.left, chartBottom = chartArea.bottom,
+                            chartWidth = chartArea.width, chartHeight = chartArea.height,
+                        )
+                        Offset(cx, cy)
+                    }
 
-                // Draw data point dots
-                if (style.showDots) {
-                    mappedPoints.forEach { point ->
-                        drawCircle(
+                    // Create line path (curved or straight)
+                    val linePath = if (style.curved) {
+                        mappedPoints.toBezierPath()
+                    } else {
+                        mappedPoints.toLinearPath()
+                    }
+
+                    // Animation: clip left-to-right based on progress
+                    val clipRight = chartArea.left + chartArea.width * progress
+
+                    clipRect(
+                        left = chartArea.left,
+                        top = chartArea.top,
+                        right = clipRight,
+                        bottom = chartArea.bottom,
+                    ) {
+                        // Gradient area fill
+                        if (style.gradientFill && mappedPoints.size >= 2) {
+                            drawGradientFill(
+                                linePath = linePath,
+                                color = seriesColor,
+                                alpha = style.gradientAlpha,
+                                bottomY = chartArea.bottom,
+                                startX = mappedPoints.first().x,
+                                endX = mappedPoints.last().x,
+                            )
+                        }
+
+                        // Draw line
+                        drawPath(
+                            path = linePath,
                             color = seriesColor,
-                            radius = style.dotRadius.toPx(),
-                            center = point,
+                            style = Stroke(width = style.lineWidth.toPx()),
                         )
-                    }
-                }
-            }
 
-            // Touch interaction handling
-            val currentTouch = touchOffset
-            if (currentTouch != null && style.showTooltipOnTouch) {
-                val pointXPositions = mappedPoints.map { it.x }
-                val nearestIndex = findNearestPointIndex(currentTouch.x, pointXPositions)
-
-                if (nearestIndex >= 0 && nearestIndex < mappedPoints.size) {
-                    val nearestPoint = mappedPoints[nearestIndex]
-                    val dataPoint = series.points[nearestIndex]
-
-                    // Draw vertical indicator line only for the first series (avoid duplicates)
-                    if (seriesIndex == 0) {
-                        drawVerticalIndicatorLine(
-                            x = nearestPoint.x,
-                            topY = chartArea.top,
-                            bottomY = chartArea.bottom,
-                        )
+                        // Draw data point dots
+                        if (style.showDots) {
+                            mappedPoints.forEach { point ->
+                                drawCircle(
+                                    color = seriesColor,
+                                    radius = style.dotRadius.toPx(),
+                                    center = point,
+                                )
+                            }
+                        }
                     }
 
-                    // Determine tooltip text
-                    val tooltipText = dataPoint.label.ifEmpty {
-                        ChartMath.formatValue(dataPoint.y)
+                    // Touch interaction handling
+                    if (currentTouch != null && style.showTooltipOnTouch) {
+                        val pointXPositions = mappedPoints.map { it.x }
+                        val nearestIndex = findNearestPointIndex(currentTouch.x, pointXPositions)
+
+                        if (nearestIndex >= 0 && nearestIndex < mappedPoints.size) {
+                            val nearestPoint = mappedPoints[nearestIndex]
+                            val dataPoint = series.points[nearestIndex]
+
+                            // Draw vertical indicator line only for the first series (avoid duplicates)
+                            if (seriesIndex == 0) {
+                                drawVerticalIndicatorLine(
+                                    x = nearestPoint.x,
+                                    topY = chartArea.top,
+                                    bottomY = chartArea.bottom,
+                                )
+                            }
+
+                            // Determine tooltip text
+                            val tooltipText = dataPoint.label.ifEmpty {
+                                ChartMath.formatValue(dataPoint.y)
+                            }
+
+                            // Draw tooltip
+                            drawTooltip(
+                                position = nearestPoint,
+                                text = tooltipText,
+                                style = style.tooltip,
+                                lineColor = seriesColor,
+                                canvasSize = size,
+                            )
+
+                            // Invoke callback
+                            onPointSelected?.invoke(seriesIndex, nearestIndex, dataPoint)
+                        }
                     }
-
-                    // Draw tooltip
-                    drawTooltip(
-                        position = nearestPoint,
-                        text = tooltipText,
-                        style = style.tooltip,
-                        lineColor = seriesColor,
-                        canvasSize = size,
-                    )
-
-                    // Invoke callback
-                    onPointSelected?.invoke(seriesIndex, nearestIndex, dataPoint)
                 }
             }
         }

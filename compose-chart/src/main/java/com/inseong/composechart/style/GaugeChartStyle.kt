@@ -1,6 +1,7 @@
 package com.inseong.composechart.style
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.sp
  * @param showCenterText Whether to show value/label text at the center.
  * @param centerTextSize Size of the center value text.
  * @param centerTextColor Color of the center value text. Uses theme-aware default when [Color.Unspecified].
+ * @param centerFontWeight Font weight for center value text.
  * @param animationDurationMs Duration of the fill animation in milliseconds.
  * @param chart Common chart style.
  */
@@ -31,6 +33,7 @@ data class GaugeChartStyle(
     val showCenterText: Boolean = true,
     val centerTextSize: TextUnit = 24.sp,
     val centerTextColor: Color = Color.Unspecified,
+    val centerFontWeight: FontWeight = FontWeight.Bold,
     val animationDurationMs: Int = 1000,
     val chart: ChartStyle = ChartStyle(),
 )

@@ -1,6 +1,7 @@
 package com.inseong.composechart.style
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.sp
  * @param webLevels Number of concentric web levels
  * @param labelSize Text size for axis labels
  * @param labelColor Color of axis labels. Theme-aware when [Color.Unspecified].
+ * @param labelFontWeight Font weight for axis labels
  * @param animationDurationMs Duration of the entry animation in milliseconds
  * @param chart Common chart style
  */
@@ -29,6 +31,7 @@ data class RadarChartStyle(
     val webLevels: Int = 5,
     val labelSize: TextUnit = 11.sp,
     val labelColor: Color = Color.Unspecified,
+    val labelFontWeight: FontWeight = FontWeight.Normal,
     val animationDurationMs: Int = 800,
     val chart: ChartStyle = ChartStyle(),
 )

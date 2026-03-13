@@ -1,6 +1,7 @@
 package com.inseong.composechart.legend
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,7 @@ import com.inseong.composechart.style.LegendStyle
  * @param items List of legend items to display
  * @param modifier Layout modifier
  * @param style Legend style configuration
+ * @param onItemClick Callback when a legend item is clicked. Receives the item index.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -51,6 +53,7 @@ fun ChartLegend(
     items: List<LegendItem>,
     modifier: Modifier = Modifier,
     style: LegendStyle = LegendStyle(),
+    onItemClick: ((index: Int) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
 
@@ -62,11 +65,13 @@ fun ChartLegend(
     }
 
     val content: @Composable () -> Unit = {
-        items.forEach { item ->
+        items.forEachIndexed { index, item ->
             LegendItemRow(
                 item = item,
+                index = index,
                 style = style,
                 textColor = resolvedTextColor,
+                onItemClick = onItemClick,
             )
         }
     }
@@ -95,17 +100,27 @@ fun ChartLegend(
 @Composable
 private fun LegendItemRow(
     item: LegendItem,
+    index: Int,
     style: LegendStyle,
     textColor: Color,
+    onItemClick: ((index: Int) -> Unit)?,
 ) {
+    val alpha = if (item.enabled) 1f else style.disabledAlpha
+    val rowModifier = if (onItemClick != null) {
+        Modifier.clickable { onItemClick(index) }
+    } else {
+        Modifier
+    }
+
     Row(
+        modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
                 .size(style.iconSize)
                 .background(
-                    color = item.color,
+                    color = item.color.copy(alpha = alpha),
                     shape = RoundedCornerShape(style.iconCornerRadius),
                 ),
         )
@@ -114,7 +129,8 @@ private fun LegendItemRow(
             text = item.label,
             style = TextStyle(
                 fontSize = style.textSize,
-                color = textColor,
+                fontWeight = style.fontWeight,
+                color = textColor.copy(alpha = alpha),
             ),
         )
     }

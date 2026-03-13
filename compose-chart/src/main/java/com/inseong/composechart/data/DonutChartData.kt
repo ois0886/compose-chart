@@ -40,5 +40,19 @@ data class DonutChartData(
         fun fromValues(values: Map<String, Float>): DonutChartData = DonutChartData(
             slices = values.map { (label, value) -> DonutSlice(value = value, label = label) },
         )
+
+        /**
+         * Creates a donut chart from values without labels.
+         * Labels are auto-generated as "Item 1", "Item 2", etc.
+         *
+         * ```kotlin
+         * DonutChartData.fromValues(40f, 25f, 20f, 15f)
+         * ```
+         */
+        fun fromValues(vararg values: Float): DonutChartData = DonutChartData(
+            slices = values.mapIndexed { index, value ->
+                DonutSlice(value = value, label = "Item ${index + 1}")
+            },
+        )
     }
 }

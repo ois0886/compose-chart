@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import com.inseong.composechart.internal.canvas.toTypefaceStyle
 import com.inseong.composechart.style.TooltipStyle
 
 /**
@@ -43,7 +44,7 @@ internal fun DrawScope.drawTooltip(
         color = android.graphics.Color.WHITE
         textSize = textSizePx
         isAntiAlias = true
-        typeface = Typeface.DEFAULT_BOLD
+        typeface = Typeface.create(Typeface.DEFAULT, style.fontWeight.toTypefaceStyle())
     }
     val textWidth = textPaint.measureText(text)
     val textHeight = textSizePx

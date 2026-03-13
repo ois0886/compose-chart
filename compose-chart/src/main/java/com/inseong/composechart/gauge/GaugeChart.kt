@@ -158,7 +158,7 @@ fun GaugeChart(
                             style = TextStyle(
                                 fontSize = style.centerTextSize,
                                 color = resolvedCenterTextColor,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = style.centerFontWeight,
                             ),
                         )
 

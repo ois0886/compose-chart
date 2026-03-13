@@ -2,9 +2,11 @@ package com.inseong.composechart.internal.touch
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import com.inseong.composechart.ChartZoomState
 import kotlin.math.abs
 
 /**
@@ -38,6 +40,38 @@ internal fun Modifier.chartTouchHandler(
             onDragEnd = { onTouch(null) },
             onDragCancel = { onTouch(null) },
         )
+    }
+
+/**
+ * Modifier extension for chart touch with zoom/pan support.
+ *
+ * Handles tap (tooltip), pinch-to-zoom, drag-to-pan, and double-tap to reset.
+ * Vertical drags are consumed when zoomed (for panning).
+ *
+ * @param zoomState State holder managing zoom scale and pan offsets
+ * @param onTouch Touch position [Offset] or null on touch end
+ */
+internal fun Modifier.chartTouchHandlerWithZoom(
+    zoomState: ChartZoomState,
+    onTouch: (Offset?) -> Unit,
+): Modifier = this
+    .pointerInput(Unit) {
+        detectTapGestures(
+            onDoubleTap = { zoomState.reset() },
+            onPress = { offset ->
+                onTouch(offset)
+                tryAwaitRelease()
+                onTouch(null)
+            },
+        )
+    }
+    .pointerInput(Unit) {
+        detectTransformGestures { centroid, pan, zoom, _ ->
+            zoomState.applyZoom(zoom, centroid.x, centroid.y)
+            if (zoomState.isZoomed) {
+                zoomState.applyPan(pan.x, pan.y)
+            }
+        }
     }
 
 /**

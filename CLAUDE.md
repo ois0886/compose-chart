@@ -54,6 +54,13 @@ Publish to Maven Central:
 | PieChart | `pie/` | `DonutChartData` (재사용) | `PieChartStyle` |
 | ChartLegend | `legend/` | `LegendItem` | `LegendStyle` |
 
+### 공통 상태/유틸리티
+
+| 컴포넌트 | 파일 | 설명 |
+|----------|------|------|
+| `ChartZoomState` | `ChartZoomState.kt` | 줌/팬 상태 관리 (`rememberChartZoomState()`) — Line, Bar 차트 지원 |
+| `ChartCaptureState` | `ChartCaptureState.kt` | 차트 이미지 캡처 (`rememberChartCaptureState()`, `Modifier.chartCaptureModifier()`) |
+
 ### Internal Math Modules (순수 함수)
 
 비즈니스 로직을 Compose 의존성 없이 순수 함수로 분리하여 JVM 유닛 테스트 가능.

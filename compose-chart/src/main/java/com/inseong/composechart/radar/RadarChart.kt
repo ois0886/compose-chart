@@ -1,6 +1,7 @@
 package com.inseong.composechart.radar
 
 import android.graphics.Paint
+import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -17,10 +18,12 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
+import com.inseong.composechart.internal.canvas.toTypefaceStyle
 import com.inseong.composechart.internal.math.RadarMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.RadarChartStyle
@@ -138,6 +141,7 @@ fun RadarChart(
             angleStep = angleStep,
             labelColor = resolvedLabelColor,
             labelSize = style.labelSize.toPx(),
+            fontWeight = style.labelFontWeight,
         )
 
         // Draw data polygons
@@ -214,6 +218,7 @@ private fun DrawScope.drawAxisLabels(
     angleStep: Float,
     labelColor: Color,
     labelSize: Float,
+    fontWeight: FontWeight = FontWeight.Normal,
 ) {
     val paint = Paint().apply {
         color = labelColor.let {
@@ -227,6 +232,7 @@ private fun DrawScope.drawAxisLabels(
         textSize = labelSize
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
+        typeface = Typeface.create(Typeface.DEFAULT, fontWeight.toTypefaceStyle())
     }
 
     val labelOffset = labelSize * 1.2f

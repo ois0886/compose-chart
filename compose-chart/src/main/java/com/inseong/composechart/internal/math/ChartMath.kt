@@ -21,11 +21,21 @@ internal object ChartMath {
     /**
      * Calculates X/Y data range with 10% Y-axis padding.
      *
+     * When [yAxisMin] or [yAxisMax] is provided, they override the auto-calculated values.
+     * If both are provided but min >= max, falls back to auto-calculation.
+     *
      * @param xValues safe X values (NaN/Infinity already filtered)
      * @param yValues safe Y values (NaN/Infinity already filtered)
+     * @param yAxisMin Manual Y-axis minimum override. null for auto.
+     * @param yAxisMax Manual Y-axis maximum override. null for auto.
      * @return [XYRange] with min/max and adjusted Y range
      */
-    fun calculateXYRange(xValues: List<Float>, yValues: List<Float>): XYRange {
+    fun calculateXYRange(
+        xValues: List<Float>,
+        yValues: List<Float>,
+        yAxisMin: Float? = null,
+        yAxisMax: Float? = null,
+    ): XYRange {
         val minX = xValues.minOrNull() ?: 0f
         val maxX = xValues.maxOrNull() ?: 0f
         val minY = yValues.minOrNull() ?: 0f
@@ -33,9 +43,21 @@ internal object ChartMath {
 
         val yRange = (maxY - minY).let { if (it == 0f) 1f else it }
         val yPadding = yRange * 0.1f
-        val adjustedMinY = minY - yPadding
-        val adjustedMaxY = maxY + yPadding
+        val autoMinY = minY - yPadding
+        val autoMaxY = maxY + yPadding
         val xRange = (maxX - minX).let { if (it == 0f) 1f else it }
+
+        // Apply manual overrides with validation
+        val adjustedMinY: Float
+        val adjustedMaxY: Float
+        if (yAxisMin != null && yAxisMax != null && yAxisMin >= yAxisMax) {
+            // Invalid range: fallback to auto
+            adjustedMinY = autoMinY
+            adjustedMaxY = autoMaxY
+        } else {
+            adjustedMinY = yAxisMin ?: autoMinY
+            adjustedMaxY = yAxisMax ?: autoMaxY
+        }
 
         return XYRange(
             minX = minX,

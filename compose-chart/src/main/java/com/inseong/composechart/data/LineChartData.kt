@@ -73,5 +73,36 @@ data class LineChartData(
             }
             return single(points = points, xLabels = xLabels, label = label, color = color)
         }
+
+        /**
+         * Creates a multi-series line chart from a Map.
+         *
+         * ```kotlin
+         * LineChartData.fromMap(
+         *     seriesMap = mapOf(
+         *         "Revenue" to listOf(10f, 20f, 30f),
+         *         "Cost" to listOf(5f, 15f, 25f),
+         *     ),
+         *     xLabels = listOf("Q1", "Q2", "Q3"),
+         * )
+         * ```
+         *
+         * @param seriesMap Map of series name to Y values. X values are auto-assigned as indices.
+         * @param xLabels X-axis labels
+         */
+        fun fromMap(
+            seriesMap: Map<String, List<Float>>,
+            xLabels: List<String> = emptyList(),
+        ): LineChartData {
+            val series = seriesMap.map { (name, values) ->
+                LineSeries(
+                    points = values.mapIndexed { index, y ->
+                        ChartPoint(x = index.toFloat(), y = y)
+                    },
+                    label = name,
+                )
+            }
+            return LineChartData(series = series, xLabels = xLabels)
+        }
     }
 }

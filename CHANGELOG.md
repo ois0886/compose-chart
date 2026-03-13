@@ -3,6 +3,17 @@
 이 프로젝트의 모든 주요 변경 사항을 기록합니다.
 [Keep a Changelog](https://keepachangelog.com/ko/1.0.0/) 형식을 따릅니다.
 
+## [1.1.0] - 2026-03-13
+
+### Added
+- 줌/팬 지원 — `ChartZoomState`, `rememberChartZoomState()` (Line, Bar 차트)
+- 차트 이미지 내보내기 — `ChartCaptureState`, `Modifier.chartCaptureModifier()`
+- 인터랙티브 범례 — `ChartLegend`에 `onItemClick` 콜백, `LegendItem.enabled` 상태
+- 팩토리 메서드 — `BarChartData.grouped()`, `LineChartData.fromMap()`, `DonutChartData.fromValues(vararg)`
+- 폰트 커스텀 — `AxisStyle.fontWeight`, `TooltipStyle.fontWeight`, `LegendStyle.fontWeight`, `RadarChartStyle.labelFontWeight`, `GaugeChartStyle.centerFontWeight`
+- Y축 범위 수동 설정 — `AxisStyle.yAxisMin`, `AxisStyle.yAxisMax`
+- ProGuard consumer rules — 라이브러리 공개 API 보존 규칙
+
 ## [1.0.0] - 2026-03-12
 
 ### Changed

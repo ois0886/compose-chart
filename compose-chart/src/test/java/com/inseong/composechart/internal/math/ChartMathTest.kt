@@ -101,4 +101,41 @@ class ChartMathTest {
         assertEquals("25.3", ChartMath.formatValue(25.3f))
         assertEquals("0.1", ChartMath.formatValue(0.1f))
     }
+
+    @Test
+    fun calculateXYRange_manualYAxisOverrides() {
+        val range = ChartMath.calculateXYRange(
+            xValues = listOf(0f, 1f, 2f),
+            yValues = listOf(10f, 20f, 30f),
+            yAxisMin = 0f,
+            yAxisMax = 50f,
+        )
+        assertEquals(0f, range.adjustedMinY, 0.001f)
+        assertEquals(50f, range.adjustedMaxY, 0.001f)
+    }
+
+    @Test
+    fun calculateXYRange_partialOverride_onlyMin() {
+        val range = ChartMath.calculateXYRange(
+            xValues = listOf(0f, 1f),
+            yValues = listOf(10f, 20f),
+            yAxisMin = 0f,
+            yAxisMax = null,
+        )
+        assertEquals(0f, range.adjustedMinY, 0.001f)
+        // maxY auto: 20 + 10*0.1 = 21
+        assertEquals(21f, range.adjustedMaxY, 0.001f)
+    }
+
+    @Test
+    fun calculateXYRange_invalidOverride_fallbackToAuto() {
+        val range = ChartMath.calculateXYRange(
+            xValues = listOf(0f, 1f),
+            yValues = listOf(10f, 20f),
+            yAxisMin = 50f,
+            yAxisMax = 5f,
+        )
+        // Should fallback to auto range since min >= max
+        assertEquals(true, range.adjustedMinY < range.adjustedMaxY)
+    }
 }

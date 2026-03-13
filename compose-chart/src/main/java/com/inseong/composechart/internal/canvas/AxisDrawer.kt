@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import com.inseong.composechart.internal.canvas.toTypefaceStyle
 import com.inseong.composechart.style.AxisStyle
 
 /**
@@ -37,7 +38,7 @@ internal fun DrawScope.drawXAxisLabels(
         textSize = style.labelSize.toPx()
         textAlign = Paint.Align.CENTER
         isAntiAlias = true
-        typeface = Typeface.DEFAULT
+        typeface = Typeface.create(Typeface.DEFAULT, style.fontWeight.toTypefaceStyle())
     }
 
     val y = chartArea.bottom + style.labelSize.toPx() + 8f
@@ -93,7 +94,7 @@ internal fun DrawScope.drawYAxisLabels(
         textSize = style.labelSize.toPx()
         textAlign = Paint.Align.RIGHT
         isAntiAlias = true
-        typeface = Typeface.DEFAULT
+        typeface = Typeface.create(Typeface.DEFAULT, style.fontWeight.toTypefaceStyle())
     }
 
     val range = maxValue - minValue
