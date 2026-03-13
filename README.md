@@ -49,7 +49,7 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-chart:1.1.0")
+    implementation("io.github.ois0886:compose-chart:1.2.0")
 }
 ```
 
@@ -136,7 +136,7 @@ PieChart(
 )
 ```
 
-## Features (v1.1.0)
+## Features (v1.2.0)
 
 ### 줌 & 팬
 

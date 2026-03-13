@@ -99,6 +99,6 @@ internal object BarMath {
      * Returns 1f if maxValue is 0 or negative.
      */
     fun calculateAdjustedMax(maxValue: Float): Float {
-        return if (maxValue <= 0f) 1f else maxValue * 1.1f
+        return if (!maxValue.isFinite() || maxValue <= 0f) 1f else maxValue * 1.1f
     }
 }

@@ -128,6 +128,28 @@ class ChartMathTest {
     }
 
     @Test
+    fun calculateXYRange_nanValues_doesNotCrash() {
+        // 함수는 safeX/safeY로 사전 필터된 입력을 가정하지만, NaN 입력 시에도 크래시하지 않아야 함
+        val range = ChartMath.calculateXYRange(
+            xValues = listOf(Float.NaN, 1f, 2f),
+            yValues = listOf(10f, Float.NaN, 30f),
+        )
+        // 크래시 없이 XYRange 객체가 반환되는지만 검증
+        @Suppress("SENSELESS_COMPARISON")
+        assertEquals(true, range != null)
+    }
+
+    @Test
+    fun calculateXYRange_infinityValues_doesNotCrash() {
+        val range = ChartMath.calculateXYRange(
+            xValues = listOf(Float.POSITIVE_INFINITY, 1f),
+            yValues = listOf(10f, Float.NEGATIVE_INFINITY),
+        )
+        @Suppress("SENSELESS_COMPARISON")
+        assertEquals(true, range != null)
+    }
+
+    @Test
     fun calculateXYRange_invalidOverride_fallbackToAuto() {
         val range = ChartMath.calculateXYRange(
             xValues = listOf(0f, 1f),

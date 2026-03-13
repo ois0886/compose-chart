@@ -43,4 +43,36 @@ class FactoryMethodsTest {
         assertEquals("Item 2", data.slices[1].label)
         assertEquals(25f, data.slices[1].value, 0.001f)
     }
+
+    @Test
+    fun barChartData_simple_emptyValues_createsEmptyGroups() {
+        val data = BarChartData.simple(values = emptyList())
+        assertEquals(0, data.groups.size)
+    }
+
+    @Test
+    fun barChartData_grouped_emptySeriesValues_createsEmptyGroups() {
+        val data = BarChartData.grouped(seriesValues = emptyList())
+        assertEquals(0, data.groups.size)
+    }
+
+    @Test
+    fun barChartData_simple_singleValue_createsOneGroup() {
+        val data = BarChartData.simple(values = listOf(42f))
+        assertEquals(1, data.groups.size)
+        assertEquals(42f, data.groups[0].entries[0].values[0], 0.001f)
+    }
+
+    @Test
+    fun lineChartData_fromMap_emptyMap_createsEmptySeries() {
+        val data = LineChartData.fromMap(seriesMap = emptyMap())
+        assertEquals(0, data.series.size)
+    }
+
+    @Test
+    fun donutChartData_fromValues_singleValue_createsOneSlice() {
+        val data = DonutChartData.fromValues(100f)
+        assertEquals(1, data.slices.size)
+        assertEquals(100f, data.slices[0].value, 0.001f)
+    }
 }

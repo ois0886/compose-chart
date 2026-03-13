@@ -22,7 +22,7 @@ internal fun DrawScope.drawGrid(
 ) {
     val strokeWidthPx = style.strokeWidth.toPx()
     val pathEffect = style.dashPattern?.let {
-        PathEffect.dashPathEffect(it, 0f)
+        PathEffect.dashPathEffect(it.toFloatArray(), 0f)
     }
 
     // Horizontal grid lines

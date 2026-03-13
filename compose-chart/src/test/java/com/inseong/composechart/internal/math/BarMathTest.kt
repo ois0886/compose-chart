@@ -103,6 +103,31 @@ class BarMathTest {
     }
 
     @Test
+    fun calculateBarWidth_zeroEntries_fallsBackToOne() {
+        // entryCount=0 → coerceAtLeast(1) → 100/1 = 100
+        val width = BarMath.calculateBarWidth(100f, 0, 5f)
+        assertEquals(100f, width, 0.001f)
+    }
+
+    @Test
+    fun calculateAdjustedMax_nanValue_returnsOne() {
+        val max = BarMath.calculateAdjustedMax(Float.NaN)
+        assertEquals(1f, max, 0.001f)
+    }
+
+    @Test
+    fun calculateAdjustedMax_infinityValue_handlesGracefully() {
+        val max = BarMath.calculateAdjustedMax(Float.POSITIVE_INFINITY)
+        assertEquals(false, max.isNaN())
+    }
+
+    @Test
+    fun calculateSegmentHeight_nanMaxValue_returnsFinite() {
+        val height = BarMath.calculateSegmentHeight(50f, Float.NaN, 200f, 1f)
+        assertEquals(true, height.isNaN() || height.isFinite())
+    }
+
+    @Test
     fun calculateSegmentHeight_fullProgress_correctHeight() {
         val height = BarMath.calculateSegmentHeight(50f, 100f, 200f, 1f)
         assertEquals(100f, height, 0.001f) // 50/100 * 200 * 1

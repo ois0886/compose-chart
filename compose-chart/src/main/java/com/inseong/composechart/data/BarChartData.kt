@@ -18,8 +18,9 @@ data class BarEntry(
     val colors: List<Color> = emptyList(),
 ) {
     /** Safe values with negative/NaN/Infinity clamped to 0 */
-    internal val safeValues: List<Float>
-        get() = values.map { if (it.isFinite()) it.coerceAtLeast(0f) else 0f }
+    internal val safeValues: List<Float> by lazy {
+        values.map { if (it.isFinite()) it.coerceAtLeast(0f) else 0f }
+    }
 }
 
 /**

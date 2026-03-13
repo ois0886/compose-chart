@@ -117,9 +117,9 @@ fun BarChart(
         if (offset == null) selectedGroupIndex = -1
     }
     val touchModifier = if (zoomState != null) {
-        Modifier.chartTouchHandlerWithZoom(zoomState, touchCallback)
+        Modifier.chartTouchHandlerWithZoom(zoomState = zoomState, onTouch = touchCallback)
     } else {
-        Modifier.chartTouchHandler(touchCallback)
+        Modifier.chartTouchHandler(onTouch = touchCallback)
     }
 
     Canvas(
@@ -215,19 +215,27 @@ fun BarChart(
 
                         if (style.horizontal) {
                             drawHorizontalStackedBar(
-                                entry.safeValues,
-                                entry.colors.ifEmpty { colors },
-                                barLeft, barWidth,
-                                chartArea, adjustedMax, progress, alpha,
-                                style.cornerRadius.toPx(),
+                                values = entry.safeValues,
+                                colors = entry.colors.ifEmpty { colors },
+                                barTop = barLeft,
+                                barHeight = barWidth,
+                                chartArea = chartArea,
+                                maxValue = adjustedMax,
+                                progress = progress,
+                                alpha = alpha,
+                                cornerRadius = style.cornerRadius.toPx(),
                             )
                         } else {
                             drawVerticalStackedBar(
-                                entry.safeValues,
-                                entry.colors.ifEmpty { colors },
-                                barLeft, barWidth,
-                                chartArea, adjustedMax, progress, alpha,
-                                style.cornerRadius.toPx(),
+                                values = entry.safeValues,
+                                colors = entry.colors.ifEmpty { colors },
+                                barLeft = barLeft,
+                                barWidth = barWidth,
+                                chartArea = chartArea,
+                                maxValue = adjustedMax,
+                                progress = progress,
+                                alpha = alpha,
+                                cornerRadius = style.cornerRadius.toPx(),
                             )
                         }
                     }

@@ -55,7 +55,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates("io.github.ois0886", "compose-chart", "1.1.0")
+    coordinates("io.github.ois0886", "compose-chart", "1.2.0")
 
     pom {
         name.set("Compose Chart")

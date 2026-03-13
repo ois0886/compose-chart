@@ -3,6 +3,20 @@
 이 프로젝트의 모든 주요 변경 사항을 기록합니다.
 [Keep a Changelog](https://keepachangelog.com/ko/1.0.0/) 형식을 따릅니다.
 
+## [1.2.0] - 2026-03-13
+
+### Changed
+- `GridStyle.dashPattern` 타입을 `FloatArray?`에서 `List<Float>?`로 변경 — 불변성 보장 및 data class `equals()`/`hashCode()` 정합성 개선
+- `BarEntry.safeValues`, `RadarEntry.safeValues`를 `lazy` 초기화로 변경 — 불필요한 객체 반복 생성 방지
+- `ChartDefaults.colors` 타입 명시 (`List<Color>`)
+- `BarMath.calculateAdjustedMax()` NaN/Infinity 입력 방어 추가
+- LineChart, BarChart 내부 함수 호출에 이름 있는 아규먼트 적용 — 가독성 개선
+
+### Added
+- `CODE_QUALITY.md` — 코드 품질 가이드 문서 (Kotlin 코드 원칙, 테스트 규칙, 아키텍처 패턴)
+- 팩토리 메서드 빈 입력/경계값 테스트 추가
+- BarMath, ChartMath, RadarMath NaN/Infinity/경계값 테스트 추가
+
 ## [1.1.0] - 2026-03-13
 
 ### Added

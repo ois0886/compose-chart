@@ -16,7 +16,7 @@ object ChartDefaults {
      * Assigned in order for multi-series charts.
      * Cycles from the beginning when the number of series exceeds the palette size.
      */
-    val colors = listOf(
+    val colors: List<Color> = listOf(
         Color(0xFF3182F6), // Blue
         Color(0xFF48BB78), // Green
         Color(0xFFED8936), // Orange

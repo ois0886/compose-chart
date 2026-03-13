@@ -17,8 +17,9 @@ data class RadarEntry(
     val label: String = "",
     val color: Color = Color.Unspecified,
 ) {
-    internal val safeValues: List<Float>
-        get() = values.map { if (it.isFinite()) it.coerceAtLeast(0f) else 0f }
+    internal val safeValues: List<Float> by lazy {
+        values.map { if (it.isFinite()) it.coerceAtLeast(0f) else 0f }
+    }
 }
 
 /**

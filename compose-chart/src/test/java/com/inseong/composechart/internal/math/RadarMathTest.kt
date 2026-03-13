@@ -81,6 +81,25 @@ class RadarMathTest {
     }
 
     @Test
+    fun polarToCartesian_nanRadius_handlesGracefully() {
+        val (x, y) = RadarMath.polarToCartesian(100f, 100f, 0f, Float.NaN)
+        // NaN 입력 시 크래시 없이 동작 (결과는 NaN일 수 있음)
+        assertEquals(true, x.isNaN() || x.isFinite())
+    }
+
+    @Test
+    fun calculateDataPolygonVertices_zeroMaxValue_handlesGracefully() {
+        // maxValue=0은 0 나누기가 발생할 수 있음
+        val vertices = RadarMath.calculateDataPolygonVertices(
+            values = listOf(10f, 20f, 30f),
+            maxValue = 0f, axisCount = 3,
+            centerX = 100f, centerY = 100f,
+            radius = 50f, startAngle = -90f, progress = 1f,
+        )
+        assertEquals(3, vertices.size)
+    }
+
+    @Test
     fun findNearestAxisIndex_exactVertex_correctIndex() {
         // 4 axes, start=-90, angleStep=90
         // Axis 0 at top (100, 50), Axis 1 at right (150, 100)

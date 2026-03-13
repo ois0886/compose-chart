@@ -112,9 +112,9 @@ fun LineChart(
     val accessibilityDescription = "선 차트, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트"
 
     val touchModifier = if (zoomState != null) {
-        Modifier.chartTouchHandlerWithZoom(zoomState) { offset -> touchOffset = offset }
+        Modifier.chartTouchHandlerWithZoom(zoomState = zoomState, onTouch = { offset -> touchOffset = offset })
     } else {
-        Modifier.chartTouchHandler { offset -> touchOffset = offset }
+        Modifier.chartTouchHandler(onTouch = { offset -> touchOffset = offset })
     }
 
     Canvas(
