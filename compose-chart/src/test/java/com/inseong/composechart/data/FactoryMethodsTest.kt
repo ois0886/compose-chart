@@ -6,6 +6,23 @@ import org.junit.Test
 class FactoryMethodsTest {
 
     @Test
+    fun lineChartData_fromValues_createsIndexedPoints() {
+        val data = LineChartData.fromValues(
+            values = listOf(10f, 20f, 30f),
+            xLabels = listOf("Jan", "Feb", "Mar"),
+            label = "Revenue",
+        )
+
+        assertEquals(1, data.series.size)
+        assertEquals("Revenue", data.series[0].label)
+        assertEquals(0f, data.series[0].points[0].x, 0.001f)
+        assertEquals(10f, data.series[0].points[0].y, 0.001f)
+        assertEquals(2f, data.series[0].points[2].x, 0.001f)
+        assertEquals(30f, data.series[0].points[2].y, 0.001f)
+        assertEquals(listOf("Jan", "Feb", "Mar"), data.xLabels)
+    }
+
+    @Test
     fun barChartData_grouped_createsCorrectStructure() {
         val data = BarChartData.grouped(
             seriesValues = listOf(
@@ -74,5 +91,21 @@ class FactoryMethodsTest {
         val data = DonutChartData.fromValues(100f)
         assertEquals(1, data.slices.size)
         assertEquals(100f, data.slices[0].value, 0.001f)
+    }
+
+    @Test
+    fun donutChartData_fromValues_map_preservesLabelsAndValues() {
+        val data = DonutChartData.fromValues(
+            values = linkedMapOf(
+                "Food" to 40f,
+                "Transport" to 25f,
+            ),
+        )
+
+        assertEquals(2, data.slices.size)
+        assertEquals("Food", data.slices[0].label)
+        assertEquals(40f, data.slices[0].value, 0.001f)
+        assertEquals("Transport", data.slices[1].label)
+        assertEquals(25f, data.slices[1].value, 0.001f)
     }
 }

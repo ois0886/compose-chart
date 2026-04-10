@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
@@ -18,6 +20,7 @@ import com.inseong.composechart.line.LineChart
 import com.inseong.composechart.style.AxisStyle
 import com.inseong.composechart.style.GridStyle
 import com.inseong.composechart.style.LineChartStyle
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -217,6 +220,10 @@ class LineChartTest {
     @Test
     fun lineChart_touch_invokesOnPointSelected() {
         var callbackInvoked = false
+        var selectedSeriesIndex = -1
+        var selectedPointIndex = -1
+        var selectedPoint: ChartPoint? = null
+
         composeTestRule.setContent {
             LineChart(
                 data = LineChartData.fromValues(
@@ -224,16 +231,59 @@ class LineChartTest {
                     xLabels = listOf("A", "B", "C", "D"),
                 ),
                 modifier = defaultModifier,
-                onPointSelected = { _, _, _ -> callbackInvoked = true },
+                onPointSelected = { seriesIndex, pointIndex, point ->
+                    callbackInvoked = true
+                    selectedSeriesIndex = seriesIndex
+                    selectedPointIndex = pointIndex
+                    selectedPoint = point
+                },
             )
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(center) }
+        composeTestRule
+            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트")
+            .performTouchInput {
+                down(Offset(x = 1f, y = centerY))
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
         composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)
+
         assertTrue("onPointSelected should be invoked on touch", callbackInvoked)
+        assertEquals(0, selectedSeriesIndex)
+        assertEquals(0, selectedPointIndex)
+        assertEquals(0f, selectedPoint?.x, 0.001f)
+        assertEquals(10f, selectedPoint?.y ?: -1f, 0.001f)
+    }
+
+    @Test
+    fun lineChart_touchNearRightEdge_selectsLastPoint() {
+        var selectedPointIndex = -1
+
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(
+                    values = listOf(10f, 25f, 18f, 32f),
+                    xLabels = listOf("A", "B", "C", "D"),
+                ),
+                modifier = defaultModifier,
+                onPointSelected = { _, pointIndex, _ -> selectedPointIndex = pointIndex },
+            )
+        }
+
+        composeTestRule.waitForIdle()
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule
+            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트")
+            .performTouchInput {
+                down(Offset(x = right - 1f, y = centerY))
+            }
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
+
+        assertEquals(3, selectedPointIndex)
     }
 
     @Test

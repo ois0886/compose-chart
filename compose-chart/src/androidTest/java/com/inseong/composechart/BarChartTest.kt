@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
@@ -18,6 +20,7 @@ import com.inseong.composechart.data.BarGroup
 import com.inseong.composechart.style.AxisStyle
 import com.inseong.composechart.style.BarChartStyle
 import com.inseong.composechart.style.GridStyle
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -227,6 +230,10 @@ class BarChartTest {
     @Test
     fun barChart_touch_invokesOnBarSelected() {
         var callbackInvoked = false
+        var selectedGroupIndex = -1
+        var selectedEntryIndex = -1
+        var selectedStackIndex = -1
+
         composeTestRule.setContent {
             BarChart(
                 data = BarChartData.simple(
@@ -234,16 +241,58 @@ class BarChartTest {
                     labels = listOf("A", "B", "C"),
                 ),
                 modifier = defaultModifier,
-                onBarSelected = { _, _, _ -> callbackInvoked = true },
+                onBarSelected = { groupIndex, entryIndex, stackIndex ->
+                    callbackInvoked = true
+                    selectedGroupIndex = groupIndex
+                    selectedEntryIndex = entryIndex
+                    selectedStackIndex = stackIndex
+                },
             )
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(center) }
+        composeTestRule
+            .onNodeWithContentDescription("막대 차트, 3개 그룹")
+            .performTouchInput {
+                down(Offset(x = 1f, y = centerY))
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
         composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)
+
         assertTrue("onBarSelected should be invoked on touch", callbackInvoked)
+        assertEquals(0, selectedGroupIndex)
+        assertEquals(0, selectedEntryIndex)
+        assertEquals(0, selectedStackIndex)
+    }
+
+    @Test
+    fun barChart_touchNearRightEdge_selectsLastGroup() {
+        var selectedGroupIndex = -1
+
+        composeTestRule.setContent {
+            BarChart(
+                data = BarChartData.simple(
+                    values = listOf(30f, 45f, 28f),
+                    labels = listOf("A", "B", "C"),
+                ),
+                modifier = defaultModifier,
+                onBarSelected = { groupIndex, _, _ -> selectedGroupIndex = groupIndex },
+            )
+        }
+
+        composeTestRule.waitForIdle()
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule
+            .onNodeWithContentDescription("막대 차트, 3개 그룹")
+            .performTouchInput {
+                down(Offset(x = right - 1f, y = centerY))
+            }
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
+
+        assertEquals(2, selectedGroupIndex)
     }
 
     @Test

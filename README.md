@@ -62,7 +62,7 @@ dependencies {
 ```kotlin
 LineChart(
     data = LineChartData.fromValues(
-        yValues = listOf(10f, 25f, 18f, 32f, 22f),
+        values = listOf(10f, 25f, 18f, 32f, 22f),
         xLabels = listOf("1월", "2월", "3월", "4월", "5월"),
     ),
     modifier = Modifier.fillMaxWidth().height(200.dp),
