@@ -132,4 +132,53 @@ class RadarMathTest {
         )
         assertEquals(-1, index)
     }
+
+    @Test
+    fun calculateAxisLabelPosition_topVertex_startAngleMinus90() {
+        // 5 axes, first axis at -90° (top), label sits 20px outside radius 80
+        val (x, y) = RadarMath.calculateAxisLabelPosition(
+            axisIndex = 0, axisCount = 5,
+            centerX = 100f, centerY = 100f,
+            radius = 80f, startAngleDegrees = -90f,
+            labelOffset = 20f, labelBaselineOffset = 0f,
+        )
+        assertEquals(100f, x, 0.1f)
+        assertEquals(0f, y, 0.1f) // 100 - (80 + 20)
+    }
+
+    @Test
+    fun calculateAxisLabelPosition_rightVertex_4axesZeroStart() {
+        // axisIndex=0 at angle 0° (right), radius+offset = 100
+        val (x, y) = RadarMath.calculateAxisLabelPosition(
+            axisIndex = 0, axisCount = 4,
+            centerX = 100f, centerY = 100f,
+            radius = 80f, startAngleDegrees = 0f,
+            labelOffset = 20f, labelBaselineOffset = 0f,
+        )
+        assertEquals(200f, x, 0.1f)
+        assertEquals(100f, y, 0.1f)
+    }
+
+    @Test
+    fun calculateAxisLabelPosition_baselineOffset_isAddedToY() {
+        val (_, y) = RadarMath.calculateAxisLabelPosition(
+            axisIndex = 0, axisCount = 4,
+            centerX = 100f, centerY = 100f,
+            radius = 80f, startAngleDegrees = 0f,
+            labelOffset = 20f, labelBaselineOffset = 5f,
+        )
+        assertEquals(105f, y, 0.1f)
+    }
+
+    @Test
+    fun calculateAxisLabelPosition_zeroAxes_returnsCenter() {
+        val (x, y) = RadarMath.calculateAxisLabelPosition(
+            axisIndex = 0, axisCount = 0,
+            centerX = 100f, centerY = 100f,
+            radius = 80f, startAngleDegrees = 0f,
+            labelOffset = 20f, labelBaselineOffset = 0f,
+        )
+        assertEquals(100f, x, 0.001f)
+        assertEquals(100f, y, 0.001f)
+    }
 }

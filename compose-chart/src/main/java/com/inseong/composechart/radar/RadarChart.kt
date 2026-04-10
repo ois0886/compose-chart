@@ -28,9 +28,7 @@ import com.inseong.composechart.internal.canvas.toTypefaceStyle
 import com.inseong.composechart.internal.math.RadarMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.RadarChartStyle
-import kotlin.math.cos
 import kotlin.math.min
-import kotlin.math.sin
 
 /**
  * Radar chart Composable.
@@ -147,7 +145,6 @@ fun RadarChart(
             centerY = centerY,
             radius = radius,
             startAngle = startAngle,
-            angleStep = angleStep,
             labelColor = resolvedLabelColor,
             labelSize = style.labelSize.toPx(),
             fontWeight = style.labelFontWeight,
@@ -225,7 +222,6 @@ private fun DrawScope.drawAxisLabels(
     centerY: Float,
     radius: Float,
     startAngle: Float,
-    angleStep: Float,
     labelColor: Color,
     labelSize: Float,
     fontWeight: FontWeight = FontWeight.Normal,
@@ -248,9 +244,16 @@ private fun DrawScope.drawAxisLabels(
     val labelOffset = labelSize * 1.2f
 
     axisLabels.forEachIndexed { index, label ->
-        val angle = Math.toRadians((startAngle + angleStep * index).toDouble())
-        val x = centerX + (cos(angle) * (radius + labelOffset)).toFloat()
-        val y = centerY + (sin(angle) * (radius + labelOffset)).toFloat() + labelSize / 3
+        val (x, y) = RadarMath.calculateAxisLabelPosition(
+            axisIndex = index,
+            axisCount = axisLabels.size,
+            centerX = centerX,
+            centerY = centerY,
+            radius = radius,
+            startAngleDegrees = startAngle,
+            labelOffset = labelOffset,
+            labelBaselineOffset = labelSize / 3,
+        )
 
         drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
     }
