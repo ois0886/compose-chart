@@ -229,7 +229,9 @@ class DonutChartTest {
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
             .onNodeWithContentDescription("도넛 차트, 1개 항목, 총합 100")
-            .performTouchInput { down(center); up() }
+            .performTouchInput { down(center) }
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)
         assertTrue("onSliceSelected should be invoked on touch in pie mode", callbackInvoked)
     }
@@ -288,7 +290,7 @@ class DonutChartTest {
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
             .onNodeWithContentDescription("도넛 차트, 1개 항목, 총합 40")
-            .performTouchInput { down(center); up() }
+            .performTouchInput { down(center) }
         composeTestRule.mainClock.advanceTimeBy(500)
 
         composeTestRule
@@ -299,6 +301,9 @@ class DonutChartTest {
                     "선택된 항목: Food, 값 40",
                 ),
             )
+
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
     }
 
     // ── Style configuration tests ──
