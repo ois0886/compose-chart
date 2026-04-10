@@ -257,7 +257,7 @@ class LineChartTest {
         assertTrue("onPointSelected should be invoked on touch", callbackInvoked)
         assertEquals(0, selectedSeriesIndex)
         assertEquals(0, selectedPointIndex)
-        assertEquals(0f, selectedPoint?.x, 0.001f)
+        assertEquals(0f, selectedPoint?.x ?: -1f, 0.001f)
         assertEquals(10f, selectedPoint?.y ?: -1f, 0.001f)
     }
 
