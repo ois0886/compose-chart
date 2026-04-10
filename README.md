@@ -260,6 +260,18 @@ LineChart(
 
 ### 색상
 
+기본 팔레트(`ChartDefaults.colors`)는 6개 색으로 구성되며, 멀티 시리즈 차트에서
+순서대로 배정되고 시리즈 수가 6개를 넘으면 처음부터 다시 순환합니다.
+
+| # | Name   | HEX       |
+|---|--------|-----------|
+| 1 | Blue   | `#3182F6` |
+| 2 | Green  | `#48BB78` |
+| 3 | Orange | `#ED8936` |
+| 4 | Red    | `#E53E3E` |
+| 5 | Purple | `#9F7AEA` |
+| 6 | Teal   | `#38B2AC` |
+
 ```kotlin
 // 커스텀 색상 팔레트
 LineChart(

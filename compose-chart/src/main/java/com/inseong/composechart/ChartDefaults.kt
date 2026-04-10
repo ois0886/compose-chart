@@ -11,10 +11,21 @@ import androidx.compose.ui.graphics.Color
 object ChartDefaults {
 
     /**
-     * Default color palette.
+     * Default color palette (6 colors).
      *
-     * Assigned in order for multi-series charts.
-     * Cycles from the beginning when the number of series exceeds the palette size.
+     * Assigned in order for multi-series charts and cycles from the beginning when the number
+     * of series exceeds the palette size.
+     *
+     * | # | Name   | HEX       |
+     * |---|--------|-----------|
+     * | 1 | Blue   | `#3182F6` |
+     * | 2 | Green  | `#48BB78` |
+     * | 3 | Orange | `#ED8936` |
+     * | 4 | Red    | `#E53E3E` |
+     * | 5 | Purple | `#9F7AEA` |
+     * | 6 | Teal   | `#38B2AC` |
+     *
+     * Override by passing a custom `colors: List<Color>` to any chart Composable.
      */
     val colors: List<Color> = listOf(
         Color(0xFF3182F6), // Blue
