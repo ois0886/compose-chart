@@ -33,6 +33,14 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
   </tr>
 </table>
 
+### 다크 모드
+
+`Color.Unspecified` + `isSystemInDarkTheme()` 패턴으로 그리드/축/게이지 트랙/
+레이더 웹 색상이 다크 모드에 자동 대응합니다. 다크 모드 전용 스타일 설정은
+필요하지 않습니다.
+
+> 📷 다크 모드 스크린샷 추가 예정: `screenshots/{chart}-dark.png`
+
 ## Why?
 
 데이터 시각화는 앱의 핵심 기능이지만, Compose에서 바로 쓸 수 있는 가벼운 차트 라이브러리가 부족했습니다.
