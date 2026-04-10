@@ -185,22 +185,27 @@ fun calculateXYRange(xValues: List<Float>, yValues: List<Float>): XYRange { ... 
 
 ### Composable 함수
 
-파라미터 순서: **data → modifier → style → colors → callbacks**
+파라미터 순서: **data → modifier → style → colors → state → accessibility → callbacks**
 
 ```kotlin
 @Composable
 fun LineChart(
-    data: LineChartData,                                    // 1. 데이터 (필수)
-    modifier: Modifier = Modifier,                         // 2. Modifier
-    style: LineChartStyle = LineChartStyle(),               // 3. 스타일
-    colors: List<Color> = ChartDefaults.colors,            // 4. 색상
-    zoomState: ChartZoomState? = null,                     // 5. 상태 (선택)
-    onPointSelected: ((Int, ChartPoint) -> Unit)? = null,  // 6. 콜백
+    data: LineChartData,                                         // 1. 데이터 (필수)
+    modifier: Modifier = Modifier,                               // 2. Modifier
+    style: LineChartStyle = LineChartStyle(),                    // 3. 스타일
+    colors: List<Color> = ChartDefaults.colors,                  // 4. 색상
+    zoomState: ChartZoomState? = null,                           // 5. 상태 (선택)
+    accessibilityLabel: String = "선 차트",                       // 6. 접근성 라벨
+    onClickLabel: String? = null,                                // 7. 스크린리더 클릭 라벨
+    onSelectionChanged: ((ChartSelection.Line) -> Unit)? = null, // 8. 공통 선택 콜백
+    onPointSelected: ((Int, Int, ChartPoint) -> Unit)? = null,   // 9. 레거시 콜백 (v2.0 제거 예정)
 )
 ```
 
 - 모든 optional 파라미터에 기본값 제공
 - 콜백은 함수 타입으로 선언 (`(() -> Unit)? = null`) — SAM 인터페이스 대신 함수 타입 사용
+- 접근성 파라미터는 6개 차트 전부에서 동일하게 `accessibilityLabel`/`onClickLabel` 쌍으로 노출
+- 선택 이벤트는 `ChartSelection` sealed interface 하위 타입을 방출하는 `onSelectionChanged`를 우선 사용하고, 차트별 레거시 콜백(`onPointSelected` 등)은 소스 호환을 위해 병존
 
 ### 데이터 클래스
 
@@ -405,7 +410,7 @@ assertEquals(expected, actual, 0.001f)  // tolerance 필수
 
 ### 새 기능 추가 시
 - 비즈니스 로직은 순수 함수로 추출 → 유닛 테스트 작성
-- 기존 테스트가 깨지지 않는지 확인: `./gradlew :compose-chart:test`
+- 기존 테스트가 깨지지 않는지 확인: `./gradlew :compose-chart:testDebugUnitTest`
 - README 코드 예제를 변경하면 대응되는 예제 테스트도 함께 갱신
 - 접근성 semantics를 변경하면 UI 테스트에서 설명 문자열과 선택 상태를 함께 검증
 
@@ -483,9 +488,9 @@ test: BarMath 경계값 테스트 추가
 PR 제출 전 로컬에서 확인:
 
 ```bash
-./gradlew :compose-chart:assembleDebug   # 라이브러리 빌드
-./gradlew :compose-chart:test            # 유닛 테스트
-./gradlew :compose-chart:lint            # Android Lint
+./gradlew :compose-chart:assembleDebug        # 라이브러리 빌드
+./gradlew :compose-chart:testDebugUnitTest    # JVM 유닛 테스트 (AGP 9: variant-specific 태스크 사용)
+./gradlew :compose-chart:lint                 # Android Lint
 ```
 
 ### CI 파이프라인

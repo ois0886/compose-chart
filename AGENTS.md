@@ -58,11 +58,14 @@ Before making changes, read documents in this order:
 ```bash
 ./gradlew :compose-chart:assembleDebug
 ./gradlew :app:assembleDebug
-./gradlew :compose-chart:test
+./gradlew :compose-chart:testDebugUnitTest
 ./gradlew :compose-chart:lint
-./gradlew :compose-chart:connectedAndroidTest
+./gradlew :compose-chart:connectedDebugAndroidTest
 ./gradlew :compose-chart:publishAndReleaseToMavenCentral
 ```
+
+> AGP 9 note: the aggregate `test` task no longer accepts `--tests`. Use
+> `testDebugUnitTest` for single-class filters.
 
 ## Key Paths
 

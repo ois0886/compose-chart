@@ -17,17 +17,18 @@ For internal architecture and contributor onboarding details, refer to `docs/pro
 ## Build Commands
 
 ```bash
-./gradlew :compose-chart:assembleDebug   # 라이브러리 빌드
-./gradlew :app:assembleDebug             # 샘플 앱 빌드
-./gradlew test                           # 전체 유닛 테스트
-./gradlew :compose-chart:test            # 라이브러리 유닛 테스트만
-./gradlew lint                           # Android Lint
-./gradlew clean                          # 빌드 정리
+./gradlew :compose-chart:assembleDebug        # 라이브러리 빌드
+./gradlew :app:assembleDebug                  # 샘플 앱 빌드
+./gradlew :compose-chart:testDebugUnitTest    # 라이브러리 JVM 유닛 테스트
+./gradlew :compose-chart:lint                 # Android Lint
+./gradlew :compose-chart:connectedDebugAndroidTest  # 에뮬레이터 UI 테스트
+./gradlew clean                               # 빌드 정리
 ```
 
-Run a single test class:
+Run a single test class (AGP 9에서는 `test` 태스크가 `--tests`를 받지 않으므로
+variant-specific 태스크 사용):
 ```bash
-./gradlew :compose-chart:test --tests "com.inseong.composechart.SomeTest"
+./gradlew :compose-chart:testDebugUnitTest --tests "com.inseong.composechart.SomeTest"
 ```
 
 Publish to Maven Central:
@@ -63,6 +64,8 @@ Publish to Maven Central:
 |----------|------|------|
 | `ChartZoomState` | `ChartZoomState.kt` | 줌/팬 상태 관리 (`rememberChartZoomState()`) — Line, Bar 차트 지원 |
 | `ChartCaptureState` | `ChartCaptureState.kt` | 차트 이미지 캡처 (`rememberChartCaptureState()`, `Modifier.chartCaptureModifier()`) |
+| `ChartSelection` | `ChartSelection.kt` | 차트 간 공통 선택 이벤트 sealed interface (`Line`/`Bar`/`Donut`/`Radar`/`Gauge`) — 6개 차트의 `onSelectionChanged`에서 방출 |
+| `ChartDefaults` | `ChartDefaults.kt` | 기본 6색 팔레트, 라이트/다크 테마 기본 색상, 접근성 값 포맷팅 |
 
 ### Internal Math Modules (순수 함수)
 
@@ -72,16 +75,17 @@ Publish to Maven Central:
 |------|------|----------|
 | `internal/math/ChartMath.kt` | XY 범위 계산, 좌표 매핑, 값 포맷팅 | Line, Bar |
 | `internal/math/BarMath.kt` | 막대 레이아웃, 터치 그룹 인덱스, 세그먼트 높이 | Bar |
-| `internal/math/DonutMath.kt` | 터치 슬라이스 찾기, 슬라이스 offset, 간격 각도 | Donut, Pie |
+| `internal/math/DonutMath.kt` | 터치 슬라이스 찾기, 슬라이스 offset, 간격 각도, 라벨 앵커/바운드 검사 | Donut, Pie |
 | `internal/math/GaugeMath.kt` | 값 정규화, 시작 각도 | Gauge |
-| `internal/math/RadarMath.kt` | 극좌표→직교, 데이터 다각형, 최근접 축 | Radar |
+| `internal/math/RadarMath.kt` | 극좌표→직교, 데이터 다각형, 최근접 축, 축 라벨 위치 | Radar |
 
 ### Key Directories
 
 - `compose-chart/src/main/java/com/inseong/composechart/` — 차트 라이브러리 소스
 - `compose-chart/src/main/java/com/inseong/composechart/internal/math/` — 순수 함수 (테스트 가능한 비즈니스 로직)
+- `compose-chart/src/debug/java/com/inseong/composechart/previews/` — 차트 `@Preview` 함수 (debug variant 전용, release AAR 미포함)
 - `compose-chart/src/test/` — JVM 유닛 테스트 (순수 함수 대상)
-- `compose-chart/src/androidTest/` — Compose UI 테스트 (전체 차트 + ChartSize)
+- `compose-chart/src/androidTest/` — Compose UI 테스트 (차트 렌더링, 접근성, 선택 콜백)
 - `app/src/main/java/com/inseong/composechart/` — 샘플 앱 소스
 - `app/src/main/java/com/inseong/composechart/ui/theme/` — Material3 테마
 

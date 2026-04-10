@@ -31,15 +31,21 @@ Main source layout:
 - `style/` — style models such as `LineChartStyle`, `AxisStyle`, `TooltipStyle`
 - `line/`, `bar/`, `donut/`, `gauge/`, `radar/`, `pie/` — public chart composables
 - `legend/` — `ChartLegend`
-- `internal/math/` — pure calculation helpers for ranges, geometry, hit testing, and normalization
+- `internal/math/` — pure calculation helpers for ranges, geometry, label anchoring, hit testing, and normalization
 - `internal/canvas/` — reusable drawing helpers
 - `internal/touch/` — gesture and hit-test helpers
 - `internal/animation/` — animation helpers
 
+Debug-only source layout:
+
+- `src/debug/java/com/inseong/composechart/previews/` — per-chart `@Preview` functions (light + dark variants). Scoped to the debug build variant so the release AAR and Maven Central artifact stay clean.
+
 Shared public state helpers:
 
-- `ChartZoomState` with `rememberChartZoomState()` for zoom and pan
-- `ChartCaptureState` with `rememberChartCaptureState()` and `Modifier.chartCaptureModifier()` for bitmap export
+- `ChartZoomState` with `rememberChartZoomState()` for zoom and pan (Line, Bar)
+- `ChartCaptureState` with `rememberChartCaptureState()` and `Modifier.chartCaptureModifier()` for bitmap export (all charts)
+- `ChartSelection` sealed interface (`Line`/`Bar`/`Donut`/`Radar`/`Gauge`) emitted by each chart's `onSelectionChanged` callback, giving consumers a single type-safe signature across chart kinds
+- `ChartDefaults` color palette and theme-aware resolvers for grid/axis/gauge/radar surfaces
 
 ### `app/`
 
@@ -55,10 +61,12 @@ Sample app that showcases all charts and doubles as a manual verification surfac
 - `LineChart` — multi-series line chart with optional curve, gradient fill, tooltip, zoom/pan
 - `BarChart` — simple, grouped, stacked, and horizontal/vertical variations with tooltip and zoom/pan
 - `DonutChart` — ring chart with slice labels and touch interaction
-- `GaugeChart` — radial progress/gauge visualization
+- `GaugeChart` — radial progress/gauge visualization with touch-driven value read-back
 - `RadarChart` — radar/spider chart with axis labels
 - `PieChart` — pie visualization backed by `DonutChartData`
 - `ChartLegend` — reusable legend component for series toggles and labeling
+
+All six charts expose a consistent set of accessibility parameters (`accessibilityLabel`, `onClickLabel`) and the common `onSelectionChanged: ((ChartSelection.*) -> Unit)?` callback. Legacy per-chart callbacks (`onPointSelected`, `onBarSelected`, `onSliceSelected`, `onAxisSelected`) remain for source compatibility and are slated for removal in v2.0.
 
 ## Design Principles
 
@@ -72,8 +80,8 @@ Sample app that showcases all charts and doubles as a manual verification surfac
 
 ### Library tests
 
-- `compose-chart/src/test/java/...` is for JVM tests around pure math and logic helpers.
-- `compose-chart/src/androidTest/java/...` is for Compose UI and rendering-related library tests.
+- `compose-chart/src/test/java/...` is for JVM tests around pure math and logic helpers, plus README example mirroring (`documentation/ReadmeExamplesTest`).
+- `compose-chart/src/androidTest/java/...` is for Compose UI and rendering-related library tests, including cross-chart accessibility (`AccessibilityTest`) and selection callback (`SelectionCallbackTest`) suites.
 
 ### Sample app tests
 
@@ -87,10 +95,13 @@ Common commands:
 ```bash
 ./gradlew :compose-chart:assembleDebug
 ./gradlew :app:assembleDebug
-./gradlew :compose-chart:test
+./gradlew :compose-chart:testDebugUnitTest
 ./gradlew :compose-chart:lint
-./gradlew :compose-chart:connectedAndroidTest
+./gradlew :compose-chart:connectedDebugAndroidTest
 ```
+
+> AGP 9 note: the aggregate `test` task no longer accepts `--tests`. Use the
+> variant-specific `testDebugUnitTest` task when filtering to a single class.
 
 Release command:
 
