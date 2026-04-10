@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
+import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.internal.canvas.toTypefaceStyle
@@ -56,7 +57,10 @@ import kotlin.math.min
  * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
  * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
  *   node is added so assistive tech can announce the action.
- * @param onAxisSelected Callback when an axis vertex is touched. null for no callback.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Radar] when an axis vertex is touched.
+ *   Prefer this over [onAxisSelected] for a callback signature shared across all charts.
+ * @param onAxisSelected Positional-argument callback kept for source compatibility.
+ *   Will be removed in v2.0 — migrate to [onSelectionChanged].
  */
 @Composable
 fun RadarChart(
@@ -66,6 +70,7 @@ fun RadarChart(
     colors: List<Color> = ChartDefaults.colors,
     accessibilityLabel: String = "레이더 차트",
     onClickLabel: String? = null,
+    onSelectionChanged: ((ChartSelection.Radar) -> Unit)? = null,
     onAxisSelected: ((axisIndex: Int) -> Unit)? = null,
 ) {
     val isDark = isSystemInDarkTheme()
@@ -218,6 +223,7 @@ fun RadarChart(
             if (nearestAxis >= 0) {
                 selectedAxisIndex = nearestAxis
                 onAxisSelected?.invoke(nearestAxis)
+                onSelectionChanged?.invoke(ChartSelection.Radar(nearestAxis))
             }
         }
     }

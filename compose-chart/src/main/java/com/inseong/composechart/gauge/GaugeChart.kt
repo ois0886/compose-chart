@@ -25,10 +25,12 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
+import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.internal.math.ChartMath
 import com.inseong.composechart.internal.math.GaugeMath
+import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.GaugeChartStyle
 import kotlin.math.min
 
@@ -63,6 +65,8 @@ import kotlin.math.min
  * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
  * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
  *   node is added so assistive tech can announce the action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Gauge] on touch. The emitted
+ *   value and ratio reflect the currently animated progress at the moment of touch.
  */
 @Composable
 fun GaugeChart(
@@ -72,6 +76,7 @@ fun GaugeChart(
     centerContent: (@Composable (animatedValue: Float) -> Unit)? = null,
     accessibilityLabel: String = "게이지 차트",
     onClickLabel: String? = null,
+    onSelectionChanged: ((ChartSelection.Gauge) -> Unit)? = null,
 ) {
     // Detect dark theme and resolve colors
     val isDark = isSystemInDarkTheme()
@@ -102,6 +107,16 @@ fun GaugeChart(
     val gaugeStateDescription =
         "진행률 ${(animatedRatio * 100).toInt()}퍼센트, 현재 값 ${ChartMath.formatValue(animatedValue)}"
 
+    val touchModifier = if (onSelectionChanged != null) {
+        Modifier.chartTouchHandler { offset ->
+            if (offset != null) {
+                onSelectionChanged(ChartSelection.Gauge(animatedValue, animatedRatio))
+            }
+        }
+    } else {
+        Modifier
+    }
+
     Box(
         modifier = modifier
             .semantics {
@@ -110,7 +125,8 @@ fun GaugeChart(
                 onClickLabel?.let { label -> onClick(label = label, action = null) }
             }
             .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-            .background(style.chart.backgroundColor),
+            .background(style.chart.backgroundColor)
+            .then(touchModifier),
         contentAlignment = Alignment.Center,
     ) {
         // Draw gauge arcs

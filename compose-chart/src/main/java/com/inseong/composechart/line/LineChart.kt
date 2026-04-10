@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.ChartDefaults
+import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.ChartZoomState
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
@@ -73,7 +74,10 @@ import com.inseong.composechart.style.LineChartStyle
  * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
  * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
  *   node is added so assistive tech can announce the action.
- * @param onPointSelected Callback on data point touch. null for no callback.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Line] on data point touch.
+ *   Prefer this over [onPointSelected] for a callback signature shared across all charts.
+ * @param onPointSelected Positional-argument callback kept for source compatibility.
+ *   Will be removed in v2.0 — migrate to [onSelectionChanged].
  */
 @Composable
 fun LineChart(
@@ -84,6 +88,7 @@ fun LineChart(
     zoomState: ChartZoomState? = null,
     accessibilityLabel: String = "선 차트",
     onClickLabel: String? = null,
+    onSelectionChanged: ((ChartSelection.Line) -> Unit)? = null,
     onPointSelected: ((seriesIndex: Int, pointIndex: Int, point: ChartPoint) -> Unit)? = null,
 ) {
     // Detect dark theme and resolve styles
@@ -306,8 +311,11 @@ fun LineChart(
                                 canvasSize = size,
                             )
 
-                            // Invoke callback
+                            // Invoke callbacks (deprecated + new sealed-type variant)
                             onPointSelected?.invoke(seriesIndex, nearestIndex, dataPoint)
+                            onSelectionChanged?.invoke(
+                                ChartSelection.Line(seriesIndex, nearestIndex, dataPoint),
+                            )
                         }
                     }
                 }

@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
+import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.ChartZoomState
 import com.inseong.composechart.data.BarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -74,7 +75,10 @@ import com.inseong.composechart.style.BarChartStyle
  * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
  * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
  *   node is added so assistive tech can announce the action.
- * @param onBarSelected Callback on bar touch (group index, entry index, stack index)
+ * @param onSelectionChanged Callback emitting [ChartSelection.Bar] on bar touch.
+ *   Prefer this over [onBarSelected] for a callback signature shared across all charts.
+ * @param onBarSelected Positional-argument callback kept for source compatibility.
+ *   Will be removed in v2.0 — migrate to [onSelectionChanged].
  */
 @Composable
 fun BarChart(
@@ -85,6 +89,7 @@ fun BarChart(
     zoomState: ChartZoomState? = null,
     accessibilityLabel: String = "막대 차트",
     onClickLabel: String? = null,
+    onSelectionChanged: ((ChartSelection.Bar) -> Unit)? = null,
     onBarSelected: ((groupIndex: Int, entryIndex: Int, stackIndex: Int) -> Unit)? = null,
 ) {
     // Detect dark theme and resolve styles
@@ -306,6 +311,9 @@ fun BarChart(
                         )
 
                         onBarSelected?.invoke(groupIndex, touchedEntryIndex, 0)
+                        onSelectionChanged?.invoke(
+                            ChartSelection.Bar(groupIndex, touchedEntryIndex, 0),
+                        )
                     }
                 }
             }

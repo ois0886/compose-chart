@@ -11,12 +11,18 @@
 - 6개 차트 전부에 `accessibilityLabel`, `onClickLabel` 파라미터 노출 — 스크린리더 라벨 커스터마이징 및 클릭 액션 안내 지원
 - GaugeChart `stateDescription` 추가 — 현재 값과 진행률을 스크린리더가 읽을 수 있도록
 - `DonutMath.calculateLabelAnchor()`, `isLabelWithinBounds()`, `RadarMath.calculateAxisLabelPosition()` 순수 함수 — UI 코드의 수학 로직 JVM 단위 테스트화
+- `ChartSelection` sealed interface (`Line`/`Bar`/`Donut`/`Radar`/`Gauge`) 및 6개 차트 `onSelectionChanged` 파라미터 — 차트 간 공통 선택 이벤트 시그니처 제공
+- GaugeChart 터치 이벤트 지원 — `onSelectionChanged` 콜백을 통해 현재 값/진행률 읽기 가능
+- compose-chart/src/debug 소스셋에 6개 차트 @Preview 함수 추가 — Android Studio Preview 창에서 즉시 확인 가능
 
 ### Changed
 - 샘플 앱 차트 상세 화면 공통 showcase scaffold 도입 — 화면 중복 구조 정리
 - Line, Bar, Donut, Pie, Gauge, Radar 차트 semantics 설명 강화 — 차트 요약, 값, 선택 상태 전달 개선
 - 도넛 차트 UI 테스트 터치 좌표 안정화 — CI 에뮬레이터에서 선택 상태 검증 일관성 개선
 - DonutChart, RadarChart 내부 라벨 좌표 계산을 `DonutMath`/`RadarMath` 순수 함수로 이동 — UI/비즈니스 로직 분리 원칙 준수
+
+### Deprecated
+- LineChart `onPointSelected`, BarChart `onBarSelected`, DonutChart/PieChart `onSliceSelected`, RadarChart `onAxisSelected` — v2.0에서 제거 예정. `onSelectionChanged` (ChartSelection)를 사용할 것
 
 ### Documentation
 - README에 접근성 지원 및 예제 검증 방식 설명 추가

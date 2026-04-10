@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.inseong.composechart.ChartDefaults
+import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.data.DonutChartData
 import com.inseong.composechart.data.DonutSlice
 import com.inseong.composechart.donut.DonutChart
@@ -35,7 +36,10 @@ import com.inseong.composechart.style.PieChartStyle
  * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
  * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
  *   node is added so assistive tech can announce the action.
- * @param onSliceSelected Callback on slice touch
+ * @param onSelectionChanged Callback emitting [ChartSelection.Donut] on slice touch.
+ *   Prefer this over [onSliceSelected] for a callback signature shared across all charts.
+ * @param onSliceSelected Positional-argument callback kept for source compatibility.
+ *   Will be removed in v2.0 — migrate to [onSelectionChanged].
  */
 @Composable
 fun PieChart(
@@ -45,6 +49,7 @@ fun PieChart(
     colors: List<Color> = ChartDefaults.colors,
     accessibilityLabel: String = "파이 차트",
     onClickLabel: String? = null,
+    onSelectionChanged: ((ChartSelection.Donut) -> Unit)? = null,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
     DonutChart(
@@ -62,6 +67,7 @@ fun PieChart(
         colors = colors,
         accessibilityLabel = accessibilityLabel,
         onClickLabel = onClickLabel,
+        onSelectionChanged = onSelectionChanged,
         onSliceSelected = onSliceSelected,
     )
 }
