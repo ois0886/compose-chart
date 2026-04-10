@@ -231,7 +231,7 @@ class DonutChartTest {
         composeTestRule
             .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
             .performTouchInput {
-                val firstSliceTouchPoint = Offset(x = size.width * 0.8f, y = size.height * 0.35f)
+                val firstSliceTouchPoint = center + Offset(x = 40f, y = -24f)
                 down(firstSliceTouchPoint)
                 up()
             }
@@ -294,7 +294,7 @@ class DonutChartTest {
         composeTestRule
             .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
             .performTouchInput {
-                val firstSliceTouchPoint = Offset(x = size.width * 0.8f, y = size.height * 0.35f)
+                val firstSliceTouchPoint = center + Offset(x = 40f, y = -24f)
                 down(firstSliceTouchPoint)
                 up()
             }
