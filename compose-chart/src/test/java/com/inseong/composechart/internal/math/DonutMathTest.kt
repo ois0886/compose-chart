@@ -1,6 +1,8 @@
 package com.inseong.composechart.internal.math
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DonutMathTest {
@@ -90,5 +92,63 @@ class DonutMathTest {
     fun calculateSpacingAngle_zeroRadius_returnsZero() {
         val angle = DonutMath.calculateSpacingAngle(3, 5f, 0f)
         assertEquals(0f, angle, 0.001f)
+    }
+
+    @Test
+    fun calculateLabelAnchor_atZeroDegrees_returnsRightOfCenter() {
+        val (x, y) = DonutMath.calculateLabelAnchor(0f, 100f, 100f, 50f)
+        assertEquals(150f, x, 0.001f)
+        assertEquals(100f, y, 0.001f)
+    }
+
+    @Test
+    fun calculateLabelAnchor_at90Degrees_returnsBelowCenter() {
+        // 90° in screen coordinates (y-down) points downward
+        val (x, y) = DonutMath.calculateLabelAnchor(90f, 100f, 100f, 50f)
+        assertEquals(100f, x, 0.001f)
+        assertEquals(150f, y, 0.001f)
+    }
+
+    @Test
+    fun calculateLabelAnchor_at180Degrees_returnsLeftOfCenter() {
+        val (x, y) = DonutMath.calculateLabelAnchor(180f, 100f, 100f, 50f)
+        assertEquals(50f, x, 0.001f)
+        assertEquals(100f, y, 0.001f)
+    }
+
+    @Test
+    fun isLabelWithinBounds_fullyInside_returnsTrue() {
+        assertTrue(
+            DonutMath.isLabelWithinBounds(
+                labelX = 100f, labelY = 100f,
+                textWidth = 20f, textHeight = 12f,
+                canvasWidth = 200f, canvasHeight = 200f,
+                marginPx = 4f,
+            ),
+        )
+    }
+
+    @Test
+    fun isLabelWithinBounds_textOverflowsRight_returnsFalse() {
+        assertFalse(
+            DonutMath.isLabelWithinBounds(
+                labelX = 195f, labelY = 100f,
+                textWidth = 20f, textHeight = 12f,
+                canvasWidth = 200f, canvasHeight = 200f,
+                marginPx = 4f,
+            ),
+        )
+    }
+
+    @Test
+    fun isLabelWithinBounds_textOverflowsTop_returnsFalse() {
+        assertFalse(
+            DonutMath.isLabelWithinBounds(
+                labelX = 100f, labelY = 5f,
+                textWidth = 20f, textHeight = 12f,
+                canvasWidth = 200f, canvasHeight = 200f,
+                marginPx = 4f,
+            ),
+        )
     }
 }

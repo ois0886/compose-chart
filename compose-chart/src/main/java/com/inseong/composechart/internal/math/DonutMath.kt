@@ -97,4 +97,53 @@ internal object DonutMath {
             0f
         }
     }
+
+    /**
+     * Calculates the (x, y) anchor point for a slice label, given the slice mid-angle.
+     *
+     * @param midAngleDegrees angle to the midpoint of the slice in degrees
+     * @param centerX chart center X
+     * @param centerY chart center Y
+     * @param labelRadius distance from center at which to place the label
+     * @return Pair of (labelX, labelY) in canvas coordinates
+     */
+    fun calculateLabelAnchor(
+        midAngleDegrees: Float,
+        centerX: Float,
+        centerY: Float,
+        labelRadius: Float,
+    ): Pair<Float, Float> {
+        val rad = Math.toRadians(midAngleDegrees.toDouble())
+        val x = centerX + (cos(rad) * labelRadius).toFloat()
+        val y = centerY + (sin(rad) * labelRadius).toFloat()
+        return x to y
+    }
+
+    /**
+     * Checks whether a label's bounding box fits entirely within the canvas minus a margin.
+     *
+     * @param labelX horizontal center of the label
+     * @param labelY vertical reference of the label
+     * @param textWidth measured text width in px
+     * @param textHeight measured text height in px
+     * @param canvasWidth canvas width in px
+     * @param canvasHeight canvas height in px
+     * @param marginPx padding from canvas edges
+     * @return true if the label can be drawn without clipping
+     */
+    fun isLabelWithinBounds(
+        labelX: Float,
+        labelY: Float,
+        textWidth: Float,
+        textHeight: Float,
+        canvasWidth: Float,
+        canvasHeight: Float,
+        marginPx: Float,
+    ): Boolean {
+        if (labelX - textWidth / 2 < marginPx) return false
+        if (labelX + textWidth / 2 > canvasWidth - marginPx) return false
+        if (labelY - textHeight < marginPx) return false
+        if (labelY + textHeight / 2 > canvasHeight - marginPx) return false
+        return true
+    }
 }

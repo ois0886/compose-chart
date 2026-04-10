@@ -28,9 +28,7 @@ import com.inseong.composechart.data.DonutSlice
 import com.inseong.composechart.internal.math.DonutMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.DonutChartStyle
-import kotlin.math.cos
 import kotlin.math.min
-import kotlin.math.sin
 
 /**
  * Donut chart Composable.
@@ -236,9 +234,12 @@ private fun DrawScope.drawSliceLabel(
     canvasWidth: Float,
     canvasHeight: Float,
 ) {
-    val midAngleRad = Math.toRadians(midAngle.toDouble())
-    val labelX = centerX + (cos(midAngleRad) * labelRadius).toFloat()
-    val labelY = centerY + (sin(midAngleRad) * labelRadius).toFloat()
+    val (labelX, labelY) = DonutMath.calculateLabelAnchor(
+        midAngleDegrees = midAngle,
+        centerX = centerX,
+        centerY = centerY,
+        labelRadius = labelRadius,
+    )
 
     // Text size proportional to chart size (min 8dp, max ~14dp)
     val scaledTextSize = (chartRadius * 0.12f).coerceIn(8f * density, 14f * density)
@@ -256,9 +257,16 @@ private fun DrawScope.drawSliceLabel(
     val textHeight = scaledTextSize
 
     // Do not draw if text extends beyond canvas bounds
-    val margin = 4f
-    if (labelX - textWidth / 2 < margin || labelX + textWidth / 2 > canvasWidth - margin) return
-    if (labelY - textHeight < margin || labelY + textHeight / 2 > canvasHeight - margin) return
+    if (!DonutMath.isLabelWithinBounds(
+            labelX = labelX,
+            labelY = labelY,
+            textWidth = textWidth,
+            textHeight = textHeight,
+            canvasWidth = canvasWidth,
+            canvasHeight = canvasHeight,
+            marginPx = 4f,
+        )
+    ) return
 
     drawContext.canvas.nativeCanvas.drawText(
         label,
