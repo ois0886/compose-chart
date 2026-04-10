@@ -227,7 +227,9 @@ class DonutChartTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(center) }
+        composeTestRule
+            .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
+            .performTouchInput { down(center) }
         composeTestRule.mainClock.advanceTimeBy(500)
         composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)
@@ -286,7 +288,9 @@ class DonutChartTest {
 
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(centerRight) }
+        composeTestRule
+            .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
+            .performTouchInput { down(centerRight) }
         composeTestRule.mainClock.advanceTimeBy(500)
 
         composeTestRule
