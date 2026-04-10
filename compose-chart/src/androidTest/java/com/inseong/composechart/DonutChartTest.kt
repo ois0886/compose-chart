@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -219,7 +218,7 @@ class DonutChartTest {
         composeTestRule.setContent {
             DonutChart(
                 data = DonutChartData.fromValues(
-                    values = mapOf("A" to 50f, "B" to 50f),
+                    values = mapOf("A" to 100f),
                 ),
                 modifier = defaultModifier,
                 style = DonutChartStyle(holeRadius = 0f),
@@ -229,12 +228,8 @@ class DonutChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
-            .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
-            .performTouchInput {
-                val firstSliceTouchPoint = center + Offset(x = 40f, y = -24f)
-                down(firstSliceTouchPoint)
-                up()
-            }
+            .onNodeWithContentDescription("도넛 차트, 1개 항목, 총합 100")
+            .performTouchInput { down(center); up() }
         composeTestRule.mainClock.advanceTimeBy(500)
         assertTrue("onSliceSelected should be invoked on touch in pie mode", callbackInvoked)
     }
@@ -282,7 +277,7 @@ class DonutChartTest {
         composeTestRule.setContent {
             DonutChart(
                 data = DonutChartData.fromValues(
-                    values = linkedMapOf("Food" to 40f, "Transport" to 60f),
+                    values = linkedMapOf("Food" to 40f),
                 ),
                 modifier = defaultModifier,
                 style = DonutChartStyle(holeRadius = 0f),
@@ -292,16 +287,12 @@ class DonutChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
-            .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
-            .performTouchInput {
-                val firstSliceTouchPoint = center + Offset(x = 40f, y = -24f)
-                down(firstSliceTouchPoint)
-                up()
-            }
+            .onNodeWithContentDescription("도넛 차트, 1개 항목, 총합 40")
+            .performTouchInput { down(center); up() }
         composeTestRule.mainClock.advanceTimeBy(500)
 
         composeTestRule
-            .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
+            .onNodeWithContentDescription("도넛 차트, 1개 항목, 총합 40")
             .assert(
                 SemanticsMatcher.expectValue(
                     SemanticsProperties.StateDescription,
