@@ -55,6 +55,7 @@ fun PieChart(
             chart = style.chart,
         ),
         colors = colors,
+        accessibilityLabel = "파이 차트",
         onSliceSelected = onSliceSelected,
     )
 }

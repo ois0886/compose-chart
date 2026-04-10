@@ -8,6 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -307,6 +311,29 @@ class BarChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().performTouchInput { down(center); up() }
         composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun barChart_exposesAccessibilityDescriptions() {
+        composeTestRule.setContent {
+            BarChart(
+                data = BarChartData.simple(
+                    values = listOf(30f, 45f, 28f),
+                    labels = listOf("A", "B", "C"),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("막대 차트, 3개 그룹")
+            .assertContentDescriptionEquals("막대 차트, 3개 그룹")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "선택된 그룹 없음",
+                ),
+            )
     }
 
     // ── Style configuration tests ──

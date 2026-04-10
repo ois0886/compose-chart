@@ -22,6 +22,7 @@ import com.inseong.composechart.ChartZoomState
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.internal.math.ChartMath
@@ -93,6 +94,7 @@ fun LineChart(
 
     // Touch state
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
+    var selectedPointSummary by remember { mutableStateOf<String?>(null) }
 
     // Filter valid series only (series with points)
     val validSeries = remember(data) { data.series.filter { it.points.isNotEmpty() } }
@@ -109,7 +111,12 @@ fun LineChart(
 
     val chartPaddingPx = style.chart.chartPadding
 
-    val accessibilityDescription = "선 차트, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트"
+    val accessibilityDescription = buildString {
+        append("선 차트, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트")
+        if (data.xLabels.isNotEmpty()) {
+            append(", ${data.xLabels.size}개 X축 라벨")
+        }
+    }
 
     val touchModifier = if (zoomState != null) {
         Modifier.chartTouchHandlerWithZoom(zoomState = zoomState, onTouch = { offset -> touchOffset = offset })
@@ -119,7 +126,10 @@ fun LineChart(
 
     Canvas(
         modifier = modifier
-            .semantics { contentDescription = accessibilityDescription }
+            .semantics {
+                contentDescription = accessibilityDescription
+                stateDescription = selectedPointSummary ?: "선택된 포인트 없음"
+            }
             .fillMaxWidth()
             .then(touchModifier),
     ) {
@@ -170,6 +180,7 @@ fun LineChart(
                 touch
             }
         }
+        if (currentTouch == null) selectedPointSummary = null
 
         // Clip to chart area and apply zoom transform
         clipRect(
@@ -258,6 +269,12 @@ fun LineChart(
                         if (nearestIndex >= 0 && nearestIndex < mappedPoints.size) {
                             val nearestPoint = mappedPoints[nearestIndex]
                             val dataPoint = series.points[nearestIndex]
+                            if (seriesIndex == 0) {
+                                val xLabel = data.xLabels.getOrNull(nearestIndex).orEmpty()
+                                val labelPrefix = if (xLabel.isNotEmpty()) "$xLabel, " else ""
+                                selectedPointSummary =
+                                    "선택된 포인트: ${labelPrefix}값 ${ChartDefaults.formatSemanticsValue(dataPoint.y)}"
+                            }
 
                             // Draw vertical indicator line only for the first series (avoid duplicates)
                             if (seriesIndex == 0) {

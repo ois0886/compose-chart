@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.DonutChartData
@@ -56,6 +57,7 @@ import kotlin.math.sin
  * @param modifier Layout Modifier (size must be specified)
  * @param style Chart style configuration
  * @param colors Slice color palette
+ * @param accessibilityLabel Base accessibility label used in semantics output
  * @param onSliceSelected Callback on slice touch
  */
 @Composable
@@ -64,6 +66,7 @@ fun DonutChart(
     modifier: Modifier = Modifier,
     style: DonutChartStyle = DonutChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
+    accessibilityLabel: String = "도넛 차트",
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
@@ -86,11 +89,19 @@ fun DonutChart(
         )
     }
 
-    val accessibilityDescription = "도넛 차트, ${validSlices.size}개 항목"
+    val accessibilityDescription =
+        "$accessibilityLabel, ${validSlices.size}개 항목, 총합 ${ChartDefaults.formatSemanticsValue(total)}"
+    val selectionDescription = validSlices.getOrNull(selectedIndex)?.let { slice ->
+        val label = slice.label.takeIf { it.isNotEmpty() } ?: "${selectedIndex + 1}번 항목"
+        "선택된 항목: $label, 값 ${ChartDefaults.formatSemanticsValue(slice.value)}"
+    } ?: "선택된 항목 없음"
 
     Canvas(
         modifier = modifier
-            .semantics { contentDescription = accessibilityDescription }
+            .semantics {
+                contentDescription = accessibilityDescription
+                stateDescription = selectionDescription
+            }
             .chartTouchHandler { offset ->
                 touchOffset = offset
                 if (offset == null) selectedIndex = -1

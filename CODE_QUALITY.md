@@ -406,6 +406,8 @@ assertEquals(expected, actual, 0.001f)  // tolerance 필수
 ### 새 기능 추가 시
 - 비즈니스 로직은 순수 함수로 추출 → 유닛 테스트 작성
 - 기존 테스트가 깨지지 않는지 확인: `./gradlew :compose-chart:test`
+- README 코드 예제를 변경하면 대응되는 예제 테스트도 함께 갱신
+- 접근성 semantics를 변경하면 UI 테스트에서 설명 문자열과 선택 상태를 함께 검증
 
 ---
 
@@ -449,6 +451,9 @@ class ChartZoomState( ... )
 ### Fixed
 - 버그 수정 설명
 ```
+
+- 공개 동작, 문서 예제, 접근성 출력, 릴리스 운영 흐름이 바뀌면 같은 변경에 `CHANGELOG.md`를 포함한다.
+- 진행 중인 변경은 `Unreleased` 섹션에 먼저 기록하고, 릴리스 시 버전 섹션으로 정리한다.
 
 ---
 

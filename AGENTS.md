@@ -44,6 +44,8 @@ Before making changes, read documents in this order:
 - Prefer pure functions for calculations and transformations.
 - Keep UI rendering and business/math logic separated.
 - Add or update tests when behavior changes.
+- When changing README code examples, update the mirrored example tests too.
+- When changing public behavior, docs, accessibility output, or release-visible workflows, update `CHANGELOG.md` in the same change.
 
 ### 5. Finish with validation and commit
 

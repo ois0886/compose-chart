@@ -8,6 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -242,7 +246,7 @@ class LineChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
-            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트")
+            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트, 4개 X축 라벨")
             .performTouchInput {
                 down(Offset(x = 1f, y = centerY))
             }
@@ -275,7 +279,7 @@ class LineChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
-            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트")
+            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트, 4개 X축 라벨")
             .performTouchInput {
                 down(Offset(x = right - 1f, y = centerY))
             }
@@ -298,6 +302,29 @@ class LineChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().performTouchInput { down(center); up() }
         composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun lineChart_exposesAccessibilityDescriptions() {
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(
+                    values = listOf(10f, 25f, 18f, 32f),
+                    xLabels = listOf("A", "B", "C", "D"),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트, 4개 X축 라벨")
+            .assertContentDescriptionEquals("선 차트, 1개 시리즈, 4개 데이터 포인트, 4개 X축 라벨")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "선택된 포인트 없음",
+                ),
+            )
     }
 
     // ── Style configuration tests ──

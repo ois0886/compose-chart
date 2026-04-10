@@ -3,6 +3,20 @@
 이 프로젝트의 모든 주요 변경 사항을 기록합니다.
 [Keep a Changelog](https://keepachangelog.com/ko/1.0.0/) 형식을 따릅니다.
 
+## [Unreleased]
+
+### Added
+- README Quick Start 예제를 코드로 미러링하는 테스트 추가 — 문서 예제와 실제 API 시그니처 동기화 검증
+- 차트 접근성 검증 테스트 추가 — contentDescription 및 선택 상태 설명 확인
+
+### Changed
+- 샘플 앱 차트 상세 화면 공통 showcase scaffold 도입 — 화면 중복 구조 정리
+- Line, Bar, Donut, Pie, Gauge, Radar 차트 semantics 설명 강화 — 차트 요약, 값, 선택 상태 전달 개선
+
+### Documentation
+- README에 접근성 지원 및 예제 검증 방식 설명 추가
+- 기여 가이드 문서에 README 예제 테스트와 CHANGELOG 갱신 규칙 명시
+
 ## [1.2.0] - 2026-03-13
 
 ### Changed

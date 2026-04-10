@@ -7,7 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inseong.composechart.data.GaugeChartData
@@ -209,6 +211,20 @@ class GaugeChartTest {
             )
         }
         composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun gaugeChart_exposesAccessibilityDescription() {
+        composeTestRule.setContent {
+            GaugeChart(
+                data = GaugeChartData(value = 72f, maxValue = 100f, label = "Progress"),
+                modifier = defaultModifier,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("게이지 차트, Progress, 현재 값 72, 최대 값 100, 진행률 72퍼센트")
+            .assertContentDescriptionEquals("게이지 차트, Progress, 현재 값 72, 최대 값 100, 진행률 72퍼센트")
     }
 
     // ── Style configuration tests ──

@@ -115,3 +115,5 @@ GitHub Actions:
 - Keep internal contributor context in `docs/` instead of expanding agent instruction files.
 - When behavior changes, update tests and user-facing docs together when appropriate.
 - Follow `CODE_QUALITY.md` for implementation details such as immutability, pure functions, visibility, and named arguments.
+- Keep README examples mirrored by compile-safe tests so doc snippets stay aligned with the current API.
+- Update `CHANGELOG.md` whenever public behavior, documentation, accessibility output, or release-visible workflows change.

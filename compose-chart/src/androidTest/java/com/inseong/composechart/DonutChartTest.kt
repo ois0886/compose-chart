@@ -6,7 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -243,6 +248,55 @@ class DonutChartTest {
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().performTouchInput { down(center); up() }
         composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun donutChart_exposesAccessibilityDescriptions() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = linkedMapOf("A" to 40f, "B" to 30f, "C" to 20f, "D" to 10f),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("도넛 차트, 4개 항목, 총합 100")
+            .assertContentDescriptionEquals("도넛 차트, 4개 항목, 총합 100")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "선택된 항목 없음",
+                ),
+            )
+    }
+
+    @Test
+    fun donutChart_touch_updatesSelectedSliceAccessibilityState() {
+        composeTestRule.setContent {
+            DonutChart(
+                data = DonutChartData.fromValues(
+                    values = linkedMapOf("Food" to 40f, "Transport" to 60f),
+                ),
+                modifier = defaultModifier,
+                style = DonutChartStyle(holeRadius = 0f),
+            )
+        }
+
+        composeTestRule.waitForIdle()
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule.onRoot().performTouchInput { down(centerRight) }
+        composeTestRule.mainClock.advanceTimeBy(500)
+
+        composeTestRule
+            .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "선택된 항목: Food, 값 40",
+                ),
+            )
     }
 
     // ── Style configuration tests ──

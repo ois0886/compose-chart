@@ -83,7 +83,15 @@ fun GaugeChart(
     // Start angle: calculated so the gap is centered at the bottom
     val startAngle = GaugeMath.calculateStartAngle(style.sweepAngle)
 
-    val accessibilityDescription = "게이지 차트, 값 ${ChartMath.formatValue(normalized.safeValue)}/${ChartMath.formatValue(normalized.safeMax)}"
+    val accessibilityDescription = buildString {
+        append("게이지 차트")
+        if (data.label.isNotEmpty()) {
+            append(", ${data.label}")
+        }
+        append(", 현재 값 ${ChartMath.formatValue(normalized.safeValue)}")
+        append(", 최대 값 ${ChartMath.formatValue(normalized.safeMax)}")
+        append(", 진행률 ${(normalized.ratio * 100).toInt()}퍼센트")
+    }
 
     Box(
         modifier = modifier

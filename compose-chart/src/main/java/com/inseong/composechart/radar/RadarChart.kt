@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.RadarChartData
@@ -70,6 +71,7 @@ fun RadarChart(
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
 
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
+    var selectedAxisIndex by remember { mutableStateOf<Int?>(null) }
 
     val axisCount = data.axisLabels.size
     if (axisCount < 3) return
@@ -85,14 +87,21 @@ fun RadarChart(
         validEntries.flatMap { it.safeValues }.maxOrNull() ?: 1f
     }
 
-    val accessibilityDescription = "레이더 차트, ${axisCount}개 축"
+    val accessibilityDescription = "레이더 차트, ${axisCount}개 축, ${validEntries.size}개 시리즈"
+    val selectionDescription = selectedAxisIndex
+        ?.let(data.axisLabels::getOrNull)
+        ?.let { "선택된 축: $it" }
+        ?: "선택된 축 없음"
 
     Canvas(
         modifier = modifier
-            .semantics { contentDescription = accessibilityDescription }
+            .semantics {
+                contentDescription = accessibilityDescription
+                stateDescription = selectionDescription
+            }
             .chartTouchHandler { offset ->
                 touchOffset = offset
-                if (offset == null) { /* no-op */ }
+                if (offset == null) selectedAxisIndex = null
             },
     ) {
         val paddingPx = style.chart.chartPadding.toPx()
@@ -203,6 +212,7 @@ fun RadarChart(
             )
 
             if (nearestAxis >= 0) {
+                selectedAxisIndex = nearestAxis
                 onAxisSelected?.invoke(nearestAxis)
             }
         }

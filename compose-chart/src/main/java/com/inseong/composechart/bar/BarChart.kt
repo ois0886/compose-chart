@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.ChartZoomState
@@ -92,6 +93,7 @@ fun BarChart(
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
     var selectedGroupIndex by remember { mutableIntStateOf(-1) }
+    var selectedEntryIndex by remember { mutableIntStateOf(-1) }
 
     // Filter valid groups (only groups with entries)
     val validGroups = remember(data) {
@@ -111,10 +113,26 @@ fun BarChart(
     val chartPaddingPx = style.chart.chartPadding
 
     val accessibilityDescription = "막대 차트, ${validGroups.size}개 그룹"
+    val selectionDescription = if (selectedGroupIndex >= 0 && selectedGroupIndex < validGroups.size) {
+        val group = validGroups[selectedGroupIndex]
+        val entry = group.entries.getOrNull(selectedEntryIndex.coerceAtLeast(0))
+        val label = group.label.takeIf { it.isNotEmpty() } ?: "${selectedGroupIndex + 1}번 그룹"
+        val value = entry?.safeValues?.sum()
+        if (value != null) {
+            "선택된 그룹: $label, 값 ${ChartDefaults.formatSemanticsValue(value)}"
+        } else {
+            "선택된 그룹: $label"
+        }
+    } else {
+        "선택된 그룹 없음"
+    }
 
     val touchCallback: (Offset?) -> Unit = { offset ->
         touchOffset = offset
-        if (offset == null) selectedGroupIndex = -1
+        if (offset == null) {
+            selectedGroupIndex = -1
+            selectedEntryIndex = -1
+        }
     }
     val touchModifier = if (zoomState != null) {
         Modifier.chartTouchHandlerWithZoom(zoomState = zoomState, onTouch = touchCallback)
@@ -124,7 +142,10 @@ fun BarChart(
 
     Canvas(
         modifier = modifier
-            .semantics { contentDescription = accessibilityDescription }
+            .semantics {
+                contentDescription = accessibilityDescription
+                stateDescription = selectionDescription
+            }
             .fillMaxWidth()
             .then(touchModifier),
     ) {
@@ -185,6 +206,8 @@ fun BarChart(
                 touchX = currentTouch.x, chartLeft = chartArea.left,
                 groupWidth = groupWidth, groupSpacingPx = groupSpacingPx, groupCount = groupCount,
             )
+        } else {
+            selectedEntryIndex = -1
         }
 
         // Clip to chart area and apply zoom transform
@@ -251,6 +274,7 @@ fun BarChart(
                         } else {
                             0
                         }
+                        selectedEntryIndex = touchedEntryIndex
 
                         val entry = group.entries[touchedEntryIndex]
                         val totalValue = entry.safeValues.sum()

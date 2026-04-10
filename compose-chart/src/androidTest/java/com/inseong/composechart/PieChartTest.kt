@@ -6,7 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -206,5 +208,21 @@ class PieChartTest {
             )
         }
         composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun pieChart_usesPieAccessibilityLabel() {
+        composeTestRule.setContent {
+            PieChart(
+                data = DonutChartData.fromValues(
+                    values = linkedMapOf("A" to 40f, "B" to 30f, "C" to 30f),
+                ),
+                modifier = defaultModifier,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("파이 차트, 3개 항목, 총합 100")
+            .assertContentDescriptionEquals("파이 차트, 3개 항목, 총합 100")
     }
 }

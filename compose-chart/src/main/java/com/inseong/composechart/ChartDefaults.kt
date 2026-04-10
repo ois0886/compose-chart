@@ -94,4 +94,10 @@ object ChartDefaults {
             color
         }
     }
+
+    internal fun formatSemanticsValue(value: Float): String {
+        if (!value.isFinite()) return "0"
+        val rounded = value.toInt().toFloat()
+        return if (value == rounded) rounded.toInt().toString() else String.format("%.1f", value)
+    }
 }

@@ -6,7 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -254,5 +259,28 @@ class RadarChartTest {
             )
         }
         composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun radarChart_exposesAccessibilityDescriptions() {
+        composeTestRule.setContent {
+            RadarChart(
+                data = RadarChartData.single(
+                    values = listOf(80f, 65f, 90f, 70f, 85f),
+                    axisLabels = defaultLabels,
+                ),
+                modifier = defaultModifier,
+            )
+        }
+
+        composeTestRule
+            .onNodeWithContentDescription("레이더 차트, 5개 축, 1개 시리즈")
+            .assertContentDescriptionEquals("레이더 차트, 5개 축, 1개 시리즈")
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "선택된 축 없음",
+                ),
+            )
     }
 }
