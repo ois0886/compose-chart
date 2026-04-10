@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,19 +38,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ChartApp(modifier: Modifier = Modifier) {
-    var currentScreen by remember { mutableStateOf<ChartType?>(null) }
+    var currentScreenName by rememberSaveable { mutableStateOf<String?>(null) }
+    val currentScreen = currentScreenName?.let(ChartType::valueOf)
 
     when (currentScreen) {
         null -> ChartGalleryScreen(
-            onChartSelected = { currentScreen = it },
+            onChartSelected = { currentScreenName = it.name },
             modifier = modifier,
         )
-        ChartType.LINE -> LineChartScreen(onBack = { currentScreen = null })
-        ChartType.BAR -> BarChartScreen(onBack = { currentScreen = null })
-        ChartType.DONUT -> DonutChartScreen(onBack = { currentScreen = null })
-        ChartType.GAUGE -> GaugeChartScreen(onBack = { currentScreen = null })
-        ChartType.RADAR -> RadarChartScreen(onBack = { currentScreen = null })
-        ChartType.PIE -> PieChartScreen(onBack = { currentScreen = null })
+        ChartType.LINE -> LineChartScreen(onBack = { currentScreenName = null })
+        ChartType.BAR -> BarChartScreen(onBack = { currentScreenName = null })
+        ChartType.DONUT -> DonutChartScreen(onBack = { currentScreenName = null })
+        ChartType.GAUGE -> GaugeChartScreen(onBack = { currentScreenName = null })
+        ChartType.RADAR -> RadarChartScreen(onBack = { currentScreenName = null })
+        ChartType.PIE -> PieChartScreen(onBack = { currentScreenName = null })
     }
 }
 
