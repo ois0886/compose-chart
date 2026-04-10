@@ -42,6 +42,17 @@ class AccessibilityTest {
     private val wideModifier = Modifier.fillMaxWidth().height(200.dp)
     private val squareModifier = Modifier.size(200.dp)
 
+    /**
+     * Waits for the compose hierarchy to be mounted before running semantics
+     * queries. Without this, the very first test in the class can race ahead of
+     * the Activity launch on slow emulators.
+     */
+    private fun awaitComposed() {
+        composeTestRule.waitForIdle()
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule.waitForIdle()
+    }
+
     // ── accessibilityLabel overrides prefix ──
 
     @Test
@@ -53,6 +64,7 @@ class AccessibilityTest {
                 accessibilityLabel = "매출 추이",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("매출 추이", substring = true)
             .assertExists()
@@ -72,6 +84,7 @@ class AccessibilityTest {
                 accessibilityLabel = "월별 판매량",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("월별 판매량", substring = true)
             .assertExists()
@@ -92,6 +105,7 @@ class AccessibilityTest {
                 accessibilityLabel = "지출 분포",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("지출 분포", substring = true)
             .assertExists()
@@ -111,6 +125,7 @@ class AccessibilityTest {
                 accessibilityLabel = "투표 결과",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("투표 결과", substring = true)
             .assertExists()
@@ -128,6 +143,7 @@ class AccessibilityTest {
                 accessibilityLabel = "능력치",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("능력치", substring = true)
             .assertExists()
@@ -142,6 +158,7 @@ class AccessibilityTest {
                 accessibilityLabel = "목표 달성률",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("목표 달성률", substring = true)
             .assertExists()
@@ -159,6 +176,7 @@ class AccessibilityTest {
                 onClickLabel = "포인트 선택",
             )
         }
+        awaitComposed()
         composeTestRule
             .onNodeWithContentDescription("차트", substring = true)
             .assert(SemanticsMatcher.keyIsDefined(SemanticsActions.OnClick))
@@ -175,6 +193,7 @@ class AccessibilityTest {
         }
         // Animated progress eventually reaches 100%, so state description
         // must expose a non-null stateDescription property.
+        awaitComposed()
         composeTestRule.mainClock.advanceTimeBy(2000)
         composeTestRule
             .onNodeWithContentDescription("게이지", substring = true)
