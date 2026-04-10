@@ -156,22 +156,35 @@ LineChart(
 
 ### 차트 이미지 캡처
 
-차트를 `ImageBitmap`으로 내보낼 수 있습니다.
+차트를 `ImageBitmap`으로 내보낼 수 있습니다. `capture()`는 suspend 함수이므로
+`rememberCoroutineScope()` 혹은 `LaunchedEffect`에서 호출합니다.
 
 ```kotlin
 val captureState = rememberChartCaptureState()
+val scope = rememberCoroutineScope()
 
-LineChart(
-    data = data,
-    modifier = Modifier
-        .fillMaxWidth()
-        .height(200.dp)
-        .chartCaptureModifier(captureState),
-)
+Column {
+    LineChart(
+        data = data,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .chartCaptureModifier(captureState),
+    )
 
-// 캡처 (suspend)
-val bitmap: ImageBitmap = captureState.capture()
+    Button(onClick = {
+        scope.launch {
+            val bitmap: ImageBitmap = captureState.capture()
+            // bitmap.asAndroidBitmap()을 파일로 저장하거나 공유 Intent에 첨부
+        }
+    }) {
+        Text("이미지로 저장")
+    }
+}
 ```
+
+`Modifier.chartCaptureModifier(captureState)`는 어느 차트에도 동일하게 적용할 수
+있으며, 애니메이션이 끝난 뒤 캡처하면 최종 상태가 담긴 이미지가 반환됩니다.
 
 ### 인터랙티브 범례
 
@@ -291,21 +304,35 @@ LineChart(
 
 ### 터치 상호작용
 
+`onSelectionChanged`는 6개 차트에서 공통으로 제공하는 콜백으로, 차트별
+`ChartSelection` 하위 타입(`Line`/`Bar`/`Donut`/`Radar`/`Gauge`)을 방출합니다.
+
 ```kotlin
 LineChart(
     data = data,
-    onPointSelected = { seriesIndex, pointIndex, point ->
-        println("시리즈 $seriesIndex, 포인트 $pointIndex: ${point.y}")
+    onSelectionChanged = { selection: ChartSelection.Line ->
+        println("시리즈 ${selection.seriesIndex}, " +
+            "포인트 ${selection.pointIndex}: ${selection.point.y}")
     },
 )
 
 DonutChart(
     data = data,
-    onSliceSelected = { index, slice ->
-        println("${slice.label}: ${slice.value}")
+    onSelectionChanged = { selection: ChartSelection.Donut ->
+        println("${selection.slice.label}: ${selection.slice.value}")
+    },
+)
+
+GaugeChart(
+    data = data,
+    onSelectionChanged = { selection: ChartSelection.Gauge ->
+        println("현재 값 ${selection.value}, 진행률 ${selection.ratio}")
     },
 )
 ```
+
+기존의 `onPointSelected`/`onBarSelected`/`onSliceSelected`/`onAxisSelected`
+콜백은 소스 호환을 위해 유지되지만 v2.0에서 제거될 예정입니다.
 
 ### 범례
 
