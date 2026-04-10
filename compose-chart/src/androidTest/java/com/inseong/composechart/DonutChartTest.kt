@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -229,9 +230,11 @@ class DonutChartTest {
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
             .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
-            .performTouchInput { down(center) }
-        composeTestRule.mainClock.advanceTimeBy(500)
-        composeTestRule.onRoot().performTouchInput { up() }
+            .performTouchInput {
+                val firstSliceTouchPoint = Offset(x = size.width * 0.8f, y = size.height * 0.35f)
+                down(firstSliceTouchPoint)
+                up()
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
         assertTrue("onSliceSelected should be invoked on touch in pie mode", callbackInvoked)
     }
@@ -290,7 +293,11 @@ class DonutChartTest {
         composeTestRule.mainClock.advanceTimeBy(1000)
         composeTestRule
             .onNodeWithContentDescription("도넛 차트, 2개 항목, 총합 100")
-            .performTouchInput { down(centerRight) }
+            .performTouchInput {
+                val firstSliceTouchPoint = Offset(x = size.width * 0.8f, y = size.height * 0.35f)
+                down(firstSliceTouchPoint)
+                up()
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
 
         composeTestRule

@@ -12,6 +12,7 @@
 ### Changed
 - 샘플 앱 차트 상세 화면 공통 showcase scaffold 도입 — 화면 중복 구조 정리
 - Line, Bar, Donut, Pie, Gauge, Radar 차트 semantics 설명 강화 — 차트 요약, 값, 선택 상태 전달 개선
+- 도넛 차트 UI 테스트 터치 좌표 안정화 — CI 에뮬레이터에서 선택 상태 검증 일관성 개선
 
 ### Documentation
 - README에 접근성 지원 및 예제 검증 방식 설명 추가
