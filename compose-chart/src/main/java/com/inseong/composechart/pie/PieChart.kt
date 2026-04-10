@@ -29,17 +29,21 @@ import com.inseong.composechart.style.PieChartStyle
  * )
  * ```
  *
- * @param data Data to display in the chart (reuses [DonutChartData])
- * @param modifier Layout Modifier (size must be specified)
- * @param style Chart style configuration
- * @param colors Slice color palette
- * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
- * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
- *   node is added so assistive tech can announce the action.
- * @param onSelectionChanged Callback emitting [ChartSelection.Donut] on slice touch.
- *   Prefer this over [onSliceSelected] for a callback signature shared across all charts.
- * @param onSliceSelected Positional-argument callback kept for source compatibility.
- *   Will be removed in v2.0 — migrate to [onSelectionChanged].
+ * @param data Data to display (reuses [DonutChartData]). Non-positive slices are filtered out.
+ * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
+ * @param style Pie style (slice spacing, selected scale, labels, animation duration, start angle).
+ * @param colors Slice palette used when slices omit a color. See [ChartDefaults.colors].
+ * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
+ *   `"파이 차트"`; override when localizing or using a more specific label.
+ * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
+ *   is added so TalkBack announces the action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Donut] on slice touch. Prefer this
+ *   over [onSliceSelected] for a signature shared across all charts.
+ * @param onSliceSelected Positional-argument callback kept for source compatibility. Will be
+ *   removed in v2.0 — migrate to [onSelectionChanged].
+ *
+ * @see ChartSelection.Donut
+ * @see DonutChart
  */
 @Composable
 fun PieChart(

@@ -66,18 +66,26 @@ import com.inseong.composechart.style.LineChartStyle
  * )
  * ```
  *
- * @param data Data to display in the chart
- * @param modifier Layout Modifier (size must be specified)
- * @param style Chart style configuration
- * @param colors Series color palette. Used in order when no color is specified per series.
- * @param zoomState Optional zoom/pan state. Pass [rememberChartZoomState] to enable pinch-to-zoom and pan.
- * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
- * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
- *   node is added so assistive tech can announce the action.
- * @param onSelectionChanged Callback emitting [ChartSelection.Line] on data point touch.
- *   Prefer this over [onPointSelected] for a callback signature shared across all charts.
- * @param onPointSelected Positional-argument callback kept for source compatibility.
- *   Will be removed in v2.0 — migrate to [onSelectionChanged].
+ * @param data Data to display. Series with empty points are skipped; rendering is a no-op if all
+ *   series are empty.
+ * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
+ * @param style Chart style (curve mode, dots, grid, axis, tooltip, animation duration).
+ * @param colors Palette used for series without an explicit color. Cycles when more series than
+ *   colors. See [ChartDefaults.colors] for the default palette.
+ * @param zoomState Optional zoom/pan state. Pass [com.inseong.composechart.rememberChartZoomState]
+ *   to enable pinch-to-zoom and pan gestures.
+ * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
+ *   `"선 차트"`; override when localizing or using a more specific label.
+ * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
+ *   is added so TalkBack announces the action. null hides the click action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Line] on data point touch. Prefer
+ *   this over [onPointSelected] for a signature shared across all charts.
+ * @param onPointSelected Positional-argument callback kept for source compatibility. Will be
+ *   removed in v2.0 — migrate to [onSelectionChanged].
+ *
+ * @see ChartSelection.Line
+ * @see ChartZoomState
+ * @see com.inseong.composechart.ChartCaptureState
  */
 @Composable
 fun LineChart(

@@ -67,18 +67,26 @@ import com.inseong.composechart.style.BarChartStyle
  * )
  * ```
  *
- * @param data Data to display in the chart
- * @param modifier Layout Modifier (size must be specified)
- * @param style Chart style configuration
- * @param colors Bar color palette
- * @param zoomState Optional zoom/pan state. Pass [rememberChartZoomState] to enable pinch-to-zoom and pan.
- * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
- * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
- *   node is added so assistive tech can announce the action.
- * @param onSelectionChanged Callback emitting [ChartSelection.Bar] on bar touch.
- *   Prefer this over [onBarSelected] for a callback signature shared across all charts.
- * @param onBarSelected Positional-argument callback kept for source compatibility.
- *   Will be removed in v2.0 — migrate to [onSelectionChanged].
+ * @param data Data to display. Groups without entries are skipped; rendering is a no-op if all
+ *   groups are empty.
+ * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
+ * @param style Chart style (orientation, bar corner radius, grouping, grid, axis, tooltip,
+ *   animation duration, highlight alpha).
+ * @param colors Palette for bar segments. See [ChartDefaults.colors] for the default palette.
+ * @param zoomState Optional zoom/pan state. Pass [com.inseong.composechart.rememberChartZoomState]
+ *   to enable pinch-to-zoom and pan gestures.
+ * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
+ *   `"막대 차트"`; override when localizing or using a more specific label.
+ * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
+ *   is added so TalkBack announces the action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Bar] on bar touch. Prefer this over
+ *   [onBarSelected] for a signature shared across all charts.
+ * @param onBarSelected Positional-argument callback kept for source compatibility. Will be
+ *   removed in v2.0 — migrate to [onSelectionChanged].
+ *
+ * @see ChartSelection.Bar
+ * @see ChartZoomState
+ * @see com.inseong.composechart.ChartCaptureState
  */
 @Composable
 fun BarChart(

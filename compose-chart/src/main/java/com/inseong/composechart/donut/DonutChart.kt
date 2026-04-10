@@ -53,17 +53,24 @@ import kotlin.math.min
  * )
  * ```
  *
- * @param data Data to display in the chart
- * @param modifier Layout Modifier (size must be specified)
- * @param style Chart style configuration
- * @param colors Slice color palette
- * @param accessibilityLabel Base accessibility label used in semantics output.
- * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
- *   node is added so assistive tech can announce the action.
- * @param onSelectionChanged Callback emitting [ChartSelection.Donut] on slice touch.
- *   Prefer this over [onSliceSelected] for a callback signature shared across all charts.
- * @param onSliceSelected Positional-argument callback kept for source compatibility.
- *   Will be removed in v2.0 — migrate to [onSelectionChanged].
+ * @param data Data to display. Slices with non-positive value are skipped; rendering is a no-op
+ *   if all slices are filtered out.
+ * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
+ * @param style Chart style (hole radius, slice spacing, selected scale, labels, animation, start
+ *   angle). Use `holeRadius = 0f` for a filled pie look, `0.6f` for a typical donut.
+ * @param colors Slice color palette used when slices omit a color. See [ChartDefaults.colors].
+ * @param accessibilityLabel Base prefix used in the chart's semantics `contentDescription`.
+ *   Default `"도넛 차트"`; override when localizing or using a more specific label.
+ * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
+ *   is added so TalkBack announces the action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Donut] on slice touch. Prefer this
+ *   over [onSliceSelected] for a signature shared across all charts.
+ * @param onSliceSelected Positional-argument callback kept for source compatibility. Will be
+ *   removed in v2.0 — migrate to [onSelectionChanged].
+ *
+ * @see ChartSelection.Donut
+ * @see com.inseong.composechart.pie.PieChart
+ * @see com.inseong.composechart.ChartCaptureState
  */
 @Composable
 fun DonutChart(

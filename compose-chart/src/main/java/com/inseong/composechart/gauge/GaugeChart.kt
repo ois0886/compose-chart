@@ -57,16 +57,25 @@ import kotlin.math.min
  * )
  * ```
  *
- * @param data Data to display in the gauge (current value, max value, label)
- * @param modifier Layout Modifier (size must be specified)
- * @param style Gauge style configuration
- * @param centerContent Custom Composable to display at the center. If null, default text is shown.
- *                      Default text is only shown when [GaugeChartStyle.showCenterText] is true.
- * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
- * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
- *   node is added so assistive tech can announce the action.
- * @param onSelectionChanged Callback emitting [ChartSelection.Gauge] on touch. The emitted
- *   value and ratio reflect the currently animated progress at the moment of touch.
+ * @param data Gauge data (current value, max value, label). Negative/NaN/Infinity values are
+ *   clamped to safe bounds; ratio is computed as `value / maxValue` and clamped to `[0, 1]`.
+ * @param modifier Layout Modifier. A finite size must be provided — the gauge will not size
+ *   itself beyond the internal 48.dp minimum.
+ * @param style Gauge style (stroke width, sweep angle, round cap, center text visibility/color,
+ *   animation duration). Use `sweepAngle = 360f` for a full circle, default is 240° semicircle.
+ * @param centerContent Custom Composable shown at the center. Receives the animated value.
+ *   When null, default text is shown only if [GaugeChartStyle.showCenterText] is true and the
+ *   gauge is at least 80.dp wide.
+ * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
+ *   `"게이지 차트"`; override when localizing or using a more specific label.
+ * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
+ *   is added so TalkBack announces the action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Gauge] on touch. The emitted value
+ *   and ratio reflect the currently animated progress at the moment of touch. When null, the
+ *   gauge does not install a touch handler.
+ *
+ * @see ChartSelection.Gauge
+ * @see com.inseong.composechart.ChartCaptureState
  */
 @Composable
 fun GaugeChart(

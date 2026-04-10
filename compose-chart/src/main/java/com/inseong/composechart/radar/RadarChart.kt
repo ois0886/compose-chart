@@ -50,17 +50,25 @@ import kotlin.math.min
  * )
  * ```
  *
- * @param data Data to display in the chart
- * @param modifier Layout Modifier (size must be specified)
- * @param style Chart style configuration
- * @param colors Series color palette. Used in order when no color is specified per entry.
- * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
- * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
- *   node is added so assistive tech can announce the action.
- * @param onSelectionChanged Callback emitting [ChartSelection.Radar] when an axis vertex is touched.
- *   Prefer this over [onAxisSelected] for a callback signature shared across all charts.
- * @param onAxisSelected Positional-argument callback kept for source compatibility.
- *   Will be removed in v2.0 — migrate to [onSelectionChanged].
+ * @param data Data to display. Requires `axisLabels.size >= 3`; otherwise rendering is a no-op.
+ *   Entries with fewer values than `axisLabels` are dropped. `maxValue` 0 or less falls back
+ *   to the maximum observed value.
+ * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
+ * @param style Chart style (web levels, web line color/width, dot radius, fill alpha, label size,
+ *   animation duration).
+ * @param colors Palette used for entries without an explicit color. Cycles after the palette is
+ *   exhausted. See [ChartDefaults.colors].
+ * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
+ *   `"레이더 차트"`; override when localizing or using a more specific label.
+ * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
+ *   is added so TalkBack announces the action.
+ * @param onSelectionChanged Callback emitting [ChartSelection.Radar] when an axis vertex is
+ *   touched. Prefer this over [onAxisSelected] for a signature shared across all charts.
+ * @param onAxisSelected Positional-argument callback kept for source compatibility. Will be
+ *   removed in v2.0 — migrate to [onSelectionChanged].
+ *
+ * @see ChartSelection.Radar
+ * @see com.inseong.composechart.ChartCaptureState
  */
 @Composable
 fun RadarChart(
