@@ -5,6 +5,8 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-10
+
 ### Added
 - README Quick Start 예제를 코드로 미러링하는 테스트 추가 — 문서 예제와 실제 API 시그니처 동기화 검증
 - 차트 접근성 검증 테스트 추가 — contentDescription 및 선택 상태 설명 확인
