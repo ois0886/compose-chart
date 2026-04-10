@@ -6,6 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 compose-chart is an Android open-source library for custom chart UI components built with Jetpack Compose. Published to Maven Central via `io.github.ois0886:compose-chart`.
 
+For internal architecture and contributor onboarding details, refer to `docs/project-architecture.md`.
+`CLAUDE.md` is the Claude-specific working guide, while `AGENTS.md` is the Codex-specific working guide.
+
 ## Module Structure
 
 - **`compose-chart/`** — 라이브러리 모듈. 차트 Composable 컴포넌트가 위치. Maven Central로 배포됨.
