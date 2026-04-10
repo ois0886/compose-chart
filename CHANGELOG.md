@@ -8,11 +8,15 @@
 ### Added
 - README Quick Start 예제를 코드로 미러링하는 테스트 추가 — 문서 예제와 실제 API 시그니처 동기화 검증
 - 차트 접근성 검증 테스트 추가 — contentDescription 및 선택 상태 설명 확인
+- 6개 차트 전부에 `accessibilityLabel`, `onClickLabel` 파라미터 노출 — 스크린리더 라벨 커스터마이징 및 클릭 액션 안내 지원
+- GaugeChart `stateDescription` 추가 — 현재 값과 진행률을 스크린리더가 읽을 수 있도록
+- `DonutMath.calculateLabelAnchor()`, `isLabelWithinBounds()`, `RadarMath.calculateAxisLabelPosition()` 순수 함수 — UI 코드의 수학 로직 JVM 단위 테스트화
 
 ### Changed
 - 샘플 앱 차트 상세 화면 공통 showcase scaffold 도입 — 화면 중복 구조 정리
 - Line, Bar, Donut, Pie, Gauge, Radar 차트 semantics 설명 강화 — 차트 요약, 값, 선택 상태 전달 개선
 - 도넛 차트 UI 테스트 터치 좌표 안정화 — CI 에뮬레이터에서 선택 상태 검증 일관성 개선
+- DonutChart, RadarChart 내부 라벨 좌표 계산을 `DonutMath`/`RadarMath` 순수 함수로 이동 — UI/비즈니스 로직 분리 원칙 준수
 
 ### Documentation
 - README에 접근성 지원 및 예제 검증 방식 설명 추가

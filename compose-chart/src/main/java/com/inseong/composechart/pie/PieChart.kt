@@ -32,6 +32,9 @@ import com.inseong.composechart.style.PieChartStyle
  * @param modifier Layout Modifier (size must be specified)
  * @param style Chart style configuration
  * @param colors Slice color palette
+ * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
+ * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
+ *   node is added so assistive tech can announce the action.
  * @param onSliceSelected Callback on slice touch
  */
 @Composable
@@ -40,6 +43,8 @@ fun PieChart(
     modifier: Modifier = Modifier,
     style: PieChartStyle = PieChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
+    accessibilityLabel: String = "파이 차트",
+    onClickLabel: String? = null,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
     DonutChart(
@@ -55,7 +60,8 @@ fun PieChart(
             chart = style.chart,
         ),
         colors = colors,
-        accessibilityLabel = "파이 차트",
+        accessibilityLabel = accessibilityLabel,
+        onClickLabel = onClickLabel,
         onSliceSelected = onSliceSelected,
     )
 }

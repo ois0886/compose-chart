@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
@@ -70,6 +71,9 @@ import com.inseong.composechart.style.BarChartStyle
  * @param style Chart style configuration
  * @param colors Bar color palette
  * @param zoomState Optional zoom/pan state. Pass [rememberChartZoomState] to enable pinch-to-zoom and pan.
+ * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
+ * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
+ *   node is added so assistive tech can announce the action.
  * @param onBarSelected Callback on bar touch (group index, entry index, stack index)
  */
 @Composable
@@ -79,6 +83,8 @@ fun BarChart(
     style: BarChartStyle = BarChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
     zoomState: ChartZoomState? = null,
+    accessibilityLabel: String = "막대 차트",
+    onClickLabel: String? = null,
     onBarSelected: ((groupIndex: Int, entryIndex: Int, stackIndex: Int) -> Unit)? = null,
 ) {
     // Detect dark theme and resolve styles
@@ -112,7 +118,7 @@ fun BarChart(
 
     val chartPaddingPx = style.chart.chartPadding
 
-    val accessibilityDescription = "막대 차트, ${validGroups.size}개 그룹"
+    val accessibilityDescription = "$accessibilityLabel, ${validGroups.size}개 그룹"
     val selectionDescription = if (selectedGroupIndex >= 0 && selectedGroupIndex < validGroups.size) {
         val group = validGroups[selectedGroupIndex]
         val entry = group.entries.getOrNull(selectedEntryIndex.coerceAtLeast(0))
@@ -145,6 +151,7 @@ fun BarChart(
             .semantics {
                 contentDescription = accessibilityDescription
                 stateDescription = selectionDescription
+                onClickLabel?.let { label -> onClick(label = label, action = null) }
             }
             .fillMaxWidth()
             .then(touchModifier),

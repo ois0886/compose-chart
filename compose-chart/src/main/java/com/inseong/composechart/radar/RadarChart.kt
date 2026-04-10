@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +53,9 @@ import kotlin.math.min
  * @param modifier Layout Modifier (size must be specified)
  * @param style Chart style configuration
  * @param colors Series color palette. Used in order when no color is specified per entry.
+ * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
+ * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
+ *   node is added so assistive tech can announce the action.
  * @param onAxisSelected Callback when an axis vertex is touched. null for no callback.
  */
 @Composable
@@ -60,6 +64,8 @@ fun RadarChart(
     modifier: Modifier = Modifier,
     style: RadarChartStyle = RadarChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
+    accessibilityLabel: String = "레이더 차트",
+    onClickLabel: String? = null,
     onAxisSelected: ((axisIndex: Int) -> Unit)? = null,
 ) {
     val isDark = isSystemInDarkTheme()
@@ -85,7 +91,7 @@ fun RadarChart(
         validEntries.flatMap { it.safeValues }.maxOrNull() ?: 1f
     }
 
-    val accessibilityDescription = "레이더 차트, ${axisCount}개 축, ${validEntries.size}개 시리즈"
+    val accessibilityDescription = "$accessibilityLabel, ${axisCount}개 축, ${validEntries.size}개 시리즈"
     val selectionDescription = selectedAxisIndex
         ?.let(data.axisLabels::getOrNull)
         ?.let { "선택된 축: $it" }
@@ -96,6 +102,7 @@ fun RadarChart(
             .semantics {
                 contentDescription = accessibilityDescription
                 stateDescription = selectionDescription
+                onClickLabel?.let { label -> onClick(label = label, action = null) }
             }
             .chartTouchHandler { offset ->
                 touchOffset = offset

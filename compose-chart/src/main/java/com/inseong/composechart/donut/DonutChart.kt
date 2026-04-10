@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
@@ -55,7 +56,9 @@ import kotlin.math.min
  * @param modifier Layout Modifier (size must be specified)
  * @param style Chart style configuration
  * @param colors Slice color palette
- * @param accessibilityLabel Base accessibility label used in semantics output
+ * @param accessibilityLabel Base accessibility label used in semantics output.
+ * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
+ *   node is added so assistive tech can announce the action.
  * @param onSliceSelected Callback on slice touch
  */
 @Composable
@@ -65,6 +68,7 @@ fun DonutChart(
     style: DonutChartStyle = DonutChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
     accessibilityLabel: String = "도넛 차트",
+    onClickLabel: String? = null,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
@@ -99,6 +103,7 @@ fun DonutChart(
             .semantics {
                 contentDescription = accessibilityDescription
                 stateDescription = selectionDescription
+                onClickLabel?.let { label -> onClick(label = label, action = null) }
             }
             .chartTouchHandler { offset ->
                 touchOffset = offset

@@ -21,6 +21,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.data.GaugeChartData
@@ -58,6 +60,9 @@ import kotlin.math.min
  * @param style Gauge style configuration
  * @param centerContent Custom Composable to display at the center. If null, default text is shown.
  *                      Default text is only shown when [GaugeChartStyle.showCenterText] is true.
+ * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
+ * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
+ *   node is added so assistive tech can announce the action.
  */
 @Composable
 fun GaugeChart(
@@ -65,6 +70,8 @@ fun GaugeChart(
     modifier: Modifier = Modifier,
     style: GaugeChartStyle = GaugeChartStyle(),
     centerContent: (@Composable (animatedValue: Float) -> Unit)? = null,
+    accessibilityLabel: String = "게이지 차트",
+    onClickLabel: String? = null,
 ) {
     // Detect dark theme and resolve colors
     val isDark = isSystemInDarkTheme()
@@ -84,7 +91,7 @@ fun GaugeChart(
     val startAngle = GaugeMath.calculateStartAngle(style.sweepAngle)
 
     val accessibilityDescription = buildString {
-        append("게이지 차트")
+        append(accessibilityLabel)
         if (data.label.isNotEmpty()) {
             append(", ${data.label}")
         }
@@ -92,10 +99,16 @@ fun GaugeChart(
         append(", 최대 값 ${ChartMath.formatValue(normalized.safeMax)}")
         append(", 진행률 ${(normalized.ratio * 100).toInt()}퍼센트")
     }
+    val gaugeStateDescription =
+        "진행률 ${(animatedRatio * 100).toInt()}퍼센트, 현재 값 ${ChartMath.formatValue(animatedValue)}"
 
     Box(
         modifier = modifier
-            .semantics { contentDescription = accessibilityDescription }
+            .semantics {
+                contentDescription = accessibilityDescription
+                stateDescription = gaugeStateDescription
+                onClickLabel?.let { label -> onClick(label = label, action = null) }
+            }
             .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
             .background(style.chart.backgroundColor),
         contentAlignment = Alignment.Center,

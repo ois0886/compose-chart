@@ -22,6 +22,7 @@ import com.inseong.composechart.ChartZoomState
 import com.inseong.composechart.data.ChartPoint
 import com.inseong.composechart.data.LineChartData
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.internal.animation.rememberChartAnimation
@@ -69,6 +70,9 @@ import com.inseong.composechart.style.LineChartStyle
  * @param style Chart style configuration
  * @param colors Series color palette. Used in order when no color is specified per series.
  * @param zoomState Optional zoom/pan state. Pass [rememberChartZoomState] to enable pinch-to-zoom and pan.
+ * @param accessibilityLabel Prefix used in the chart's semantics contentDescription.
+ * @param onClickLabel Screen reader click action label. When non-null, a click action semantics
+ *   node is added so assistive tech can announce the action.
  * @param onPointSelected Callback on data point touch. null for no callback.
  */
 @Composable
@@ -78,6 +82,8 @@ fun LineChart(
     style: LineChartStyle = LineChartStyle(),
     colors: List<Color> = ChartDefaults.colors,
     zoomState: ChartZoomState? = null,
+    accessibilityLabel: String = "선 차트",
+    onClickLabel: String? = null,
     onPointSelected: ((seriesIndex: Int, pointIndex: Int, point: ChartPoint) -> Unit)? = null,
 ) {
     // Detect dark theme and resolve styles
@@ -112,7 +118,7 @@ fun LineChart(
     val chartPaddingPx = style.chart.chartPadding
 
     val accessibilityDescription = buildString {
-        append("선 차트, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트")
+        append("$accessibilityLabel, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트")
         if (data.xLabels.isNotEmpty()) {
             append(", ${data.xLabels.size}개 X축 라벨")
         }
@@ -129,6 +135,7 @@ fun LineChart(
             .semantics {
                 contentDescription = accessibilityDescription
                 stateDescription = selectedPointSummary ?: "선택된 포인트 없음"
+                onClickLabel?.let { label -> onClick(label = label, action = null) }
             }
             .fillMaxWidth()
             .then(touchModifier),
