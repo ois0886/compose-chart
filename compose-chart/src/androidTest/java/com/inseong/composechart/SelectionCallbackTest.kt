@@ -6,15 +6,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import com.inseong.composechart.bar.BarChart
 import com.inseong.composechart.data.BarChartData
-import com.inseong.composechart.data.BarEntry
-import com.inseong.composechart.data.BarGroup
 import com.inseong.composechart.data.DonutChartData
-import com.inseong.composechart.data.DonutSlice
 import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.data.LineChartData
 import com.inseong.composechart.data.RadarChartData
@@ -22,6 +20,7 @@ import com.inseong.composechart.donut.DonutChart
 import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.line.LineChart
 import com.inseong.composechart.radar.RadarChart
+import com.inseong.composechart.style.DonutChartStyle
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
@@ -53,14 +52,17 @@ class SelectionCallbackTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput {
-            down(Offset(x = 1f, y = centerY))
-        }
+        composeTestRule
+            .onNodeWithContentDescription("선 차트, 1개 시리즈, 4개 데이터 포인트, 4개 X축 라벨")
+            .performTouchInput {
+                down(Offset(x = 1f, y = centerY))
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.runOnIdle {
+            assertNotNull("LineChart should emit a ChartSelection.Line on touch", selection)
+        }
         composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)
-
-        assertNotNull("LineChart should emit a ChartSelection.Line on touch", selection)
     }
 
     @Test
@@ -68,12 +70,9 @@ class SelectionCallbackTest {
         var selection: ChartSelection.Bar? = null
         composeTestRule.setContent {
             BarChart(
-                data = BarChartData(
-                    groups = listOf(
-                        BarGroup(entries = listOf(BarEntry(values = listOf(30f))), label = "A"),
-                        BarGroup(entries = listOf(BarEntry(values = listOf(50f))), label = "B"),
-                        BarGroup(entries = listOf(BarEntry(values = listOf(40f))), label = "C"),
-                    ),
+                data = BarChartData.simple(
+                    values = listOf(30f, 45f, 28f),
+                    labels = listOf("A", "B", "C"),
                 ),
                 modifier = wideModifier,
                 onSelectionChanged = { selection = it },
@@ -81,10 +80,17 @@ class SelectionCallbackTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule
+            .onNodeWithContentDescription("막대 차트, 3개 그룹")
+            .performTouchInput {
+                down(Offset(x = 1f, y = centerY))
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
-
-        assertNotNull("BarChart should emit a ChartSelection.Bar on touch", selection)
+        composeTestRule.runOnIdle {
+            assertNotNull("BarChart should emit a ChartSelection.Bar on touch", selection)
+        }
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
     }
 
     @Test
@@ -92,22 +98,23 @@ class SelectionCallbackTest {
         var selection: ChartSelection.Donut? = null
         composeTestRule.setContent {
             DonutChart(
-                data = DonutChartData(
-                    slices = listOf(
-                        DonutSlice(60f, "A"),
-                        DonutSlice(40f, "B"),
-                    ),
-                ),
+                data = DonutChartData.fromValues(values = mapOf("Only" to 100f)),
                 modifier = squareModifier,
+                style = DonutChartStyle(holeRadius = 0f),
                 onSelectionChanged = { selection = it },
             )
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule
+            .onNodeWithContentDescription("도넛 차트, 1개 항목, 총합 100")
+            .performTouchInput { down(center) }
         composeTestRule.mainClock.advanceTimeBy(500)
-
-        assertNotNull("DonutChart should emit a ChartSelection.Donut on touch", selection)
+        composeTestRule.runOnIdle {
+            assertNotNull("DonutChart should emit a ChartSelection.Donut on touch", selection)
+        }
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
     }
 
     @Test
@@ -125,14 +132,17 @@ class SelectionCallbackTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1000)
-        composeTestRule.onRoot().performTouchInput {
-            down(Offset(x = centerX, y = top + 20f))
-        }
+        composeTestRule
+            .onNodeWithContentDescription("레이더 차트, 5개 축, 1개 시리즈")
+            .performTouchInput {
+                down(Offset(x = centerX, y = top + 20f))
+            }
         composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.runOnIdle {
+            assertNotNull("RadarChart should emit a ChartSelection.Radar on touch", selection)
+        }
         composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)
-
-        assertNotNull("RadarChart should emit a ChartSelection.Radar on touch", selection)
     }
 
     @Test
@@ -147,9 +157,14 @@ class SelectionCallbackTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeBy(1500)
-        composeTestRule.onRoot().performTouchInput { down(center); up() }
+        composeTestRule
+            .onNodeWithContentDescription("게이지", substring = true)
+            .performTouchInput { down(center) }
         composeTestRule.mainClock.advanceTimeBy(500)
-
-        assertNotNull("GaugeChart should emit a ChartSelection.Gauge on touch", selection)
+        composeTestRule.runOnIdle {
+            assertNotNull("GaugeChart should emit a ChartSelection.Gauge on touch", selection)
+        }
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
     }
 }
