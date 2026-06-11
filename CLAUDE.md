@@ -107,6 +107,7 @@ Publish to Maven Central:
 - **테스트 작성**: 새로운 기능 추가 시 유닛 테스트를 함께 작성한다. 기존 테스트가 깨지지 않는지 확인한다.
 - **README 예제 동기화**: README의 코드 예제를 변경하면 대응되는 예제 테스트도 함께 갱신한다.
 - **릴리스 노트 반영**: 공개 동작, 문서, 접근성, 운영 흐름에 영향이 있으면 `CHANGELOG.md`를 같은 변경에 포함한다.
+- **릴리스 문서 동기화**: 새 버전 배포 시 Maven coordinates, README dependency snippet, README 기능 버전 제목, `CHANGELOG.md` 버전 섹션을 같은 릴리스 번호로 맞춘다.
 
 ### 4. 작업 완료 시 커밋
 - 모든 작업이 완료되면 반드시 git commit을 수행한다.

@@ -55,6 +55,8 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 
 ## Setup
 
+현재 문서 기준 최신 릴리스는 **v1.3.1**입니다.
+
 ```kotlin
 // build.gradle.kts
 dependencies {
@@ -145,9 +147,10 @@ PieChart(
 )
 ```
 
-## Features (v1.3.0)
+## Features (v1.3.1)
 
 README 예제 코드는 테스트에서도 함께 유지되어, 문서 스니펫이 실제 API와 어긋나지 않도록 관리합니다.
+v1.3.1은 공개 API와 시각 결과를 유지하면서 Line/Bar/Donut/Pie/Radar 렌더링 hot path의 반복 계산과 할당을 줄인 성능 개선 릴리스입니다.
 
 ### 줌 & 팬
 
@@ -316,7 +319,7 @@ LineChart(
         ),
         grid = GridStyle(
             showHorizontalLines = true,
-            dashPattern = floatArrayOf(10f, 5f),
+            dashPattern = listOf(10f, 5f),
         ),
     ),
 )
@@ -352,10 +355,13 @@ GaugeChart(
 ```
 
 기존의 `onPointSelected`/`onBarSelected`/`onSliceSelected`/`onAxisSelected`
-콜백은 소스 호환을 위해 유지되지만 v2.0에서 제거될 예정입니다.
+콜백은 소스 호환을 위해 유지되지만 v2.0에서 제거될 예정입니다. 선택 콜백은
+동일한 선택 상태의 redraw/recomposition마다 반복 호출되지 않고, 선택 값이 바뀔
+때 호출됩니다.
 
 ### 성능 팁
 
+- v1.3.1부터 차트 내부에서 주요 파생 데이터와 draw 리소스를 캐시하지만, 호출하는 쪽에서도 불필요한 새 객체 생성을 줄이면 효과가 더 안정적입니다.
 - 차트 `data`와 `style`은 가능하면 `remember` 또는 상위 상태로 안정적으로 유지하세요. 같은 값을 매 recomposition마다 새 객체로 만들면 차트가 다시 계산될 수 있습니다.
 - 데이터 포인트가 많다면 `showDots`, X축/slice/radar label, 긴 애니메이션을 필요한 화면에서만 켜는 것이 좋습니다.
 - 대량의 `LineChart` 데이터는 시간순/인덱스순처럼 x 값이 오름차순이 되도록 전달하면 터치 선택 탐색이 더 빠르게 동작합니다. 정렬되지 않은 데이터도 계속 지원됩니다.
@@ -389,7 +395,8 @@ Column {
 
 - **Pure Compose Foundation** — Material3 의존 없이 Foundation의 `Canvas`, `BasicText`만 사용하여, 어떤 디자인 시스템을 쓰는 프로젝트에서도 충돌 없이 동작합니다.
 - **안전한 데이터 처리** — NaN, Infinity, 음수, 빈 데이터를 모든 차트에서 방어적으로 처리합니다. `safeX`, `safeY` 패턴으로 잘못된 입력이 크래시를 일으키지 않습니다.
-- **순수 함수 & 테스트** — 좌표 계산, 범위 계산, 터치 감지 로직이 `internal/math/`에 순수 함수로 분리되어 있으며, 72개의 JVM 유닛 테스트와 183개의 UI 테스트가 전체 차트를 검증합니다.
+- **순수 함수 & 테스트** — 좌표 계산, 범위 계산, 터치 감지 로직이 `internal/math/`에 순수 함수로 분리되어 있으며, JVM 유닛 테스트와 Compose UI 테스트가 전체 차트를 검증합니다.
+- **렌더링 성능** — Canvas draw 중 side effect를 피하고, 데이터/크기 기반 레이아웃과 공통 draw 리소스를 캐시해 animation redraw 비용을 줄입니다.
 - **줌 & 팬** — `ChartZoomState`를 통한 핀치 줌/드래그 팬 지원. Canvas `withTransform`으로 좌표 역변환 처리.
 - **이미지 캡처** — `GraphicsLayer` API를 활용하여 차트를 `ImageBitmap`으로 내보내기.
 - **테마 인식** — `Color.Unspecified` 패턴으로 다크/라이트 테마에 맞는 기본 색상을 자동 적용합니다.

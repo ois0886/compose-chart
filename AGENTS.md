@@ -46,6 +46,7 @@ Before making changes, read documents in this order:
 - Add or update tests when behavior changes.
 - When changing README code examples, update the mirrored example tests too.
 - When changing public behavior, docs, accessibility output, or release-visible workflows, update `CHANGELOG.md` in the same change.
+- When preparing or documenting a release, keep Maven coordinates, README dependency snippets, README feature version headings, and `CHANGELOG.md` aligned to the same version.
 
 ### 5. Finish with validation and commit
 

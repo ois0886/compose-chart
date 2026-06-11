@@ -8,6 +8,7 @@ import com.inseong.composechart.data.GaugeChartData
 import com.inseong.composechart.data.LineChartData
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.style.AxisStyle
+import com.inseong.composechart.style.GridStyle
 import com.inseong.composechart.style.LineChartStyle
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -77,5 +78,17 @@ class ReadmeExamplesTest {
 
         assertEquals(0f, style.axis.yAxisMin)
         assertEquals(100f, style.axis.yAxisMax)
+    }
+
+    @Test
+    fun readme_styleExample_compilesWithCurrentGridDashPatternType() {
+        val style = LineChartStyle(
+            grid = GridStyle(
+                showHorizontalLines = true,
+                dashPattern = listOf(10f, 5f),
+            ),
+        )
+
+        assertEquals(listOf(10f, 5f), style.grid.dashPattern)
     }
 }

@@ -468,6 +468,8 @@ class ChartZoomState( ... )
 
 - 공개 동작, 문서 예제, 접근성 출력, 릴리스 운영 흐름이 바뀌면 같은 변경에 `CHANGELOG.md`를 포함한다.
 - 진행 중인 변경은 `Unreleased` 섹션에 먼저 기록하고, 릴리스 시 버전 섹션으로 정리한다.
+- 릴리스 준비 시 `compose-chart/build.gradle.kts`의 Maven coordinates, README dependency snippet, README 기능 버전 제목, `CHANGELOG.md` 버전 섹션이 같은 버전을 가리키는지 확인한다.
+- README 코드 예제는 Quick Start 외 스타일/성능 예제도 가능한 범위에서 mirrored example test로 컴파일 안정성을 보장한다.
 
 ---
 
