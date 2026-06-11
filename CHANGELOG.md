@@ -9,6 +9,7 @@
 - Line/Bar/Donut/Pie/Radar 차트 렌더링 성능 개선 — Canvas draw 중 선택 상태 변경과 콜백 호출을 제거하고, 데이터/크기 기반 파생값을 캐시해 반복 할당을 줄임
 - 선택 콜백 호출 안정화 — 동일한 터치 선택이 redraw/recomposition 되는 동안 `onSelectionChanged` 및 레거시 선택 콜백이 반복 호출되지 않도록 변경
 - LineChart 터치 탐색 최적화 — 정렬된 x 값은 primitive 배열과 binary search로 가장 가까운 포인트를 찾고, 정렬되지 않은 데이터는 기존 linear fallback 동작을 유지
+- Line/Bar/Radar 렌더링 hot path 추가 최적화 — LineChart range 계산을 single-pass로 줄이고, Bar/Radar layout 및 공통 text paint 재사용으로 draw 중 반복 계산과 할당을 축소
 
 ## [1.3.0] - 2026-04-10
 

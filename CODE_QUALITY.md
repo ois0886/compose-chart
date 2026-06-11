@@ -342,6 +342,7 @@ internal fun resolveGridLineColor(color: Color, isDark: Boolean): Color =
 - 데이터/크기/style에만 의존하는 좌표, `Path`, 라벨 목록, 누적값은 `remember`, `lazy`, `drawWithCache` 등으로 재사용한다.
 - draw 중 반복 생성되는 `Paint`, `PathEffect`, 임시 컬렉션은 호출 단위 캐시나 더 직접적인 draw API로 줄인다.
 - 정렬된 좌표 탐색은 `FloatArray` 같은 primitive 배열과 binary search를 우선하고, 정렬되지 않은 사용자 데이터에는 기존 순서 기반 fallback을 보존한다.
+- range/layout 계산은 가능하면 composition 단계에서 single-pass로 끝내고, draw 단계에는 animation progress에 필요한 계산만 남긴다.
 
 ### 컬렉션 처리 최적화
 
