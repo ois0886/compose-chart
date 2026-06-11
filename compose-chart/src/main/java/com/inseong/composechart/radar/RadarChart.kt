@@ -5,9 +5,11 @@ import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -17,11 +19,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntSize
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.data.RadarChartData
@@ -31,6 +36,20 @@ import com.inseong.composechart.internal.math.RadarMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.RadarChartStyle
 import kotlin.math.min
+
+private data class RadarGeometry(
+    val centerX: Float,
+    val centerY: Float,
+    val radius: Float,
+    val axisVertices: List<Offset>,
+    val axisLabelPositions: List<Offset>,
+    val webPaths: List<Path>,
+)
+
+private data class RadarEntryLayout(
+    val color: Color,
+    val normalizedValues: List<Float>,
+)
 
 /**
  * Radar chart Composable.
@@ -84,11 +103,12 @@ fun RadarChart(
     val isDark = isSystemInDarkTheme()
     val resolvedWebColor = ChartDefaults.resolveRadarWebColor(style.webLineColor, isDark)
     val resolvedLabelColor = ChartDefaults.resolveAxisLabelColor(style.labelColor, isDark)
+    val density = LocalDensity.current
+    var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
 
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
-    var selectedAxisIndex by remember { mutableStateOf<Int?>(null) }
 
     val axisCount = data.axisLabels.size
     if (axisCount < 3) return
@@ -98,10 +118,116 @@ fun RadarChart(
     }
     if (validEntries.isEmpty()) return
 
-    val resolvedMaxValue = if (data.maxValue > 0f) {
-        data.maxValue
-    } else {
-        validEntries.flatMap { it.safeValues }.maxOrNull() ?: 1f
+    val resolvedMaxValue = remember(data.maxValue, validEntries) {
+        if (data.maxValue > 0f) {
+            data.maxValue
+        } else {
+            (validEntries.asSequence().flatMap { it.safeValues.asSequence() }.maxOrNull() ?: 1f)
+                .coerceAtLeast(1f)
+        }
+    }
+
+    val geometry = remember(
+        chartSize,
+        style.chart.chartPadding,
+        style.labelSize,
+        style.webLevels,
+        axisCount,
+        density,
+    ) {
+        with(density) {
+            val centerX = chartSize.width / 2f
+            val centerY = chartSize.height / 2f
+            val radius = min(chartSize.width.toFloat(), chartSize.height.toFloat()) / 2 -
+                style.chart.chartPadding.toPx() -
+                style.labelSize.toPx() * 1.5f
+            val startAngle = -90f
+            val angleStep = 360f / axisCount
+            val axisVertices = if (radius > 0f) {
+                (0 until axisCount).map { i ->
+                    val (x, y) = RadarMath.polarToCartesian(centerX, centerY, startAngle + angleStep * i, radius)
+                    Offset(x, y)
+                }
+            } else {
+                emptyList()
+            }
+            val labelOffset = style.labelSize.toPx() * 1.2f
+            val axisLabelPositions = if (radius > 0f) {
+                (0 until axisCount).map { i ->
+                    val (x, y) = RadarMath.calculateAxisLabelPosition(
+                        axisIndex = i,
+                        axisCount = axisCount,
+                        centerX = centerX,
+                        centerY = centerY,
+                        radius = radius,
+                        startAngleDegrees = startAngle,
+                        labelOffset = labelOffset,
+                        labelBaselineOffset = style.labelSize.toPx() / 3,
+                    )
+                    Offset(x, y)
+                }
+            } else {
+                emptyList()
+            }
+            val webPaths = if (radius > 0f && style.webLevels > 0) {
+                (1..style.webLevels).map { level ->
+                    val levelRadius = radius * level / style.webLevels
+                    Path().apply {
+                        for (i in 0 until axisCount) {
+                            val (x, y) = RadarMath.polarToCartesian(
+                                centerX,
+                                centerY,
+                                startAngle + angleStep * i,
+                                levelRadius,
+                            )
+                            if (i == 0) moveTo(x, y) else lineTo(x, y)
+                        }
+                        close()
+                    }
+                }
+            } else {
+                emptyList()
+            }
+            RadarGeometry(
+                centerX = centerX,
+                centerY = centerY,
+                radius = radius,
+                axisVertices = axisVertices,
+                axisLabelPositions = axisLabelPositions,
+                webPaths = webPaths,
+            )
+        }
+    }
+
+    val entryLayouts = remember(validEntries, resolvedMaxValue, axisCount, colors) {
+        validEntries.mapIndexed { entryIndex, entry ->
+            val entryColor = if (entry.color == Color.Unspecified) {
+                colors[entryIndex % colors.size]
+            } else {
+                entry.color
+            }
+            RadarEntryLayout(
+                color = entryColor,
+                normalizedValues = List(axisCount) { i ->
+                    entry.safeValues[i].coerceIn(0f, resolvedMaxValue) / resolvedMaxValue
+                },
+            )
+        }
+    }
+
+    val selectedAxisIndex = remember(touchOffset, geometry.axisVertices) {
+        touchOffset?.let { touch ->
+            findNearestAxisIndex(touch, geometry.axisVertices).takeIf { it >= 0 }
+        }
+    }
+
+    val currentOnAxisSelected by rememberUpdatedState(onAxisSelected)
+    val currentOnSelectionChanged by rememberUpdatedState(onSelectionChanged)
+    LaunchedEffect(selectedAxisIndex) {
+        selectedAxisIndex?.let { axisIndex ->
+            currentOnAxisSelected?.invoke(axisIndex)
+            currentOnSelectionChanged?.invoke(ChartSelection.Radar(axisIndex))
+        }
     }
 
     val accessibilityDescription = "$accessibilityLabel, ${axisCount}개 축, ${validEntries.size}개 시리즈"
@@ -119,83 +245,61 @@ fun RadarChart(
             }
             .chartTouchHandler { offset ->
                 touchOffset = offset
-                if (offset == null) selectedAxisIndex = null
-            },
+            }
+            .onSizeChanged { chartSize = it },
     ) {
-        val paddingPx = style.chart.chartPadding.toPx()
-        val centerX = size.width / 2
-        val centerY = size.height / 2
-        val radius = min(size.width, size.height) / 2 - paddingPx - style.labelSize.toPx() * 1.5f
+        val centerX = geometry.centerX
+        val centerY = geometry.centerY
+        val radius = geometry.radius
         if (radius <= 0f) return@Canvas
 
-        val angleStep = 360f / axisCount
-        val startAngle = -90f
+        val webLineWidthPx = style.webLineWidth.toPx()
+        val dotRadiusPx = style.dotRadius.toPx()
 
         // Draw concentric web levels
-        for (level in 1..style.webLevels) {
-            val levelRadius = radius * level / style.webLevels
-            val webPath = Path()
-            for (i in 0 until axisCount) {
-                val (x, y) = RadarMath.polarToCartesian(centerX, centerY, startAngle + angleStep * i, levelRadius)
-                if (i == 0) webPath.moveTo(x, y) else webPath.lineTo(x, y)
-            }
-            webPath.close()
+        geometry.webPaths.forEach { webPath ->
             drawPath(
                 path = webPath,
                 color = resolvedWebColor,
-                style = Stroke(width = style.webLineWidth.toPx()),
+                style = Stroke(width = webLineWidthPx),
             )
         }
 
         // Draw axis lines from center to each vertex
-        for (i in 0 until axisCount) {
-            val (x, y) = RadarMath.polarToCartesian(centerX, centerY, startAngle + angleStep * i, radius)
+        geometry.axisVertices.forEach { vertex ->
             drawLine(
                 color = resolvedWebColor,
                 start = Offset(centerX, centerY),
-                end = Offset(x, y),
-                strokeWidth = style.webLineWidth.toPx(),
+                end = vertex,
+                strokeWidth = webLineWidthPx,
             )
         }
 
         // Draw axis labels
         drawAxisLabels(
             axisLabels = data.axisLabels,
-            centerX = centerX,
-            centerY = centerY,
-            radius = radius,
-            startAngle = startAngle,
+            positions = geometry.axisLabelPositions,
             labelColor = resolvedLabelColor,
             labelSize = style.labelSize.toPx(),
             fontWeight = style.labelFontWeight,
         )
 
         // Draw data polygons
-        validEntries.forEachIndexed { entryIndex, entry ->
-            val entryColor = if (entry.color == Color.Unspecified) {
-                colors[entryIndex % colors.size]
-            } else {
-                entry.color
-            }
-
-            val safeValues = entry.safeValues
-            val vertices = RadarMath.calculateDataPolygonVertices(
-                values = safeValues, maxValue = resolvedMaxValue,
-                axisCount = axisCount, centerX = centerX, centerY = centerY,
-                radius = radius, startAngle = startAngle, progress = progress,
-            )
+        entryLayouts.forEach { layout ->
             val dataPath = Path()
-            val dotPositions = mutableListOf<Offset>()
-            vertices.forEachIndexed { i, (x, y) ->
+            for (i in 0 until axisCount) {
+                val axisVertex = geometry.axisVertices[i]
+                val ratio = layout.normalizedValues[i] * progress
+                val x = centerX + (axisVertex.x - centerX) * ratio
+                val y = centerY + (axisVertex.y - centerY) * ratio
                 if (i == 0) dataPath.moveTo(x, y) else dataPath.lineTo(x, y)
-                dotPositions.add(Offset(x, y))
             }
             dataPath.close()
 
             // Fill polygon
             drawPath(
                 path = dataPath,
-                color = entryColor,
+                color = layout.color,
                 alpha = style.fillAlpha,
                 style = Fill,
             )
@@ -203,46 +307,52 @@ fun RadarChart(
             // Draw polygon outline
             drawPath(
                 path = dataPath,
-                color = entryColor,
+                color = layout.color,
                 style = Stroke(width = 2f),
             )
 
             // Draw dots at vertices
             if (style.showDots) {
-                dotPositions.forEach { pos ->
+                for (i in 0 until axisCount) {
+                    val axisVertex = geometry.axisVertices[i]
+                    val ratio = layout.normalizedValues[i] * progress
                     drawCircle(
-                        color = entryColor,
-                        radius = style.dotRadius.toPx(),
-                        center = pos,
+                        color = layout.color,
+                        radius = dotRadiusPx,
+                        center = Offset(
+                            x = centerX + (axisVertex.x - centerX) * ratio,
+                            y = centerY + (axisVertex.y - centerY) * ratio,
+                        ),
                     )
                 }
-            }
-        }
-
-        // Touch interaction: find nearest axis
-        val currentTouch = touchOffset
-        if (currentTouch != null) {
-            val nearestAxis = RadarMath.findNearestAxisIndex(
-                touchX = currentTouch.x, touchY = currentTouch.y,
-                axisCount = axisCount, centerX = centerX, centerY = centerY,
-                radius = radius, startAngle = startAngle,
-            )
-
-            if (nearestAxis >= 0) {
-                selectedAxisIndex = nearestAxis
-                onAxisSelected?.invoke(nearestAxis)
-                onSelectionChanged?.invoke(ChartSelection.Radar(nearestAxis))
             }
         }
     }
 }
 
+private fun findNearestAxisIndex(
+    touch: Offset,
+    axisVertices: List<Offset>,
+): Int {
+    if (axisVertices.isEmpty()) return -1
+
+    var nearestAxis = -1
+    var minDistance = Float.MAX_VALUE
+    axisVertices.forEachIndexed { index, vertex ->
+        val dx = touch.x - vertex.x
+        val dy = touch.y - vertex.y
+        val distance = dx * dx + dy * dy
+        if (distance < minDistance) {
+            minDistance = distance
+            nearestAxis = index
+        }
+    }
+    return nearestAxis
+}
+
 private fun DrawScope.drawAxisLabels(
     axisLabels: List<String>,
-    centerX: Float,
-    centerY: Float,
-    radius: Float,
-    startAngle: Float,
+    positions: List<Offset>,
     labelColor: Color,
     labelSize: Float,
     fontWeight: FontWeight = FontWeight.Normal,
@@ -262,20 +372,9 @@ private fun DrawScope.drawAxisLabels(
         typeface = Typeface.create(Typeface.DEFAULT, fontWeight.toTypefaceStyle())
     }
 
-    val labelOffset = labelSize * 1.2f
-
     axisLabels.forEachIndexed { index, label ->
-        val (x, y) = RadarMath.calculateAxisLabelPosition(
-            axisIndex = index,
-            axisCount = axisLabels.size,
-            centerX = centerX,
-            centerY = centerY,
-            radius = radius,
-            startAngleDegrees = startAngle,
-            labelOffset = labelOffset,
-            labelBaselineOffset = labelSize / 3,
-        )
+        val position = positions.getOrNull(index) ?: return@forEachIndexed
 
-        drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
+        drawContext.canvas.nativeCanvas.drawText(label, position.x, position.y, paint)
     }
 }

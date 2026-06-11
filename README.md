@@ -354,6 +354,12 @@ GaugeChart(
 기존의 `onPointSelected`/`onBarSelected`/`onSliceSelected`/`onAxisSelected`
 콜백은 소스 호환을 위해 유지되지만 v2.0에서 제거될 예정입니다.
 
+### 성능 팁
+
+- 차트 `data`와 `style`은 가능하면 `remember` 또는 상위 상태로 안정적으로 유지하세요. 같은 값을 매 recomposition마다 새 객체로 만들면 차트가 다시 계산될 수 있습니다.
+- 데이터 포인트가 많다면 `showDots`, slice/radar label, 긴 애니메이션을 필요한 화면에서만 켜는 것이 좋습니다.
+- `Modifier.chartCaptureModifier()`는 offscreen 기록 비용이 있으므로 실제 이미지 내보내기가 필요한 차트에만 적용하세요.
+
 ### 범례
 
 ```kotlin

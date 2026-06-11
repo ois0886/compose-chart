@@ -4,10 +4,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -21,6 +22,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
@@ -108,11 +112,11 @@ fun BarChart(
     val resolvedAxisStyle = style.axis.copy(
         labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
     )
+    val density = LocalDensity.current
+    var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
-    var selectedGroupIndex by remember { mutableIntStateOf(-1) }
-    var selectedEntryIndex by remember { mutableIntStateOf(-1) }
 
     // Filter valid groups (only groups with entries)
     val validGroups = remember(data) {
@@ -121,22 +125,124 @@ fun BarChart(
     if (validGroups.isEmpty()) return
 
     // Calculate data range (safeValues guard against NaN/negative)
-    val maxValue = validGroups.maxOf { group ->
-        group.entries.maxOfOrNull { entry ->
-            entry.safeValues.sum()
-        } ?: 0f
+    val maxValue = remember(validGroups) {
+        validGroups.maxOf { group ->
+            group.entries.maxOfOrNull { entry ->
+                entry.safeTotal
+            } ?: 0f
+        }
     }
-    val adjustedMax = style.axis.yAxisMax?.coerceAtLeast(maxValue)
-        ?: BarMath.calculateAdjustedMax(maxValue)
+    val adjustedMax = remember(maxValue, style.axis.yAxisMax) {
+        style.axis.yAxisMax?.coerceAtLeast(maxValue) ?: BarMath.calculateAdjustedMax(maxValue)
+    }
 
     val chartPaddingPx = style.chart.chartPadding
+    val chartArea = remember(
+        chartSize,
+        chartPaddingPx,
+        resolvedAxisStyle.showYAxis,
+        resolvedAxisStyle.showXAxis,
+        density,
+    ) {
+        with(density) {
+            val paddingPx = chartPaddingPx.toPx()
+            val yAxisWidth = if (resolvedAxisStyle.showYAxis) 40.dp.toPx() else 0f
+            val xAxisHeight = if (resolvedAxisStyle.showXAxis) 20.dp.toPx() else 0f
+            Rect(
+                left = paddingPx + yAxisWidth,
+                top = paddingPx,
+                right = chartSize.width.toFloat() - paddingPx,
+                bottom = chartSize.height.toFloat() - paddingPx - xAxisHeight,
+            )
+        }
+    }
+
+    LaunchedEffect(
+        zoomState,
+        chartArea.width,
+        chartArea.height,
+        zoomState?.scale,
+        zoomState?.offsetX,
+        zoomState?.offsetY,
+    ) {
+        if (chartArea.width > 0f && chartArea.height > 0f) {
+            zoomState?.clampOffset(chartArea.width, chartArea.height)
+        }
+    }
+
+    val zScale = zoomState?.scale ?: 1f
+    val zOffsetX = zoomState?.offsetX ?: 0f
+    val zOffsetY = zoomState?.offsetY ?: 0f
+    val groupCount = validGroups.size
+    val groupSpacingPx = with(density) { style.groupSpacing.toPx() }
+    val barSpacingPx = with(density) { style.barSpacing.toPx() }
+    val groupWidth = remember(chartArea.width, groupCount, groupSpacingPx) {
+        BarMath.calculateGroupWidth(chartArea.width, groupCount, groupSpacingPx)
+    }
+    val groupLabels = remember(validGroups) { validGroups.map { it.label } }
+
+    val currentTouch = remember(touchOffset, zoomState, zScale, zOffsetX, zOffsetY) {
+        touchOffset?.let { touch ->
+            if (zoomState != null && zoomState.isZoomed) {
+                Offset(
+                    (touch.x - zOffsetX) / zScale,
+                    (touch.y - zOffsetY) / zScale,
+                )
+            } else {
+                touch
+            }
+        }
+    }
+
+    val selectedBarSelection = remember(
+        currentTouch,
+        validGroups,
+        chartArea,
+        groupWidth,
+        groupSpacingPx,
+        barSpacingPx,
+    ) {
+        if (currentTouch == null || chartArea.width <= 0f || chartArea.height <= 0f) {
+            null
+        } else {
+            val groupIndex = BarMath.findTouchedGroupIndex(
+                touchX = currentTouch.x,
+                chartLeft = chartArea.left,
+                groupWidth = groupWidth,
+                groupSpacingPx = groupSpacingPx,
+                groupCount = groupCount,
+            )
+            val group = validGroups.getOrNull(groupIndex)
+            val entryCount = group?.entries?.size ?: 0
+            if (group == null || entryCount == 0) {
+                null
+            } else {
+                val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
+                val barWidth = BarMath.calculateBarWidth(groupWidth, entryCount, barSpacingPx)
+                val entryIndex = if (entryCount > 1) {
+                    BarMath.findTouchedEntryIndex(
+                        touchX = currentTouch.x,
+                        groupLeft = groupLeft,
+                        barWidth = barWidth,
+                        barSpacingPx = barSpacingPx,
+                        entryCount = entryCount,
+                    )
+                } else {
+                    0
+                }
+                ChartSelection.Bar(groupIndex, entryIndex, 0)
+            }
+        }
+    }
+    val selectedGroupIndex = selectedBarSelection?.groupIndex ?: -1
+    val selectedEntryIndex = selectedBarSelection?.entryIndex ?: -1
 
     val accessibilityDescription = "$accessibilityLabel, ${validGroups.size}개 그룹"
     val selectionDescription = if (selectedGroupIndex >= 0 && selectedGroupIndex < validGroups.size) {
         val group = validGroups[selectedGroupIndex]
         val entry = group.entries.getOrNull(selectedEntryIndex.coerceAtLeast(0))
         val label = group.label.takeIf { it.isNotEmpty() } ?: "${selectedGroupIndex + 1}번 그룹"
-        val value = entry?.safeValues?.sum()
+        val value = entry?.safeTotal
         if (value != null) {
             "선택된 그룹: $label, 값 ${ChartDefaults.formatSemanticsValue(value)}"
         } else {
@@ -148,15 +254,20 @@ fun BarChart(
 
     val touchCallback: (Offset?) -> Unit = { offset ->
         touchOffset = offset
-        if (offset == null) {
-            selectedGroupIndex = -1
-            selectedEntryIndex = -1
-        }
     }
     val touchModifier = if (zoomState != null) {
         Modifier.chartTouchHandlerWithZoom(zoomState = zoomState, onTouch = touchCallback)
     } else {
         Modifier.chartTouchHandler(onTouch = touchCallback)
+    }
+
+    val currentOnBarSelected by rememberUpdatedState(onBarSelected)
+    val currentOnSelectionChanged by rememberUpdatedState(onSelectionChanged)
+    LaunchedEffect(selectedBarSelection) {
+        selectedBarSelection?.let { selection ->
+            currentOnBarSelected?.invoke(selection.groupIndex, selection.entryIndex, selection.stackIndex)
+            currentOnSelectionChanged?.invoke(selection)
+        }
     }
 
     Canvas(
@@ -167,18 +278,10 @@ fun BarChart(
                 onClickLabel?.let { label -> onClick(label = label, action = null) }
             }
             .fillMaxWidth()
+            .onSizeChanged { chartSize = it }
             .then(touchModifier),
     ) {
-        val paddingPx = chartPaddingPx.toPx()
-        val yAxisWidth = if (resolvedAxisStyle.showYAxis) 40.dp.toPx() else 0f
-        val xAxisHeight = if (resolvedAxisStyle.showXAxis) 20.dp.toPx() else 0f
-
-        val chartArea = Rect(
-            left = paddingPx + yAxisWidth,
-            top = paddingPx,
-            right = size.width - paddingPx,
-            bottom = size.height - paddingPx - xAxisHeight,
-        )
+        if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas
 
         // Draw grid and axes
         drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
@@ -187,47 +290,11 @@ fun BarChart(
             drawYAxisLabels(0f, adjustedMax, resolvedAxisStyle, chartArea)
         }
 
-        // Bar layout calculation
-        if (chartArea.width <= 0f || chartArea.height <= 0f) return@Canvas
-
-        // Clamp zoom offsets
-        zoomState?.clampOffset(chartArea.width, chartArea.height)
-        val zScale = zoomState?.scale ?: 1f
-        val zOffsetX = zoomState?.offsetX ?: 0f
-        val zOffsetY = zoomState?.offsetY ?: 0f
-
-        val groupCount = validGroups.size
-        val groupSpacingPx = style.groupSpacing.toPx()
-        val barSpacingPx = style.barSpacing.toPx()
-        val groupWidth = BarMath.calculateGroupWidth(chartArea.width, groupCount, groupSpacingPx)
-
         // X-axis labels (centered under each bar group)
         if (resolvedAxisStyle.showXAxis) {
-            val labels = validGroups.map { it.label }
-            if (labels.any { it.isNotEmpty() }) {
-                drawXAxisLabels(labels, resolvedAxisStyle, chartArea, groupWidth, groupSpacingPx)
+            if (groupLabels.any { it.isNotEmpty() }) {
+                drawXAxisLabels(groupLabels, resolvedAxisStyle, chartArea, groupWidth, groupSpacingPx)
             }
-        }
-
-        // Inverse-transform touch coordinates for accurate hit testing under zoom
-        val currentTouch = touchOffset?.let { touch ->
-            if (zoomState != null && zoomState.isZoomed) {
-                Offset(
-                    (touch.x - zOffsetX) / zScale,
-                    (touch.y - zOffsetY) / zScale,
-                )
-            } else {
-                touch
-            }
-        }
-
-        if (currentTouch != null) {
-            selectedGroupIndex = BarMath.findTouchedGroupIndex(
-                touchX = currentTouch.x, chartLeft = chartArea.left,
-                groupWidth = groupWidth, groupSpacingPx = groupSpacingPx, groupCount = groupCount,
-            )
-        } else {
-            selectedEntryIndex = -1
         }
 
         // Clip to chart area and apply zoom transform
@@ -242,6 +309,7 @@ fun BarChart(
                 scale(zScale, zScale, Offset(chartArea.left, chartArea.top))
             }) {
                 // Draw bars and tooltips
+                val cornerRadiusPx = style.cornerRadius.toPx()
                 validGroups.forEachIndexed { groupIndex, group ->
                     val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
                     val entryCount = group.entries.size
@@ -266,7 +334,7 @@ fun BarChart(
                                 maxValue = adjustedMax,
                                 progress = progress,
                                 alpha = alpha,
-                                cornerRadius = style.cornerRadius.toPx(),
+                                cornerRadius = cornerRadiusPx,
                             )
                         } else {
                             drawVerticalStackedBar(
@@ -278,26 +346,15 @@ fun BarChart(
                                 maxValue = adjustedMax,
                                 progress = progress,
                                 alpha = alpha,
-                                cornerRadius = style.cornerRadius.toPx(),
+                                cornerRadius = cornerRadiusPx,
                             )
                         }
                     }
 
                     // Show tooltip for selected group
-                    if (selectedGroupIndex == groupIndex && group.entries.isNotEmpty()) {
-                        // Determine which entry was touched within the group
-                        val touchedEntryIndex = if (currentTouch != null && entryCount > 1) {
-                            BarMath.findTouchedEntryIndex(
-                                touchX = currentTouch.x, groupLeft = groupLeft,
-                                barWidth = barWidth, barSpacingPx = barSpacingPx, entryCount = entryCount,
-                            )
-                        } else {
-                            0
-                        }
-                        selectedEntryIndex = touchedEntryIndex
-
-                        val entry = group.entries[touchedEntryIndex]
-                        val totalValue = entry.safeValues.sum()
+                    if (selectedGroupIndex == groupIndex && selectedEntryIndex in group.entries.indices) {
+                        val entry = group.entries[selectedEntryIndex]
+                        val totalValue = entry.safeTotal
                         val formattedValue = ChartMath.formatValue(totalValue)
                         val tooltipText = if (group.label.isNotEmpty()) {
                             "${group.label}: $formattedValue"
@@ -305,7 +362,7 @@ fun BarChart(
                             formattedValue
                         }
 
-                        val barLeft = groupLeft + touchedEntryIndex * (barWidth + barSpacingPx)
+                        val barLeft = groupLeft + selectedEntryIndex * (barWidth + barSpacingPx)
                         val barHeight = (totalValue / adjustedMax) * chartArea.height * progress
                         val tooltipX = barLeft + barWidth / 2
                         val tooltipY = chartArea.bottom - barHeight
@@ -314,13 +371,8 @@ fun BarChart(
                             position = Offset(tooltipX, tooltipY),
                             text = tooltipText,
                             style = style.tooltip,
-                            lineColor = colors[touchedEntryIndex % colors.size],
+                            lineColor = colors[selectedEntryIndex % colors.size],
                             canvasSize = size,
-                        )
-
-                        onBarSelected?.invoke(groupIndex, touchedEntryIndex, 0)
-                        onSelectionChanged?.invoke(
-                            ChartSelection.Bar(groupIndex, touchedEntryIndex, 0),
                         )
                     }
                 }

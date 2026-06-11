@@ -75,6 +75,7 @@ All six charts expose a consistent set of accessibility parameters (`accessibili
 - Prefer safe input handling over crashing on malformed data.
 - Keep calculations testable by extracting non-UI logic into pure internal helpers.
 - Expose simple public APIs with sensible defaults and convenience factories.
+- Keep Canvas draw blocks side-effect free: hit testing, selection callbacks, and state changes happen outside draw, while size/data-derived geometry is cached and reused.
 
 ## Testing Strategy
 

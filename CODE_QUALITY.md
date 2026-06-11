@@ -335,6 +335,13 @@ internal fun resolveGridLineColor(color: Color, isDark: Boolean): Color =
 - 싱글톤(`object`), 캐싱, 지연 초기화(`lazy`)를 적절히 활용한다.
 - 성능이 중요한 계산에서는 기본 자료형 배열(`FloatArray`, `IntArray`)을 사용한다.
 
+### Canvas 렌더링 최적화
+
+- `Canvas`/draw 블록 안에서는 상태 변경, 외부 콜백 호출, 선택 이벤트 방출을 하지 않는다.
+- 터치 hit-test 결과와 접근성 선택 설명은 draw 밖에서 파생 상태로 계산하고, 콜백은 선택값 변경 시점에만 호출한다.
+- 데이터/크기/style에만 의존하는 좌표, `Path`, 라벨 목록, 누적값은 `remember`, `lazy`, `drawWithCache` 등으로 재사용한다.
+- draw 중 반복 생성되는 `Paint`, `PathEffect`, 임시 컬렉션은 호출 단위 캐시나 더 직접적인 draw API로 줄인다.
+
 ### 컬렉션 처리 최적화
 
 - 여러 단계의 컬렉션 처리는 `Sequence`를 고려한다 (지연 처리, 최소 연산).
