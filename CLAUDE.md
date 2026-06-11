@@ -111,6 +111,7 @@ Publish to Maven Central:
 ### 4. 작업 완료 시 커밋
 - 모든 작업이 완료되면 반드시 git commit을 수행한다.
 - 커밋 메시지는 한국어로, conventional commit 형식을 따른다 (예: `feat:`, `fix:`, `refactor:`, `docs:`).
+- PR을 생성할 때는 사용자가 명시적으로 Draft를 요청한 경우를 제외하고 ready for review 상태로 올린다.
 
 ## CI/CD
 
