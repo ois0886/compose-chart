@@ -19,10 +19,10 @@ internal fun DrawScope.drawGrid(
     style: GridStyle,
     chartArea: Rect,
     horizontalCount: Int,
-) {
-    val strokeWidthPx = style.strokeWidth.toPx()
-    val pathEffect = style.dashPattern?.let {
-        PathEffect.dashPathEffect(it.toFloatArray(), 0f)
+    ) {
+        val strokeWidthPx = style.strokeWidth.toPx()
+    val pathEffect = style.dashPatternArray?.let {
+        PathEffect.dashPathEffect(it, 0f)
     }
 
     // Horizontal grid lines

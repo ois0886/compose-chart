@@ -3,6 +3,9 @@ package com.inseong.composechart
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -21,6 +24,7 @@ import com.inseong.composechart.gauge.GaugeChart
 import com.inseong.composechart.line.LineChart
 import com.inseong.composechart.radar.RadarChart
 import com.inseong.composechart.style.DonutChartStyle
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
 import org.junit.Test
@@ -60,6 +64,39 @@ class SelectionCallbackTest {
         composeTestRule.mainClock.advanceTimeBy(500)
         composeTestRule.runOnIdle {
             assertNotNull("LineChart should emit a ChartSelection.Line on touch", selection)
+        }
+        composeTestRule.onRoot().performTouchInput { up() }
+        composeTestRule.mainClock.advanceTimeBy(500)
+    }
+
+    @Test
+    fun lineChart_onSelectionChanged_sameTouchRecomposition_doesNotRepeat() {
+        var callbackCount = 0
+        var recompositionTick by mutableIntStateOf(0)
+
+        composeTestRule.setContent {
+            LineChart(
+                data = LineChartData.fromValues(values = listOf(10f, 25f, 18f)),
+                modifier = wideModifier,
+                accessibilityLabel = "선 차트 $recompositionTick",
+                onSelectionChanged = { callbackCount++ },
+            )
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.mainClock.advanceTimeBy(1000)
+        composeTestRule
+            .onNodeWithContentDescription("선 차트 0, 1개 시리즈, 3개 데이터 포인트")
+            .performTouchInput {
+                down(Offset(x = 1f, y = centerY))
+            }
+        composeTestRule.mainClock.advanceTimeBy(500)
+        composeTestRule.runOnIdle {
+            assertEquals(1, callbackCount)
+            recompositionTick = 1
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.runOnIdle {
+            assertEquals("Selection callback should not repeat for the same touch selection", 1, callbackCount)
         }
         composeTestRule.onRoot().performTouchInput { up() }
         composeTestRule.mainClock.advanceTimeBy(500)

@@ -6,10 +6,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -18,10 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntSize
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.data.DonutChartData
@@ -31,6 +35,13 @@ import com.inseong.composechart.internal.math.DonutMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.DonutChartStyle
 import kotlin.math.min
+
+private data class DonutGeometry(
+    val centerX: Float,
+    val centerY: Float,
+    val radius: Float,
+    val holeRadius: Float,
+)
 
 /**
  * Donut chart Composable.
@@ -83,16 +94,59 @@ fun DonutChart(
     onSelectionChanged: ((ChartSelection.Donut) -> Unit)? = null,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
+    val density = LocalDensity.current
+    var chartSize by remember { mutableStateOf(IntSize.Zero) }
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
-    var selectedIndex by remember { mutableIntStateOf(-1) }
     var touchOffset by remember { mutableStateOf<Offset?>(null) }
 
     // Filter valid slices (value > 0)
     val validSlices = remember(data) { data.slices.filter { it.value > 0f } }
     if (validSlices.isEmpty()) return
 
-    val total = validSlices.sumOf { it.value.toDouble() }.toFloat()
+    val sliceValues = remember(validSlices) { validSlices.map { it.value } }
+    val total = remember(validSlices) { validSlices.sumOf { it.value.toDouble() }.toFloat() }
     if (total == 0f) return
+
+    val geometry = remember(chartSize, style.chart.chartPadding, style.holeRadius, density) {
+        with(density) {
+            val paddingPx = style.chart.chartPadding.toPx()
+            val radius = min(chartSize.width.toFloat(), chartSize.height.toFloat()) / 2 - paddingPx
+            DonutGeometry(
+                centerX = chartSize.width / 2f,
+                centerY = chartSize.height / 2f,
+                radius = radius,
+                holeRadius = radius * style.holeRadius.coerceIn(0f, 0.95f),
+            )
+        }
+    }
+
+    val selectedIndex = remember(touchOffset, geometry, sliceValues, total, style.startAngle) {
+        val currentTouch = touchOffset
+        if (currentTouch == null || geometry.radius <= 0f) {
+            -1
+        } else {
+            DonutMath.findTouchedSliceIndex(
+                touchX = currentTouch.x,
+                touchY = currentTouch.y,
+                centerX = geometry.centerX,
+                centerY = geometry.centerY,
+                outerRadius = geometry.radius,
+                holeRadius = geometry.holeRadius,
+                sliceValues = sliceValues,
+                total = total,
+                startAngle = style.startAngle,
+            )
+        }
+    }
+
+    val currentOnSliceSelected by rememberUpdatedState(onSliceSelected)
+    val currentOnSelectionChanged by rememberUpdatedState(onSelectionChanged)
+    LaunchedEffect(selectedIndex, validSlices) {
+        validSlices.getOrNull(selectedIndex)?.let { slice ->
+            currentOnSliceSelected?.invoke(selectedIndex, slice)
+            currentOnSelectionChanged?.invoke(ChartSelection.Donut(selectedIndex, slice))
+        }
+    }
 
     // Scale animation for selected slice
     val selectedScales = validSlices.indices.map { index ->
@@ -119,16 +173,15 @@ fun DonutChart(
             }
             .chartTouchHandler { offset ->
                 touchOffset = offset
-                if (offset == null) selectedIndex = -1
-            },
+            }
+            .onSizeChanged { chartSize = it },
     ) {
-        val paddingPx = style.chart.chartPadding.toPx()
-        val centerX = size.width / 2
-        val centerY = size.height / 2
-        val radius = min(size.width, size.height) / 2 - paddingPx
+        val centerX = geometry.centerX
+        val centerY = geometry.centerY
+        val radius = geometry.radius
         if (radius <= 0f) return@Canvas
 
-        val holeRadiusPx = radius * style.holeRadius.coerceIn(0f, 0.95f)
+        val holeRadiusPx = geometry.holeRadius
 
         // Spacing angle between slices
         val spacingAngle = DonutMath.calculateSpacingAngle(
@@ -137,26 +190,17 @@ fun DonutChart(
             radius = radius,
         )
 
-        // Touch detection: determine slice by angle and distance
-        val currentTouch = touchOffset
-        if (currentTouch != null) {
-            val touchedIndex = DonutMath.findTouchedSliceIndex(
-                touchX = currentTouch.x, touchY = currentTouch.y,
-                centerX = centerX, centerY = centerY,
-                outerRadius = radius, holeRadius = holeRadiusPx,
-                sliceValues = validSlices.map { it.value },
-                total = total, startAngle = style.startAngle,
-            )
-            if (touchedIndex >= 0) {
-                if (selectedIndex != touchedIndex) {
-                    selectedIndex = touchedIndex
-                    val slice = validSlices[touchedIndex]
-                    onSliceSelected?.invoke(touchedIndex, slice)
-                    onSelectionChanged?.invoke(ChartSelection.Donut(touchedIndex, slice))
-                }
-            } else {
-                selectedIndex = -1
+        val labelPaint = if (style.showLabels && progress > 0.8f) {
+            val scaledTextSize = (radius * 0.12f).coerceIn(8f * this.density, 14f * this.density)
+            Paint().apply {
+                color = android.graphics.Color.WHITE
+                textSize = scaledTextSize
+                textAlign = Paint.Align.CENTER
+                isAntiAlias = true
+                typeface = Typeface.DEFAULT_BOLD
             }
+        } else {
+            null
         }
 
         // Draw slices
@@ -211,7 +255,7 @@ fun DonutChart(
 
             // Draw slice label
             // Skip labels when chart is too small or slice is too narrow (< 15 degrees)
-            val minLabelRadius = 40f * density
+            val minLabelRadius = 40f * this.density
             if (style.showLabels && slice.label.isNotEmpty() && progress > 0.8f && rawSweep >= 15f && radius >= minLabelRadius) {
                 // Donut: midpoint between hole and outer edge, Filled: 65% of radius
                 val labelRadius = if (style.holeRadius > 0f) {
@@ -226,9 +270,9 @@ fun DonutChart(
                     centerX = arcCenterX,
                     centerY = arcCenterY,
                     labelRadius = labelRadius,
-                    chartRadius = radius,
                     canvasWidth = size.width,
                     canvasHeight = size.height,
+                    paint = labelPaint ?: return@forEachIndexed,
                 )
             }
 
@@ -249,9 +293,9 @@ private fun DrawScope.drawSliceLabel(
     centerX: Float,
     centerY: Float,
     labelRadius: Float,
-    chartRadius: Float,
     canvasWidth: Float,
     canvasHeight: Float,
+    paint: Paint,
 ) {
     val (labelX, labelY) = DonutMath.calculateLabelAnchor(
         midAngleDegrees = midAngle,
@@ -260,20 +304,9 @@ private fun DrawScope.drawSliceLabel(
         labelRadius = labelRadius,
     )
 
-    // Text size proportional to chart size (min 8dp, max ~14dp)
-    val scaledTextSize = (chartRadius * 0.12f).coerceIn(8f * density, 14f * density)
-
-    val paint = Paint().apply {
-        color = android.graphics.Color.WHITE
-        textSize = scaledTextSize
-        textAlign = Paint.Align.CENTER
-        isAntiAlias = true
-        typeface = Typeface.DEFAULT_BOLD
-    }
-
     // Measure text size
     val textWidth = paint.measureText(label)
-    val textHeight = scaledTextSize
+    val textHeight = paint.textSize
 
     // Do not draw if text extends beyond canvas bounds
     if (!DonutMath.isLabelWithinBounds(

@@ -1,6 +1,7 @@
 package com.inseong.composechart.pie
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.inseong.composechart.ChartDefaults
@@ -56,10 +57,8 @@ fun PieChart(
     onSelectionChanged: ((ChartSelection.Donut) -> Unit)? = null,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
-    DonutChart(
-        data = data,
-        modifier = modifier,
-        style = DonutChartStyle(
+    val donutStyle = remember(style) {
+        DonutChartStyle(
             holeRadius = 0f,
             sliceSpacing = style.sliceSpacing,
             selectedScale = style.selectedScale,
@@ -67,7 +66,13 @@ fun PieChart(
             animationDurationMs = style.animationDurationMs,
             startAngle = style.startAngle,
             chart = style.chart,
-        ),
+        )
+    }
+
+    DonutChart(
+        data = data,
+        modifier = modifier,
+        style = donutStyle,
         colors = colors,
         accessibilityLabel = accessibilityLabel,
         onClickLabel = onClickLabel,

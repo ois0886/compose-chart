@@ -39,6 +39,14 @@ class FactoryMethodsTest {
     }
 
     @Test
+    fun barEntry_safeTotal_invalidValues_sumsClampedValues() {
+        val entry = BarEntry(values = listOf(10f, Float.NaN, -5f, Float.POSITIVE_INFINITY, 15f))
+
+        assertEquals(listOf(10f, 0f, 0f, 0f, 15f), entry.safeValues)
+        assertEquals(25f, entry.safeTotal, 0.001f)
+    }
+
+    @Test
     fun lineChartData_fromMap_createsMultiSeries() {
         val data = LineChartData.fromMap(
             seriesMap = mapOf(

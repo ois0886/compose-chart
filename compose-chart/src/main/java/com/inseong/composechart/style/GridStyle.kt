@@ -21,4 +21,8 @@ data class GridStyle(
     val lineColor: Color = Color.Unspecified,
     val strokeWidth: Dp = 0.5.dp,
     val dashPattern: List<Float>? = null,
-)
+) {
+    internal val dashPatternArray: FloatArray? by lazy {
+        dashPattern?.toFloatArray()
+    }
+}
