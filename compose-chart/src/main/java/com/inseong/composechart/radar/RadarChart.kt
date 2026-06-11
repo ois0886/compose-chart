@@ -1,7 +1,6 @@
 package com.inseong.composechart.radar
 
 import android.graphics.Paint
-import android.graphics.Typeface
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -23,7 +22,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntSize
@@ -31,7 +29,7 @@ import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
-import com.inseong.composechart.internal.canvas.toTypefaceStyle
+import com.inseong.composechart.internal.canvas.rememberChartTextPaint
 import com.inseong.composechart.internal.math.RadarMath
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.style.RadarChartStyle
@@ -46,9 +44,9 @@ private data class RadarGeometry(
     val webPaths: List<Path>,
 )
 
-private data class RadarEntryLayout(
+private class RadarEntryLayout(
     val color: Color,
-    val normalizedValues: List<Float>,
+    val normalizedValues: FloatArray,
 )
 
 /**
@@ -103,6 +101,12 @@ fun RadarChart(
     val isDark = isSystemInDarkTheme()
     val resolvedWebColor = ChartDefaults.resolveRadarWebColor(style.webLineColor, isDark)
     val resolvedLabelColor = ChartDefaults.resolveAxisLabelColor(style.labelColor, isDark)
+    val axisLabelPaint = rememberChartTextPaint(
+        color = resolvedLabelColor,
+        textSize = style.labelSize,
+        fontWeight = style.labelFontWeight,
+        textAlign = Paint.Align.CENTER,
+    )
     val density = LocalDensity.current
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -208,7 +212,7 @@ fun RadarChart(
             }
             RadarEntryLayout(
                 color = entryColor,
-                normalizedValues = List(axisCount) { i ->
+                normalizedValues = FloatArray(axisCount) { i ->
                     entry.safeValues[i].coerceIn(0f, resolvedMaxValue) / resolvedMaxValue
                 },
             )
@@ -279,14 +283,13 @@ fun RadarChart(
         drawAxisLabels(
             axisLabels = data.axisLabels,
             positions = geometry.axisLabelPositions,
-            labelColor = resolvedLabelColor,
-            labelSize = style.labelSize.toPx(),
-            fontWeight = style.labelFontWeight,
+            labelPaint = axisLabelPaint,
         )
 
         // Draw data polygons
+        val dataPath = Path()
         entryLayouts.forEach { layout ->
-            val dataPath = Path()
+            dataPath.reset()
             for (i in 0 until axisCount) {
                 val axisVertex = geometry.axisVertices[i]
                 val ratio = layout.normalizedValues[i] * progress
@@ -353,28 +356,11 @@ private fun findNearestAxisIndex(
 private fun DrawScope.drawAxisLabels(
     axisLabels: List<String>,
     positions: List<Offset>,
-    labelColor: Color,
-    labelSize: Float,
-    fontWeight: FontWeight = FontWeight.Normal,
+    labelPaint: Paint,
 ) {
-    val paint = Paint().apply {
-        color = labelColor.let {
-            android.graphics.Color.argb(
-                (it.alpha * 255).toInt(),
-                (it.red * 255).toInt(),
-                (it.green * 255).toInt(),
-                (it.blue * 255).toInt(),
-            )
-        }
-        textSize = labelSize
-        textAlign = Paint.Align.CENTER
-        isAntiAlias = true
-        typeface = Typeface.create(Typeface.DEFAULT, fontWeight.toTypefaceStyle())
-    }
-
     axisLabels.forEachIndexed { index, label ->
         val position = positions.getOrNull(index) ?: return@forEachIndexed
 
-        drawContext.canvas.nativeCanvas.drawText(label, position.x, position.y, paint)
+        drawContext.canvas.nativeCanvas.drawText(label, position.x, position.y, labelPaint)
     }
 }

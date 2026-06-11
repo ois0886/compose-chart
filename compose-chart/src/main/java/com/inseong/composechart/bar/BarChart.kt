@@ -1,5 +1,6 @@
 package com.inseong.composechart.bar
 
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import com.inseong.composechart.ChartDefaults
 import com.inseong.composechart.ChartSelection
 import com.inseong.composechart.ChartZoomState
+import com.inseong.composechart.data.BarEntry
 import com.inseong.composechart.data.BarChartData
 import com.inseong.composechart.internal.animation.rememberChartAnimation
 import com.inseong.composechart.internal.math.BarMath
@@ -41,9 +43,28 @@ import com.inseong.composechart.internal.canvas.drawGrid
 import com.inseong.composechart.internal.canvas.drawTooltip
 import com.inseong.composechart.internal.canvas.drawXAxisLabels
 import com.inseong.composechart.internal.canvas.drawYAxisLabels
+import com.inseong.composechart.internal.canvas.rememberAxisLabelPaint
+import com.inseong.composechart.internal.canvas.rememberTooltipTextPaint
 import com.inseong.composechart.internal.touch.chartTouchHandler
 import com.inseong.composechart.internal.touch.chartTouchHandlerWithZoom
 import com.inseong.composechart.style.BarChartStyle
+
+private class BarGroupLayout(
+    val groupIndex: Int,
+    val label: String,
+    val groupLeft: Float,
+    val barWidth: Float,
+    val entries: List<BarEntryLayout>,
+)
+
+private class BarEntryLayout(
+    val entryIndex: Int,
+    val entry: BarEntry,
+    val barLeft: Float,
+    val segmentColors: List<Color>,
+    val totalValue: Float,
+    val tooltipLineColor: Color,
+)
 
 /**
  * Bar chart Composable.
@@ -112,6 +133,9 @@ fun BarChart(
     val resolvedAxisStyle = style.axis.copy(
         labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
     )
+    val xAxisLabelPaint = rememberAxisLabelPaint(resolvedAxisStyle, Paint.Align.CENTER)
+    val yAxisLabelPaint = rememberAxisLabelPaint(resolvedAxisStyle, Paint.Align.RIGHT)
+    val tooltipTextPaint = rememberTooltipTextPaint(style.tooltip)
     val density = LocalDensity.current
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -180,6 +204,33 @@ fun BarChart(
         BarMath.calculateGroupWidth(chartArea.width, groupCount, groupSpacingPx)
     }
     val groupLabels = remember(validGroups) { validGroups.map { it.label } }
+    val barLayouts = remember(validGroups, chartArea, groupWidth, groupSpacingPx, barSpacingPx, colors) {
+        if (chartArea.width <= 0f || chartArea.height <= 0f) {
+            emptyList()
+        } else {
+            validGroups.mapIndexed { groupIndex, group ->
+                val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
+                val entryCount = group.entries.size
+                val barWidth = BarMath.calculateBarWidth(groupWidth, entryCount, barSpacingPx)
+                BarGroupLayout(
+                    groupIndex = groupIndex,
+                    label = group.label,
+                    groupLeft = groupLeft,
+                    barWidth = barWidth,
+                    entries = group.entries.mapIndexed { entryIndex, entry ->
+                        BarEntryLayout(
+                            entryIndex = entryIndex,
+                            entry = entry,
+                            barLeft = groupLeft + entryIndex * (barWidth + barSpacingPx),
+                            segmentColors = entry.colors.ifEmpty { colors },
+                            totalValue = entry.safeTotal,
+                            tooltipLineColor = colors[entryIndex % colors.size],
+                        )
+                    },
+                )
+            }
+        }
+    }
 
     val currentTouch = remember(touchOffset, zoomState, zScale, zOffsetX, zOffsetY) {
         touchOffset?.let { touch ->
@@ -212,18 +263,16 @@ fun BarChart(
                 groupSpacingPx = groupSpacingPx,
                 groupCount = groupCount,
             )
-            val group = validGroups.getOrNull(groupIndex)
-            val entryCount = group?.entries?.size ?: 0
-            if (group == null || entryCount == 0) {
+            val groupLayout = barLayouts.getOrNull(groupIndex)
+            val entryCount = groupLayout?.entries?.size ?: 0
+            if (groupLayout == null || entryCount == 0) {
                 null
             } else {
-                val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
-                val barWidth = BarMath.calculateBarWidth(groupWidth, entryCount, barSpacingPx)
                 val entryIndex = if (entryCount > 1) {
                     BarMath.findTouchedEntryIndex(
                         touchX = currentTouch.x,
-                        groupLeft = groupLeft,
-                        barWidth = barWidth,
+                        groupLeft = groupLayout.groupLeft,
+                        barWidth = groupLayout.barWidth,
                         barSpacingPx = barSpacingPx,
                         entryCount = entryCount,
                     )
@@ -238,19 +287,15 @@ fun BarChart(
     val selectedEntryIndex = selectedBarSelection?.entryIndex ?: -1
 
     val accessibilityDescription = "$accessibilityLabel, ${validGroups.size}개 그룹"
-    val selectionDescription = if (selectedGroupIndex >= 0 && selectedGroupIndex < validGroups.size) {
-        val group = validGroups[selectedGroupIndex]
+    val selectionDescription = barLayouts.getOrNull(selectedGroupIndex)?.let { group ->
         val entry = group.entries.getOrNull(selectedEntryIndex.coerceAtLeast(0))
         val label = group.label.takeIf { it.isNotEmpty() } ?: "${selectedGroupIndex + 1}번 그룹"
-        val value = entry?.safeTotal
-        if (value != null) {
-            "선택된 그룹: $label, 값 ${ChartDefaults.formatSemanticsValue(value)}"
+        if (entry != null) {
+            "선택된 그룹: $label, 값 ${ChartDefaults.formatSemanticsValue(entry.totalValue)}"
         } else {
             "선택된 그룹: $label"
         }
-    } else {
-        "선택된 그룹 없음"
-    }
+    } ?: "선택된 그룹 없음"
 
     val touchCallback: (Offset?) -> Unit = { offset ->
         touchOffset = offset
@@ -287,13 +332,26 @@ fun BarChart(
         drawGrid(resolvedGridStyle, chartArea, resolvedAxisStyle.yLabelCount)
 
         if (resolvedAxisStyle.showYAxis) {
-            drawYAxisLabels(0f, adjustedMax, resolvedAxisStyle, chartArea)
+            drawYAxisLabels(
+                minValue = 0f,
+                maxValue = adjustedMax,
+                style = resolvedAxisStyle,
+                chartArea = chartArea,
+                labelPaint = yAxisLabelPaint,
+            )
         }
 
         // X-axis labels (centered under each bar group)
         if (resolvedAxisStyle.showXAxis) {
             if (groupLabels.any { it.isNotEmpty() }) {
-                drawXAxisLabels(groupLabels, resolvedAxisStyle, chartArea, groupWidth, groupSpacingPx)
+                drawXAxisLabels(
+                    labels = groupLabels,
+                    style = resolvedAxisStyle,
+                    chartArea = chartArea,
+                    labelPaint = xAxisLabelPaint,
+                    groupWidth = groupWidth,
+                    groupSpacing = groupSpacingPx,
+                )
             }
         }
 
@@ -310,51 +368,48 @@ fun BarChart(
             }) {
                 // Draw bars and tooltips
                 val cornerRadiusPx = style.cornerRadius.toPx()
-                validGroups.forEachIndexed { groupIndex, group ->
-                    val groupLeft = chartArea.left + groupIndex * (groupWidth + groupSpacingPx)
-                    val entryCount = group.entries.size
-                    val barWidth = BarMath.calculateBarWidth(groupWidth, entryCount, barSpacingPx)
-
-                    group.entries.forEachIndexed { entryIndex, entry ->
-                        val barLeft = groupLeft + entryIndex * (barWidth + barSpacingPx)
-
+                val roundedSegmentPath = Path()
+                barLayouts.forEach { group ->
+                    group.entries.forEach { entryLayout ->
                         // Highlight: apply transparency to unselected bars
                         val isHighlighted = !style.highlightOnTouch ||
                             selectedGroupIndex == -1 ||
-                            selectedGroupIndex == groupIndex
+                            selectedGroupIndex == group.groupIndex
                         val alpha = if (isHighlighted) 1f else style.highlightAlpha
 
                         if (style.horizontal) {
                             drawHorizontalStackedBar(
-                                values = entry.safeValues,
-                                colors = entry.colors.ifEmpty { colors },
-                                barTop = barLeft,
-                                barHeight = barWidth,
+                                values = entryLayout.entry.safeValues,
+                                colors = entryLayout.segmentColors,
+                                barTop = entryLayout.barLeft,
+                                barHeight = group.barWidth,
                                 chartArea = chartArea,
                                 maxValue = adjustedMax,
                                 progress = progress,
                                 alpha = alpha,
                                 cornerRadius = cornerRadiusPx,
+                                roundedPath = roundedSegmentPath,
                             )
                         } else {
                             drawVerticalStackedBar(
-                                values = entry.safeValues,
-                                colors = entry.colors.ifEmpty { colors },
-                                barLeft = barLeft,
-                                barWidth = barWidth,
+                                values = entryLayout.entry.safeValues,
+                                colors = entryLayout.segmentColors,
+                                barLeft = entryLayout.barLeft,
+                                barWidth = group.barWidth,
                                 chartArea = chartArea,
                                 maxValue = adjustedMax,
                                 progress = progress,
                                 alpha = alpha,
                                 cornerRadius = cornerRadiusPx,
+                                roundedPath = roundedSegmentPath,
                             )
                         }
                     }
 
                     // Show tooltip for selected group
-                    if (selectedGroupIndex == groupIndex && selectedEntryIndex in group.entries.indices) {
+                    if (selectedGroupIndex == group.groupIndex && selectedEntryIndex in group.entries.indices) {
                         val entry = group.entries[selectedEntryIndex]
-                        val totalValue = entry.safeTotal
+                        val totalValue = entry.totalValue
                         val formattedValue = ChartMath.formatValue(totalValue)
                         val tooltipText = if (group.label.isNotEmpty()) {
                             "${group.label}: $formattedValue"
@@ -362,17 +417,17 @@ fun BarChart(
                             formattedValue
                         }
 
-                        val barLeft = groupLeft + selectedEntryIndex * (barWidth + barSpacingPx)
                         val barHeight = (totalValue / adjustedMax) * chartArea.height * progress
-                        val tooltipX = barLeft + barWidth / 2
+                        val tooltipX = entry.barLeft + group.barWidth / 2
                         val tooltipY = chartArea.bottom - barHeight
 
                         drawTooltip(
                             position = Offset(tooltipX, tooltipY),
                             text = tooltipText,
                             style = style.tooltip,
-                            lineColor = colors[selectedEntryIndex % colors.size],
+                            lineColor = entry.tooltipLineColor,
                             canvasSize = size,
+                            textPaint = tooltipTextPaint,
                         )
                     }
                 }
@@ -395,6 +450,7 @@ private fun DrawScope.drawVerticalStackedBar(
     progress: Float,
     alpha: Float,
     cornerRadius: Float,
+    roundedPath: Path,
 ) {
     var currentBottom = chartArea.bottom
     val totalSegments = values.size
@@ -408,21 +464,20 @@ private fun DrawScope.drawVerticalStackedBar(
 
         if (isTopSegment && cornerRadius > 0f) {
             // Top segment: rounded top corners only
-            val path = Path().apply {
-                addRoundRect(
-                    RoundRect(
-                        left = barLeft,
-                        top = segmentTop,
-                        right = barLeft + barWidth,
-                        bottom = currentBottom,
-                        topLeftCornerRadius = CornerRadius(cornerRadius),
-                        topRightCornerRadius = CornerRadius(cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius.Zero,
-                    )
+            roundedPath.reset()
+            roundedPath.addRoundRect(
+                RoundRect(
+                    left = barLeft,
+                    top = segmentTop,
+                    right = barLeft + barWidth,
+                    bottom = currentBottom,
+                    topLeftCornerRadius = CornerRadius(cornerRadius),
+                    topRightCornerRadius = CornerRadius(cornerRadius),
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius.Zero,
                 )
-            }
-            drawPath(path = path, color = color, style = Fill)
+            )
+            drawPath(path = roundedPath, color = color, style = Fill)
         } else {
             // Bottom segments: square corners
             drawRect(
@@ -450,6 +505,7 @@ private fun DrawScope.drawHorizontalStackedBar(
     progress: Float,
     alpha: Float,
     cornerRadius: Float,
+    roundedPath: Path,
 ) {
     var currentLeft = chartArea.left
     val totalSegments = values.size
@@ -462,21 +518,20 @@ private fun DrawScope.drawHorizontalStackedBar(
 
         if (isRightSegment && cornerRadius > 0f) {
             // Rightmost segment: rounded right corners only
-            val path = Path().apply {
-                addRoundRect(
-                    RoundRect(
-                        left = currentLeft,
-                        top = barTop,
-                        right = currentLeft + segmentWidth,
-                        bottom = barTop + barHeight,
-                        topLeftCornerRadius = CornerRadius.Zero,
-                        topRightCornerRadius = CornerRadius(cornerRadius),
-                        bottomLeftCornerRadius = CornerRadius.Zero,
-                        bottomRightCornerRadius = CornerRadius(cornerRadius),
-                    )
+            roundedPath.reset()
+            roundedPath.addRoundRect(
+                RoundRect(
+                    left = currentLeft,
+                    top = barTop,
+                    right = currentLeft + segmentWidth,
+                    bottom = barTop + barHeight,
+                    topLeftCornerRadius = CornerRadius.Zero,
+                    topRightCornerRadius = CornerRadius(cornerRadius),
+                    bottomLeftCornerRadius = CornerRadius.Zero,
+                    bottomRightCornerRadius = CornerRadius(cornerRadius),
                 )
-            }
-            drawPath(path = path, color = color, style = Fill)
+            )
+            drawPath(path = roundedPath, color = color, style = Fill)
         } else {
             drawRect(
                 color = color,

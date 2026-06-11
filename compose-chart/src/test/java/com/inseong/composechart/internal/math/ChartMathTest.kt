@@ -1,5 +1,7 @@
 package com.inseong.composechart.internal.math
 
+import com.inseong.composechart.data.ChartPoint
+import com.inseong.composechart.data.LineSeries
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -159,5 +161,89 @@ class ChartMathTest {
         )
         // Should fallback to auto range since min >= max
         assertEquals(true, range.adjustedMinY < range.adjustedMaxY)
+    }
+
+    @Test
+    fun calculateXYRange_lineSeriesNormalData_matchesListRange() {
+        val series = listOf(
+            LineSeries(
+                points = listOf(
+                    ChartPoint(0f, 10f),
+                    ChartPoint(1f, 20f),
+                    ChartPoint(2f, 30f),
+                    ChartPoint(3f, 40f),
+                ),
+            ),
+        )
+
+        val range = ChartMath.calculateXYRange(series = series)
+
+        assertEquals(0f, range.minX, 0.001f)
+        assertEquals(3f, range.maxX, 0.001f)
+        assertEquals(3f, range.xRange, 0.001f)
+        assertEquals(7f, range.adjustedMinY, 0.001f)
+        assertEquals(43f, range.adjustedMaxY, 0.001f)
+    }
+
+    @Test
+    fun calculateXYRange_lineSeriesSinglePoint_rangeIsOne() {
+        val range = ChartMath.calculateXYRange(
+            series = listOf(LineSeries(points = listOf(ChartPoint(5f, 10f)))),
+        )
+
+        assertEquals(5f, range.minX, 0.001f)
+        assertEquals(5f, range.maxX, 0.001f)
+        assertEquals(1f, range.xRange, 0.001f)
+        assertEquals(9.9f, range.adjustedMinY, 0.001f)
+        assertEquals(10.1f, range.adjustedMaxY, 0.001f)
+    }
+
+    @Test
+    fun calculateXYRange_lineSeriesNegativeValues_handlesCorrectly() {
+        val range = ChartMath.calculateXYRange(
+            series = listOf(
+                LineSeries(
+                    points = listOf(
+                        ChartPoint(-5f, -10f),
+                        ChartPoint(5f, 10f),
+                    ),
+                ),
+            ),
+        )
+
+        assertEquals(-5f, range.minX, 0.001f)
+        assertEquals(5f, range.maxX, 0.001f)
+        assertEquals(10f, range.xRange, 0.001f)
+        assertEquals(-12f, range.adjustedMinY, 0.001f)
+        assertEquals(12f, range.adjustedMaxY, 0.001f)
+    }
+
+    @Test
+    fun calculateXYRange_lineSeriesEmpty_returnsZeroDefaults() {
+        val range = ChartMath.calculateXYRange(series = emptyList())
+
+        assertEquals(0f, range.minX, 0.001f)
+        assertEquals(0f, range.maxX, 0.001f)
+        assertEquals(1f, range.xRange, 0.001f)
+    }
+
+    @Test
+    fun calculateXYRange_lineSeriesManualYAxisOverrides() {
+        val range = ChartMath.calculateXYRange(
+            series = listOf(
+                LineSeries(
+                    points = listOf(
+                        ChartPoint(0f, 10f),
+                        ChartPoint(1f, 20f),
+                        ChartPoint(2f, 30f),
+                    ),
+                ),
+            ),
+            yAxisMin = 0f,
+            yAxisMax = 50f,
+        )
+
+        assertEquals(0f, range.adjustedMinY, 0.001f)
+        assertEquals(50f, range.adjustedMaxY, 0.001f)
     }
 }

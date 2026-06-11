@@ -77,6 +77,7 @@ All six charts expose a consistent set of accessibility parameters (`accessibili
 - Expose simple public APIs with sensible defaults and convenience factories.
 - Keep Canvas draw blocks side-effect free: hit testing, selection callbacks, and state changes happen outside draw, while size/data-derived geometry is cached and reused.
 - Prefer cached primitive geometry for interaction hot paths. For example, `LineChart` stores x positions in a `FloatArray` and uses binary search for ascending data, while preserving a linear fallback for unordered input.
+- Keep high-volume chart calculations single-pass where possible, cache Bar/Radar layout outside draw, and reuse common text drawing resources instead of rebuilding them every frame.
 
 ## Testing Strategy
 

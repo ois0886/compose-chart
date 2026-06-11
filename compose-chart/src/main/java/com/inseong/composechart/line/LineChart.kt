@@ -1,5 +1,6 @@
 package com.inseong.composechart.line
 
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,8 @@ import com.inseong.composechart.internal.canvas.drawTooltip
 import com.inseong.composechart.internal.canvas.drawVerticalIndicatorLine
 import com.inseong.composechart.internal.canvas.drawXAxisLabels
 import com.inseong.composechart.internal.canvas.drawYAxisLabels
+import com.inseong.composechart.internal.canvas.rememberAxisLabelPaint
+import com.inseong.composechart.internal.canvas.rememberTooltipTextPaint
 import com.inseong.composechart.internal.canvas.toBezierPath
 import com.inseong.composechart.internal.canvas.toLinearPath
 import com.inseong.composechart.internal.touch.chartTouchHandler
@@ -122,6 +125,9 @@ fun LineChart(
     val resolvedAxisStyle = style.axis.copy(
         labelColor = ChartDefaults.resolveAxisLabelColor(style.axis.labelColor, isDark),
     )
+    val xAxisLabelPaint = rememberAxisLabelPaint(resolvedAxisStyle, Paint.Align.CENTER)
+    val yAxisLabelPaint = rememberAxisLabelPaint(resolvedAxisStyle, Paint.Align.RIGHT)
+    val tooltipTextPaint = rememberTooltipTextPaint(style.tooltip)
     val density = LocalDensity.current
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -136,11 +142,10 @@ fun LineChart(
     if (validSeries.isEmpty()) return
 
     // Calculate data range (safeX/safeY guard against NaN/Infinity)
-    val allPoints = remember(validSeries) { validSeries.flatMap { it.points } }
-    val xyRange = remember(allPoints, style.axis.yAxisMin, style.axis.yAxisMax) {
+    val dataPointCount = remember(validSeries) { validSeries.sumOf { it.points.size } }
+    val xyRange = remember(validSeries, style.axis.yAxisMin, style.axis.yAxisMax) {
         ChartMath.calculateXYRange(
-            xValues = allPoints.map { it.safeX },
-            yValues = allPoints.map { it.safeY },
+            series = validSeries,
             yAxisMin = style.axis.yAxisMin,
             yAxisMax = style.axis.yAxisMax,
         )
@@ -265,7 +270,7 @@ fun LineChart(
     }
 
     val accessibilityDescription = buildString {
-        append("$accessibilityLabel, ${validSeries.size}개 시리즈, ${allPoints.size}개 데이터 포인트")
+        append("$accessibilityLabel, ${validSeries.size}개 시리즈, ${dataPointCount}개 데이터 포인트")
         if (data.xLabels.isNotEmpty()) {
             append(", ${data.xLabels.size}개 X축 라벨")
         }
@@ -295,12 +300,23 @@ fun LineChart(
 
         // Draw Y-axis labels
         if (resolvedAxisStyle.showYAxis) {
-            drawYAxisLabels(xyRange.adjustedMinY, xyRange.adjustedMaxY, resolvedAxisStyle, chartArea)
+            drawYAxisLabels(
+                minValue = xyRange.adjustedMinY,
+                maxValue = xyRange.adjustedMaxY,
+                style = resolvedAxisStyle,
+                chartArea = chartArea,
+                labelPaint = yAxisLabelPaint,
+            )
         }
 
         // Draw X-axis labels
         if (resolvedAxisStyle.showXAxis && data.xLabels.isNotEmpty()) {
-            drawXAxisLabels(data.xLabels, resolvedAxisStyle, chartArea)
+            drawXAxisLabels(
+                labels = data.xLabels,
+                style = resolvedAxisStyle,
+                chartArea = chartArea,
+                labelPaint = xAxisLabelPaint,
+            )
         }
 
         // Clip to chart area and apply zoom transform
@@ -379,6 +395,7 @@ fun LineChart(
                         style = style.tooltip,
                         lineColor = layout.color,
                         canvasSize = size,
+                        textPaint = tooltipTextPaint,
                     )
                 }
             }

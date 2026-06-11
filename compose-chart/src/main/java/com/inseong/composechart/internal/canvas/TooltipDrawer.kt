@@ -1,14 +1,12 @@
 package com.inseong.composechart.internal.canvas
 
 import android.graphics.Paint
-import android.graphics.Typeface
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
-import com.inseong.composechart.internal.canvas.toTypefaceStyle
 import com.inseong.composechart.style.TooltipStyle
 
 /**
@@ -29,21 +27,15 @@ internal fun DrawScope.drawTooltip(
     style: TooltipStyle,
     lineColor: Color,
     canvasSize: Size,
+    textPaint: Paint,
 ) {
     val paddingH = style.paddingHorizontal.toPx()
     val paddingV = style.paddingVertical.toPx()
     val cornerRadius = style.cornerRadius.toPx()
-    val textSizePx = style.textSize.toPx()
 
     // Measure text size
-    val textPaint = Paint().apply {
-        color = android.graphics.Color.WHITE
-        textSize = textSizePx
-        isAntiAlias = true
-        typeface = Typeface.create(Typeface.DEFAULT, style.fontWeight.toTypefaceStyle())
-    }
     val textWidth = textPaint.measureText(text)
-    val textHeight = textSizePx
+    val textHeight = textPaint.textSize
 
     // Clamp bubble size to not exceed canvas
     val bubbleWidth = (textWidth + paddingH * 2).coerceAtMost(canvasSize.width)
@@ -51,7 +43,7 @@ internal fun DrawScope.drawTooltip(
     val arrowHeight = 6f
 
     // Skip tooltip if canvas is too small
-    if (canvasSize.width < textSizePx || canvasSize.height < textSizePx) return
+    if (canvasSize.width < textPaint.textSize || canvasSize.height < textPaint.textSize) return
 
     // Default position: above the point
     var bubbleLeft = position.x - bubbleWidth / 2

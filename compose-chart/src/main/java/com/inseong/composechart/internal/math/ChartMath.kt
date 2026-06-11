@@ -1,5 +1,7 @@
 package com.inseong.composechart.internal.math
 
+import com.inseong.composechart.data.LineSeries
+
 /**
  * XY range calculation result for axis-based charts.
  */
@@ -41,6 +43,67 @@ internal object ChartMath {
         val minY = yValues.minOrNull() ?: 0f
         val maxY = yValues.maxOrNull() ?: 0f
 
+        return buildXYRange(
+            minX = minX,
+            maxX = maxX,
+            minY = minY,
+            maxY = maxY,
+            yAxisMin = yAxisMin,
+            yAxisMax = yAxisMax,
+        )
+    }
+
+    /**
+     * Calculates X/Y data range for line series without building intermediate point/value lists.
+     */
+    fun calculateXYRange(
+        series: List<LineSeries>,
+        yAxisMin: Float? = null,
+        yAxisMax: Float? = null,
+    ): XYRange {
+        var hasPoint = false
+        var minX = 0f
+        var maxX = 0f
+        var minY = 0f
+        var maxY = 0f
+
+        series.forEach { lineSeries ->
+            lineSeries.points.forEach { point ->
+                val safeX = point.safeX
+                val safeY = point.safeY
+                if (!hasPoint) {
+                    minX = safeX
+                    maxX = safeX
+                    minY = safeY
+                    maxY = safeY
+                    hasPoint = true
+                } else {
+                    if (safeX < minX) minX = safeX
+                    if (safeX > maxX) maxX = safeX
+                    if (safeY < minY) minY = safeY
+                    if (safeY > maxY) maxY = safeY
+                }
+            }
+        }
+
+        return buildXYRange(
+            minX = minX,
+            maxX = maxX,
+            minY = minY,
+            maxY = maxY,
+            yAxisMin = yAxisMin,
+            yAxisMax = yAxisMax,
+        )
+    }
+
+    private fun buildXYRange(
+        minX: Float,
+        maxX: Float,
+        minY: Float,
+        maxY: Float,
+        yAxisMin: Float?,
+        yAxisMax: Float?,
+    ): XYRange {
         val yRange = (maxY - minY).let { if (it == 0f) 1f else it }
         val yPadding = yRange * 0.1f
         val autoMinY = minY - yPadding

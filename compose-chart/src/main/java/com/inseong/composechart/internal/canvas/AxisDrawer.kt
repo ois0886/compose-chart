@@ -1,12 +1,9 @@
 package com.inseong.composechart.internal.canvas
 
 import android.graphics.Paint
-import android.graphics.Typeface
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
-import com.inseong.composechart.internal.canvas.toTypefaceStyle
 import com.inseong.composechart.style.AxisStyle
 
 /**
@@ -26,6 +23,7 @@ internal fun DrawScope.drawXAxisLabels(
     labels: List<String>,
     style: AxisStyle,
     chartArea: Rect,
+    labelPaint: Paint,
     groupWidth: Float = 0f,
     groupSpacing: Float = 0f,
 ) {
@@ -33,22 +31,14 @@ internal fun DrawScope.drawXAxisLabels(
     // Hide labels when chart area is too narrow
     if (chartArea.width < 80f * density) return
 
-    val paint = Paint().apply {
-        color = style.labelColor.toArgb()
-        textSize = style.labelSize.toPx()
-        textAlign = Paint.Align.CENTER
-        isAntiAlias = true
-        typeface = Typeface.create(Typeface.DEFAULT, style.fontWeight.toTypefaceStyle())
-    }
-
-    val y = chartArea.bottom + style.labelSize.toPx() + 8f
+    val y = chartArea.bottom + labelPaint.textSize + 8f
 
     if (labels.size == 1) {
         drawContext.canvas.nativeCanvas.drawText(
             labels[0],
             chartArea.center.x,
             y,
-            paint,
+            labelPaint,
         )
         return
     }
@@ -57,14 +47,14 @@ internal fun DrawScope.drawXAxisLabels(
         // Center each label under its bar group
         labels.forEachIndexed { index, label ->
             val x = chartArea.left + index * (groupWidth + groupSpacing) + groupWidth / 2
-            drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
+            drawContext.canvas.nativeCanvas.drawText(label, x, y, labelPaint)
         }
     } else {
         // Edge-to-edge distribution (for line charts)
         val step = chartArea.width / (labels.size - 1)
         labels.forEachIndexed { index, label ->
             val x = chartArea.left + step * index
-            drawContext.canvas.nativeCanvas.drawText(label, x, y, paint)
+            drawContext.canvas.nativeCanvas.drawText(label, x, y, labelPaint)
         }
     }
 }
@@ -84,18 +74,11 @@ internal fun DrawScope.drawYAxisLabels(
     maxValue: Float,
     style: AxisStyle,
     chartArea: Rect,
+    labelPaint: Paint,
 ) {
     if (style.yLabelCount <= 0) return
     // Hide labels when chart area is too short
     if (chartArea.height < 80f * density) return
-
-    val paint = Paint().apply {
-        color = style.labelColor.toArgb()
-        textSize = style.labelSize.toPx()
-        textAlign = Paint.Align.RIGHT
-        isAntiAlias = true
-        typeface = Typeface.create(Typeface.DEFAULT, style.fontWeight.toTypefaceStyle())
-    }
 
     val range = maxValue - minValue
     val step = chartArea.height / style.yLabelCount
@@ -115,8 +98,8 @@ internal fun DrawScope.drawYAxisLabels(
         drawContext.canvas.nativeCanvas.drawText(
             text,
             chartArea.left - 8f,
-            yPos + style.labelSize.toPx() / 3, // Vertical centering adjustment
-            paint,
+            yPos + labelPaint.textSize / 3, // Vertical centering adjustment
+            labelPaint,
         )
     }
 }
