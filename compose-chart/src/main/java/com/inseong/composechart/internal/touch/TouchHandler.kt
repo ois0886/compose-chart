@@ -94,3 +94,55 @@ internal fun findNearestPointIndex(touchX: Float, pointXPositions: List<Float>):
     }
     return nearestIndex
 }
+
+/**
+ * Finds the index of the nearest data point using primitive X positions.
+ *
+ * Uses binary search when [sortedAscending] is true, and falls back to the
+ * same forward linear scan semantics as [findNearestPointIndex] otherwise.
+ */
+internal fun findNearestPointIndex(
+    touchX: Float,
+    pointXPositions: FloatArray,
+    sortedAscending: Boolean,
+): Int {
+    if (pointXPositions.isEmpty()) return -1
+    if (!sortedAscending) return findNearestPointIndexLinear(touchX, pointXPositions)
+
+    if (touchX <= pointXPositions.first()) return 0
+    val lastIndex = pointXPositions.lastIndex
+    if (touchX >= pointXPositions[lastIndex]) return lastIndex
+
+    var low = 0
+    var high = pointXPositions.size
+    while (low < high) {
+        val mid = (low + high) ushr 1
+        if (pointXPositions[mid] < touchX) {
+            low = mid + 1
+        } else {
+            high = mid
+        }
+    }
+
+    val rightIndex = low
+    val leftIndex = rightIndex - 1
+    val leftDistance = abs(touchX - pointXPositions[leftIndex])
+    val rightDistance = abs(pointXPositions[rightIndex] - touchX)
+    return if (leftDistance <= rightDistance) leftIndex else rightIndex
+}
+
+private fun findNearestPointIndexLinear(
+    touchX: Float,
+    pointXPositions: FloatArray,
+): Int {
+    var minDistance = Float.MAX_VALUE
+    var nearestIndex = 0
+    pointXPositions.forEachIndexed { index, x ->
+        val distance = abs(touchX - x)
+        if (distance < minDistance) {
+            minDistance = distance
+            nearestIndex = index
+        }
+    }
+    return nearestIndex
+}

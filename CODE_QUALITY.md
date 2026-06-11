@@ -341,6 +341,7 @@ internal fun resolveGridLineColor(color: Color, isDark: Boolean): Color =
 - 터치 hit-test 결과와 접근성 선택 설명은 draw 밖에서 파생 상태로 계산하고, 콜백은 선택값 변경 시점에만 호출한다.
 - 데이터/크기/style에만 의존하는 좌표, `Path`, 라벨 목록, 누적값은 `remember`, `lazy`, `drawWithCache` 등으로 재사용한다.
 - draw 중 반복 생성되는 `Paint`, `PathEffect`, 임시 컬렉션은 호출 단위 캐시나 더 직접적인 draw API로 줄인다.
+- 정렬된 좌표 탐색은 `FloatArray` 같은 primitive 배열과 binary search를 우선하고, 정렬되지 않은 사용자 데이터에는 기존 순서 기반 fallback을 보존한다.
 
 ### 컬렉션 처리 최적화
 

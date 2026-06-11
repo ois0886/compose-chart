@@ -37,4 +37,48 @@ class TouchHandlerTest {
         val index = findNearestPointIndex(50f, listOf(0f, 100f))
         assertEquals(0, index)
     }
+
+    @Test
+    fun findNearestPointIndex_sortedFloatArray_usesNearestLowerOnTie() {
+        val index = findNearestPointIndex(
+            touchX = 50f,
+            pointXPositions = floatArrayOf(0f, 100f, 200f),
+            sortedAscending = true,
+        )
+
+        assertEquals(0, index)
+    }
+
+    @Test
+    fun findNearestPointIndex_sortedFloatArray_middleValue_returnsNearestIndex() {
+        val index = findNearestPointIndex(
+            touchX = 130f,
+            pointXPositions = floatArrayOf(0f, 100f, 200f),
+            sortedAscending = true,
+        )
+
+        assertEquals(1, index)
+    }
+
+    @Test
+    fun findNearestPointIndex_sortedFloatArray_afterLast_returnsLastIndex() {
+        val index = findNearestPointIndex(
+            touchX = 300f,
+            pointXPositions = floatArrayOf(0f, 100f, 200f),
+            sortedAscending = true,
+        )
+
+        assertEquals(2, index)
+    }
+
+    @Test
+    fun findNearestPointIndex_unsortedFloatArray_fallsBackToLinearOrder() {
+        val index = findNearestPointIndex(
+            touchX = 50f,
+            pointXPositions = floatArrayOf(100f, 0f),
+            sortedAscending = false,
+        )
+
+        assertEquals(0, index)
+    }
 }
