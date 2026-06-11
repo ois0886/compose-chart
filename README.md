@@ -58,7 +58,7 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-chart:1.3.0")
+    implementation("io.github.ois0886:compose-chart:1.3.1")
 }
 ```
 
