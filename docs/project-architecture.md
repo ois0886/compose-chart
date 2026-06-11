@@ -112,6 +112,13 @@ Release command:
 ./gradlew :compose-chart:publishAndReleaseToMavenCentral
 ```
 
+Release documentation checklist:
+
+- Keep `compose-chart/build.gradle.kts` Maven coordinates, README dependency snippets, README feature version heading, and `CHANGELOG.md` aligned to the same release version.
+- Move completed `CHANGELOG.md` entries from `Unreleased` into a dated version section before creating a release.
+- Publish through a GitHub Release tag such as `v1.3.1`; `.github/workflows/publish.yml` runs tests, lint, and Maven Central publishing from that release event.
+- After publishing, confirm the GitHub Release is non-draft/non-prerelease unless intentionally shipping a prerelease, and verify the publish workflow completed successfully.
+
 GitHub Actions:
 
 - `.github/workflows/ci.yml`
@@ -131,4 +138,5 @@ GitHub Actions:
 - Follow `CODE_QUALITY.md` for implementation details such as immutability, pure functions, visibility, and named arguments.
 - Open pull requests as ready for review by default. Use draft PRs only when explicitly requested.
 - Keep README examples mirrored by compile-safe tests so doc snippets stay aligned with the current API.
+- When release documentation changes, verify version strings and release notes together rather than updating only the dependency snippet.
 - Update `CHANGELOG.md` whenever public behavior, documentation, accessibility output, or release-visible workflows change.

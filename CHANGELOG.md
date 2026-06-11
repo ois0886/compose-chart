@@ -5,6 +5,10 @@
 
 ## [Unreleased]
 
+### Documentation
+- README와 내부 contributor 문서를 v1.3.1 릴리스 기준으로 정리 — 최신 dependency/version 표기, 성능 릴리스 설명, 릴리즈 문서 동기화 체크리스트 보강
+- README `GridStyle.dashPattern` 예제를 현재 `List<Float>` API에 맞게 수정하고 mirrored example test 추가
+
 ## [1.3.1] - 2026-06-11
 
 ### Changed
