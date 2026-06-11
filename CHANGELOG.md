@@ -10,6 +10,7 @@
 - 선택 콜백 호출 안정화 — 동일한 터치 선택이 redraw/recomposition 되는 동안 `onSelectionChanged` 및 레거시 선택 콜백이 반복 호출되지 않도록 변경
 - LineChart 터치 탐색 최적화 — 정렬된 x 값은 primitive 배열과 binary search로 가장 가까운 포인트를 찾고, 정렬되지 않은 데이터는 기존 linear fallback 동작을 유지
 - Line/Bar/Radar 렌더링 hot path 추가 최적화 — LineChart range 계산을 single-pass로 줄이고, Bar/Radar layout 및 공통 text paint 재사용으로 draw 중 반복 계산과 할당을 축소
+- PR 운영 문서 정리 — 사용자가 명시적으로 요청하지 않는 한 PR은 Draft가 아닌 ready for review 상태로 생성하도록 contributor/agent 문서와 PR 템플릿을 갱신
 
 ## [1.3.0] - 2026-04-10
 

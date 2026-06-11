@@ -52,6 +52,7 @@ Before making changes, read documents in this order:
 - Run the narrowest useful verification for the change.
 - Review the resulting diff before commit.
 - Commit completed work with a Korean conventional commit message.
+- When opening a PR, create it as ready for review, not draft, unless the user explicitly asks for a draft PR.
 
 ## Build Commands
 
