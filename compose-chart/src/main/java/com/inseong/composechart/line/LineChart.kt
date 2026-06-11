@@ -47,12 +47,13 @@ import com.inseong.composechart.internal.touch.chartTouchHandlerWithZoom
 import com.inseong.composechart.internal.touch.findNearestPointIndex
 import com.inseong.composechart.style.LineChartStyle
 
-private data class LineSeriesLayout(
+private class LineSeriesLayout(
     val seriesIndex: Int,
     val color: Color,
     val points: List<Offset>,
     val path: Path,
-    val xPositions: List<Float>,
+    val xPositions: FloatArray,
+    val xPositionsSortedAscending: Boolean,
 )
 
 /**
@@ -210,7 +211,8 @@ fun LineChart(
                     color = seriesColor,
                     points = mappedPoints,
                     path = if (style.curved) mappedPoints.toBezierPath() else mappedPoints.toLinearPath(),
-                    xPositions = mappedPoints.map { it.x },
+                    xPositions = FloatArray(mappedPoints.size) { index -> mappedPoints[index].x },
+                    xPositionsSortedAscending = series.points.hasAscendingSafeXValues(),
                 )
             }
         }
@@ -234,7 +236,11 @@ fun LineChart(
             emptyList()
         } else {
             lineLayouts.mapNotNull { layout ->
-                val nearestIndex = findNearestPointIndex(currentTouch.x, layout.xPositions)
+                val nearestIndex = findNearestPointIndex(
+                    touchX = currentTouch.x,
+                    pointXPositions = layout.xPositions,
+                    sortedAscending = layout.xPositionsSortedAscending,
+                )
                 val dataPoint = validSeries[layout.seriesIndex].points.getOrNull(nearestIndex)
                 dataPoint?.let { ChartSelection.Line(layout.seriesIndex, nearestIndex, it) }
             }
@@ -378,4 +384,11 @@ fun LineChart(
             }
         }
     }
+}
+
+private fun List<ChartPoint>.hasAscendingSafeXValues(): Boolean {
+    for (index in 1 until size) {
+        if (this[index].safeX < this[index - 1].safeX) return false
+    }
+    return true
 }
