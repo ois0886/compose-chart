@@ -34,24 +34,24 @@ class DonutChartScreenTest {
     }
 
     @Test
-    fun donutChartScreen_showsNormalSection() {
+    fun donutChartScreen_showsDefaultScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 DonutChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
-    fun donutChartScreen_showsLargeSizeSection() {
+    fun donutChartScreen_showsExpandedScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 DonutChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Large Size (400dp)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Expanded").assertIsDisplayed()
     }
 }

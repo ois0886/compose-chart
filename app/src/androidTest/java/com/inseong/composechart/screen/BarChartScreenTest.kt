@@ -34,24 +34,24 @@ class BarChartScreenTest {
     }
 
     @Test
-    fun barChartScreen_showsNormalSection() {
+    fun barChartScreen_showsDefaultScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 BarChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
-    fun barChartScreen_showsLargeSizeSection() {
+    fun barChartScreen_showsExpandedScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 BarChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Large Size (400dp)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Expanded").assertIsDisplayed()
     }
 }

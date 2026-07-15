@@ -34,24 +34,24 @@ class GaugeChartScreenTest {
     }
 
     @Test
-    fun gaugeChartScreen_showsNormalSection() {
+    fun gaugeChartScreen_showsDefaultScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 GaugeChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
-    fun gaugeChartScreen_showsLargeSizeSection() {
+    fun gaugeChartScreen_showsExpandedScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 GaugeChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Large Size (400dp)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Expanded").assertIsDisplayed()
     }
 }

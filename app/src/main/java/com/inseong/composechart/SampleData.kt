@@ -8,15 +8,6 @@ import com.inseong.composechart.data.LineChartData
 import com.inseong.composechart.data.RadarChartData
 import com.inseong.composechart.data.RadarEntry
 
-enum class ChartType(val displayName: String) {
-    LINE("Line Chart"),
-    BAR("Bar Chart"),
-    DONUT("Donut Chart"),
-    GAUGE("Gauge Chart"),
-    RADAR("Radar Chart"),
-    PIE("Pie Chart"),
-}
-
 // ── Normal Data ──
 
 val normalLineData = LineChartData.fromValues(

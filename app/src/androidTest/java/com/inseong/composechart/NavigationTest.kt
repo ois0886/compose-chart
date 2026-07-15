@@ -1,9 +1,13 @@
 package com.inseong.composechart
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import com.inseong.composechart.ui.theme.ComposeChartTheme
 import org.junit.Rule
 import org.junit.Test
@@ -19,9 +23,8 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Line Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        openChart(ChartType.LINE)
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
@@ -30,9 +33,8 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Bar Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        openChart(ChartType.BAR)
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
@@ -41,9 +43,8 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Donut Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        openChart(ChartType.DONUT)
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
@@ -52,9 +53,8 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Gauge Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        openChart(ChartType.GAUGE)
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
@@ -63,9 +63,8 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Radar Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        openChart(ChartType.RADAR)
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
@@ -74,9 +73,8 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Pie Chart").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        openChart(ChartType.PIE)
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
@@ -85,10 +83,17 @@ class NavigationTest {
             ComposeChartTheme { ChartApp() }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Line Chart").performClick()
+        openChart(ChartType.LINE)
+        composeTestRule.onNodeWithContentDescription("Back to chart gallery").performClick()
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("\u2190").performClick()
+        composeTestRule.onNodeWithText("COMPOSE CHART").assertIsDisplayed()
+    }
+
+    private fun openChart(chartType: ChartType) {
+        composeTestRule
+            .onNodeWithTag("chart-gallery-grid")
+            .performScrollToNode(hasText(chartType.displayName))
+        composeTestRule.onNodeWithText(chartType.displayName).performClick()
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Compose Chart Gallery").assertIsDisplayed()
     }
 }

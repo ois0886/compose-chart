@@ -34,24 +34,24 @@ class PieChartScreenTest {
     }
 
     @Test
-    fun pieChartScreen_showsNormalSection() {
+    fun pieChartScreen_showsDefaultScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 PieChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
-    fun pieChartScreen_showsLargeSizeSection() {
+    fun pieChartScreen_showsExpandedScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 PieChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Large Size (400dp)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Expanded").assertIsDisplayed()
     }
 }
