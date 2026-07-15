@@ -89,7 +89,7 @@ private class LineSeriesLayout(
  * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
  * @param style Chart style (curve mode, dots, grid, axis, tooltip, animation duration).
  * @param colors Palette used for series without an explicit color. Cycles when more series than
- *   colors. See [ChartDefaults.colors] for the default palette.
+ *   colors. An empty list falls back to [ChartDefaults.colors].
  * @param zoomState Optional zoom/pan state. Pass [com.inseong.composechart.rememberChartZoomState]
  *   to enable pinch-to-zoom and pan gestures.
  * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
@@ -117,6 +117,8 @@ fun LineChart(
     onSelectionChanged: ((ChartSelection.Line) -> Unit)? = null,
     onPointSelected: ((seriesIndex: Int, pointIndex: Int, point: ChartPoint) -> Unit)? = null,
 ) {
+    val resolvedColors = remember(colors) { ChartDefaults.resolveColors(colors) }
+
     // Detect dark theme and resolve styles
     val isDark = isSystemInDarkTheme()
     val resolvedGridStyle = style.grid.copy(
@@ -189,13 +191,13 @@ fun LineChart(
     val zOffsetX = zoomState?.offsetX ?: 0f
     val zOffsetY = zoomState?.offsetY ?: 0f
 
-    val lineLayouts = remember(validSeries, xyRange, chartArea, style.curved, colors) {
+    val lineLayouts = remember(validSeries, xyRange, chartArea, style.curved, resolvedColors) {
         if (chartArea.width <= 0f || chartArea.height <= 0f) {
             emptyList()
         } else {
             validSeries.mapIndexed { seriesIndex, series ->
                 val seriesColor = if (series.color == Color.Unspecified) {
-                    colors[seriesIndex % colors.size]
+                    resolvedColors[seriesIndex % resolvedColors.size]
                 } else {
                     series.color
                 }

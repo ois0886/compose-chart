@@ -39,19 +39,39 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ChartApp(modifier: Modifier = Modifier) {
     var currentScreenName by rememberSaveable { mutableStateOf<String?>(null) }
-    val currentScreen = currentScreenName?.let(ChartType::valueOf)
+    val currentScreen = currentScreenName?.let { savedName ->
+        ChartType.entries.firstOrNull { it.name == savedName }
+    }
 
     when (currentScreen) {
         null -> ChartGalleryScreen(
             onChartSelected = { currentScreenName = it.name },
             modifier = modifier,
         )
-        ChartType.LINE -> LineChartScreen(onBack = { currentScreenName = null })
-        ChartType.BAR -> BarChartScreen(onBack = { currentScreenName = null })
-        ChartType.DONUT -> DonutChartScreen(onBack = { currentScreenName = null })
-        ChartType.GAUGE -> GaugeChartScreen(onBack = { currentScreenName = null })
-        ChartType.RADAR -> RadarChartScreen(onBack = { currentScreenName = null })
-        ChartType.PIE -> PieChartScreen(onBack = { currentScreenName = null })
+        ChartType.LINE -> LineChartScreen(
+            onBack = { currentScreenName = null },
+            modifier = modifier,
+        )
+        ChartType.BAR -> BarChartScreen(
+            onBack = { currentScreenName = null },
+            modifier = modifier,
+        )
+        ChartType.DONUT -> DonutChartScreen(
+            onBack = { currentScreenName = null },
+            modifier = modifier,
+        )
+        ChartType.GAUGE -> GaugeChartScreen(
+            onBack = { currentScreenName = null },
+            modifier = modifier,
+        )
+        ChartType.RADAR -> RadarChartScreen(
+            onBack = { currentScreenName = null },
+            modifier = modifier,
+        )
+        ChartType.PIE -> PieChartScreen(
+            onBack = { currentScreenName = null },
+            modifier = modifier,
+        )
     }
 }
 

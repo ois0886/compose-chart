@@ -106,6 +106,18 @@ Common commands:
 > AGP 9 note: the aggregate `test` task no longer accepts `--tests`. Use the
 > variant-specific `testDebugUnitTest` task when filtering to a single class.
 
+README chart screenshots are generated from the real sample data and chart
+composables on a connected emulator. The opt-in test does not write files during
+normal instrumentation runs. To refresh all six light and six dark images, run:
+
+```bash
+./scripts/update-readme-screenshots.sh
+```
+
+The script switches the emulator system theme, disables chart animations for
+deterministic captures, and writes the 12 equally sized PNG files under
+`screenshots/` using lowercase kebab-case names.
+
 Release command:
 
 ```bash
@@ -116,7 +128,7 @@ Release documentation checklist:
 
 - Keep `compose-chart/build.gradle.kts` Maven coordinates, README dependency snippets, README feature version heading, and `CHANGELOG.md` aligned to the same release version.
 - Move completed `CHANGELOG.md` entries from `Unreleased` into a dated version section before creating a release.
-- Publish through a GitHub Release tag such as `v1.3.1`; `.github/workflows/publish.yml` runs tests, lint, and Maven Central publishing from that release event.
+- Publish through a GitHub Release tag such as `v1.3.2`; `.github/workflows/publish.yml` runs tests, lint, and Maven Central publishing from that release event.
 - After publishing, confirm the GitHub Release is non-draft/non-prerelease unless intentionally shipping a prerelease, and verify the publish workflow completed successfully.
 
 GitHub Actions:

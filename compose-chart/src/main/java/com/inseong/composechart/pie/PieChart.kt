@@ -33,7 +33,8 @@ import com.inseong.composechart.style.PieChartStyle
  * @param data Data to display (reuses [DonutChartData]). Non-positive slices are filtered out.
  * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
  * @param style Pie style (slice spacing, selected scale, labels, animation duration, start angle).
- * @param colors Slice palette used when slices omit a color. See [ChartDefaults.colors].
+ * @param colors Slice palette used when slices omit a color. An empty list falls back to
+ *   [ChartDefaults.colors].
  * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
  *   `"파이 차트"`; override when localizing or using a more specific label.
  * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node

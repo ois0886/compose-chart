@@ -34,24 +34,24 @@ class RadarChartScreenTest {
     }
 
     @Test
-    fun radarChartScreen_showsNormalSection() {
+    fun radarChartScreen_showsDefaultScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 RadarChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Normal").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Default").assertIsDisplayed()
     }
 
     @Test
-    fun radarChartScreen_showsLargeSizeSection() {
+    fun radarChartScreen_showsExpandedScenario() {
         composeTestRule.setContent {
             ComposeChartTheme {
                 RadarChartScreen(onBack = {})
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Large Size (400dp)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Expanded").assertIsDisplayed()
     }
 }

@@ -1,8 +1,11 @@
 package com.inseong.composechart
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
 import com.inseong.composechart.ui.theme.ComposeChartTheme
 import org.junit.Rule
 import org.junit.Test
@@ -32,6 +35,9 @@ class ChartGalleryScreenTest {
         composeTestRule.waitForIdle()
 
         ChartType.entries.forEach { chartType ->
+            composeTestRule
+                .onNodeWithTag("chart-gallery-grid")
+                .performScrollToNode(hasText(chartType.displayName))
             composeTestRule.onNodeWithText(chartType.displayName).assertIsDisplayed()
         }
     }
@@ -44,6 +50,6 @@ class ChartGalleryScreenTest {
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Compose Chart Gallery").assertIsDisplayed()
+        composeTestRule.onNodeWithText("COMPOSE CHART").assertIsDisplayed()
     }
 }

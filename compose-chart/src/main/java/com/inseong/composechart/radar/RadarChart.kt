@@ -74,7 +74,7 @@ private class RadarEntryLayout(
  * @param style Chart style (web levels, web line color/width, dot radius, fill alpha, label size,
  *   animation duration).
  * @param colors Palette used for entries without an explicit color. Cycles after the palette is
- *   exhausted. See [ChartDefaults.colors].
+ *   exhausted. An empty list falls back to [ChartDefaults.colors].
  * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
  *   `"레이더 차트"`; override when localizing or using a more specific label.
  * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
@@ -98,6 +98,8 @@ fun RadarChart(
     onSelectionChanged: ((ChartSelection.Radar) -> Unit)? = null,
     onAxisSelected: ((axisIndex: Int) -> Unit)? = null,
 ) {
+    val resolvedColors = remember(colors) { ChartDefaults.resolveColors(colors) }
+
     val isDark = isSystemInDarkTheme()
     val resolvedWebColor = ChartDefaults.resolveRadarWebColor(style.webLineColor, isDark)
     val resolvedLabelColor = ChartDefaults.resolveAxisLabelColor(style.labelColor, isDark)
@@ -203,10 +205,10 @@ fun RadarChart(
         }
     }
 
-    val entryLayouts = remember(validEntries, resolvedMaxValue, axisCount, colors) {
+    val entryLayouts = remember(validEntries, resolvedMaxValue, axisCount, resolvedColors) {
         validEntries.mapIndexed { entryIndex, entry ->
             val entryColor = if (entry.color == Color.Unspecified) {
-                colors[entryIndex % colors.size]
+                resolvedColors[entryIndex % resolvedColors.size]
             } else {
                 entry.color
             }

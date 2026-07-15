@@ -69,7 +69,8 @@ private data class DonutGeometry(
  * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
  * @param style Chart style (hole radius, slice spacing, selected scale, labels, animation, start
  *   angle). Use `holeRadius = 0f` for a filled pie look, `0.6f` for a typical donut.
- * @param colors Slice color palette used when slices omit a color. See [ChartDefaults.colors].
+ * @param colors Slice color palette used when slices omit a color. An empty list falls back to
+ *   [ChartDefaults.colors].
  * @param accessibilityLabel Base prefix used in the chart's semantics `contentDescription`.
  *   Default `"도넛 차트"`; override when localizing or using a more specific label.
  * @param onClickLabel Screen reader click action label. When non-null, an onClick semantics node
@@ -94,6 +95,8 @@ fun DonutChart(
     onSelectionChanged: ((ChartSelection.Donut) -> Unit)? = null,
     onSliceSelected: ((index: Int, slice: DonutSlice) -> Unit)? = null,
 ) {
+    val resolvedColors = remember(colors) { ChartDefaults.resolveColors(colors) }
+
     val density = LocalDensity.current
     var chartSize by remember { mutableStateOf(IntSize.Zero) }
     val progress by rememberChartAnimation(style.animationDurationMs, animationKey = data)
@@ -212,7 +215,7 @@ fun DonutChart(
             val actualSweep = (sweepAngle - spacingAngle).coerceAtLeast(0.1f)
 
             val sliceColor = if (slice.color == Color.Unspecified) {
-                colors[index % colors.size]
+                resolvedColors[index % resolvedColors.size]
             } else {
                 slice.color
             }

@@ -17,9 +17,9 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
     <td align="center"><b>Donut Chart</b></td>
   </tr>
   <tr>
-    <td><img src="screenshots/Line%20Chart.png" width="280"/></td>
-    <td><img src="screenshots/Bar%20Chart.png" width="280"/></td>
-    <td><img src="screenshots/Donut%20Chart.png" width="280"/></td>
+    <td><img src="screenshots/line-chart-light.png" alt="라이트 모드 선 차트" width="280"/></td>
+    <td><img src="screenshots/bar-chart-light.png" alt="라이트 모드 막대 차트" width="280"/></td>
+    <td><img src="screenshots/donut-chart-light.png" alt="라이트 모드 도넛 차트" width="280"/></td>
   </tr>
   <tr>
     <td align="center"><b>Gauge Chart</b></td>
@@ -27,9 +27,9 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
     <td align="center"><b>Pie Chart</b></td>
   </tr>
   <tr>
-    <td><img src="screenshots/Gauge%20Chart.png" width="280"/></td>
-    <td><img src="screenshots/Radar%20Chart.png" width="280"/></td>
-    <td><img src="screenshots/Pie%20Chart.png" width="280"/></td>
+    <td><img src="screenshots/gauge-chart-light.png" alt="라이트 모드 게이지 차트" width="280"/></td>
+    <td><img src="screenshots/radar-chart-light.png" alt="라이트 모드 레이더 차트" width="280"/></td>
+    <td><img src="screenshots/pie-chart-light.png" alt="라이트 모드 파이 차트" width="280"/></td>
   </tr>
 </table>
 
@@ -39,7 +39,18 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 레이더 웹 색상이 다크 모드에 자동 대응합니다. 다크 모드 전용 스타일 설정은
 필요하지 않습니다.
 
-> 📷 다크 모드 스크린샷 추가 예정: `screenshots/{chart}-dark.png`
+<table>
+  <tr>
+    <td><img src="screenshots/line-chart-dark.png" alt="다크 모드 선 차트" width="280"/></td>
+    <td><img src="screenshots/bar-chart-dark.png" alt="다크 모드 막대 차트" width="280"/></td>
+    <td><img src="screenshots/donut-chart-dark.png" alt="다크 모드 도넛 차트" width="280"/></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/gauge-chart-dark.png" alt="다크 모드 게이지 차트" width="280"/></td>
+    <td><img src="screenshots/radar-chart-dark.png" alt="다크 모드 레이더 차트" width="280"/></td>
+    <td><img src="screenshots/pie-chart-dark.png" alt="다크 모드 파이 차트" width="280"/></td>
+  </tr>
+</table>
 
 ## Why?
 
@@ -55,12 +66,12 @@ Jetpack Compose에서 사용할 수 있는 가볍고 독립적인 차트 UI 컴�
 
 ## Setup
 
-현재 문서 기준 최신 릴리스는 **v1.3.1**입니다.
+현재 문서 기준 최신 릴리스는 **v1.3.2**입니다.
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.ois0886:compose-chart:1.3.1")
+    implementation("io.github.ois0886:compose-chart:1.3.2")
 }
 ```
 
@@ -68,7 +79,7 @@ dependencies {
 
 ### 선 차트
 
-<img src="screenshots/Line%20Chart.png" width="400"/>
+<img src="screenshots/line-chart-light.png" alt="라이트 모드 선 차트" width="400"/>
 
 ```kotlin
 LineChart(
@@ -82,7 +93,7 @@ LineChart(
 
 ### 막대 차트
 
-<img src="screenshots/Bar%20Chart.png" width="400"/>
+<img src="screenshots/bar-chart-light.png" alt="라이트 모드 막대 차트" width="400"/>
 
 ```kotlin
 BarChart(
@@ -96,7 +107,7 @@ BarChart(
 
 ### 도넛 차트
 
-<img src="screenshots/Donut%20Chart.png" width="300"/>
+<img src="screenshots/donut-chart-light.png" alt="라이트 모드 도넛 차트" width="300"/>
 
 ```kotlin
 DonutChart(
@@ -113,7 +124,7 @@ DonutChart(
 
 ### 게이지 차트
 
-<img src="screenshots/Gauge%20Chart.png" width="300"/>
+<img src="screenshots/gauge-chart-light.png" alt="라이트 모드 게이지 차트" width="300"/>
 
 ```kotlin
 GaugeChart(
@@ -124,7 +135,7 @@ GaugeChart(
 
 ### 레이더 차트
 
-<img src="screenshots/Radar%20Chart.png" width="300"/>
+<img src="screenshots/radar-chart-light.png" alt="라이트 모드 레이더 차트" width="300"/>
 
 ```kotlin
 RadarChart(
@@ -138,7 +149,7 @@ RadarChart(
 
 ### 파이 차트
 
-<img src="screenshots/Pie%20Chart.png" width="300"/>
+<img src="screenshots/pie-chart-light.png" alt="라이트 모드 파이 차트" width="300"/>
 
 ```kotlin
 PieChart(
@@ -147,10 +158,10 @@ PieChart(
 )
 ```
 
-## Features (v1.3.1)
+## Features (v1.3.2)
 
 README 예제 코드는 테스트에서도 함께 유지되어, 문서 스니펫이 실제 API와 어긋나지 않도록 관리합니다.
-v1.3.1은 공개 API와 시각 결과를 유지하면서 Line/Bar/Donut/Pie/Radar 렌더링 hot path의 반복 계산과 할당을 줄인 성능 개선 릴리스입니다.
+v1.3.2는 공개 API 시그니처를 유지하면서 빈 색상 팔레트를 안전한 기본 팔레트로 대체하고, 샘플 앱과 라이트·다크 차트 갤러리를 새로 정리한 패치 릴리스입니다.
 
 ### 줌 & 팬
 
@@ -273,6 +284,7 @@ LineChart(
 
 기본 팔레트(`ChartDefaults.colors`)는 6개 색으로 구성되며, 멀티 시리즈 차트에서
 순서대로 배정되고 시리즈 수가 6개를 넘으면 처음부터 다시 순환합니다.
+`colors = emptyList()`를 전달해도 크래시하지 않고 이 기본 팔레트로 대체됩니다.
 
 | # | Name   | HEX       |
 |---|--------|-----------|
