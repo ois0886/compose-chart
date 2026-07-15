@@ -97,7 +97,7 @@ private class BarEntryLayout(
  * @param modifier Layout Modifier. A finite size must be provided — the chart will not size itself.
  * @param style Chart style (orientation, bar corner radius, grouping, grid, axis, tooltip,
  *   animation duration, highlight alpha).
- * @param colors Palette for bar segments. See [ChartDefaults.colors] for the default palette.
+ * @param colors Palette for bar segments. An empty list falls back to [ChartDefaults.colors].
  * @param zoomState Optional zoom/pan state. Pass [com.inseong.composechart.rememberChartZoomState]
  *   to enable pinch-to-zoom and pan gestures.
  * @param accessibilityLabel Prefix used in the chart's semantics `contentDescription`. Default
@@ -125,6 +125,8 @@ fun BarChart(
     onSelectionChanged: ((ChartSelection.Bar) -> Unit)? = null,
     onBarSelected: ((groupIndex: Int, entryIndex: Int, stackIndex: Int) -> Unit)? = null,
 ) {
+    val resolvedColors = remember(colors) { ChartDefaults.resolveColors(colors) }
+
     // Detect dark theme and resolve styles
     val isDark = isSystemInDarkTheme()
     val resolvedGridStyle = style.grid.copy(
@@ -204,7 +206,14 @@ fun BarChart(
         BarMath.calculateGroupWidth(chartArea.width, groupCount, groupSpacingPx)
     }
     val groupLabels = remember(validGroups) { validGroups.map { it.label } }
-    val barLayouts = remember(validGroups, chartArea, groupWidth, groupSpacingPx, barSpacingPx, colors) {
+    val barLayouts = remember(
+        validGroups,
+        chartArea,
+        groupWidth,
+        groupSpacingPx,
+        barSpacingPx,
+        resolvedColors,
+    ) {
         if (chartArea.width <= 0f || chartArea.height <= 0f) {
             emptyList()
         } else {
@@ -222,9 +231,9 @@ fun BarChart(
                             entryIndex = entryIndex,
                             entry = entry,
                             barLeft = groupLeft + entryIndex * (barWidth + barSpacingPx),
-                            segmentColors = entry.colors.ifEmpty { colors },
+                            segmentColors = entry.colors.ifEmpty { resolvedColors },
                             totalValue = entry.safeTotal,
-                            tooltipLineColor = colors[entryIndex % colors.size],
+                            tooltipLineColor = resolvedColors[entryIndex % resolvedColors.size],
                         )
                     },
                 )

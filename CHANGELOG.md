@@ -5,6 +5,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Line/Bar/Donut/Pie/Radar 차트에 빈 `colors` 팔레트를 전달하면 발생하던 인덱싱 크래시를 기본 팔레트 fallback으로 방지
+
 ### Documentation
 - README와 내부 contributor 문서를 v1.3.1 릴리스 기준으로 정리 — 최신 dependency/version 표기, 성능 릴리스 설명, 릴리즈 문서 동기화 체크리스트 보강
 - README `GridStyle.dashPattern` 예제를 현재 `List<Float>` API에 맞게 수정하고 mirrored example test 추가

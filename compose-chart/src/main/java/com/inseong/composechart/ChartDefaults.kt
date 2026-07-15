@@ -36,6 +36,13 @@ object ChartDefaults {
         Color(0xFF38B2AC), // Teal
     )
 
+    /**
+     * Keeps chart palette indexing safe when a caller supplies an empty custom palette.
+     */
+    internal fun resolveColors(colors: List<Color>): List<Color> {
+        return colors.ifEmpty { this.colors }
+    }
+
     // ── Light/Dark theme default colors ──
 
     /** Grid line color (light) */
